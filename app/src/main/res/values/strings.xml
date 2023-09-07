@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Veeps</string>
+    <string name="app_description">veeps</string>
+
+    <string name="lorem" translatable="false">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent quis sem ipsum. Suspendisse potenti. Phasellus non dapibus orci, a volutpat nisl. Sed dictum felis eget leo volutpat, eget dignissim urna auctor. Phasellus sit amet pulvinar erat. Nulla facilisi. Phasellus sit amet felis iaculis, tincidunt lacus vitae, blandit felis. Pellentesque eleifend posuere vehicula. Phasellus id turpis finibus, rutrum turpis a, mollis diam. Nunc ut rhoncus odio, vitae ornare enim. Aliquam fringilla dui luctus sem facilisis, ac elementum nulla ultricies.</string>
+
+    <string name="unknown_error">Something went wrong at our end. Please try again later.</string>
+    <string name="no_connectivity_error">You are not connected to the internet.</string>
+
+    <string name="session_expired_label">Session Expired</string>
+    <string name="session_expired_warning">Session Expired. Please Sign In Again.</string>
+
+    <string name="ok_label">OK</string>
+    <string name="cancel_label">Cancel</string>
+
+    <!-- Intro Screen -->
+    <string name="welcome_label">Welcome to VEEPS</string>
+    <string name="welcome_description">Log in or register with your email</string>
+    <string name="sign_in">Sign in</string>
+    <string name="welcome_policy_full">By continuing you agree to VEEPS\' Terms of Service and Privacy Policy</string>
+    <string name="welcome_policy">By continuing you agree to VEEPS\'</string>
+    <string name="terms_label">Terms of Service</string>
+    <string name="and">and</string>
+    <string name="privacy_label">Privacy Policy</string>
+</resources>
