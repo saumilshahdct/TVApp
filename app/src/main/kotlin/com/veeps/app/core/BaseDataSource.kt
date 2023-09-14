@@ -1,13 +1,15 @@
 package com.veeps.app.core
 
 import android.text.Html
+import android.widget.Toast
 import androidx.core.text.HtmlCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
 import com.veeps.app.R
 import com.veeps.app.application.Veeps
-import com.veeps.app.data.common.BaseResponseGeneric
 import com.veeps.app.data.network.NoConnectivityException
+import com.veeps.app.util.APIConstants
+import com.veeps.app.util.DEFAULT
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -19,8 +21,8 @@ import java.io.IOException
 abstract class BaseDataSource {
 
 	protected suspend fun <T> getResult(
-		tag: String, call: suspend () -> Response<BaseResponseGeneric<T>>
-	): Resource<BaseResponseGeneric<T>> {
+		tag: String, call: suspend () -> Response<T>
+	): Resource<T> {
 		try {
 			val response = call()
 			when (response.isSuccessful) {
@@ -29,19 +31,12 @@ abstract class BaseDataSource {
 						200 -> {
 							response.body()?.let {
 								when (tag) {
+									APIConstants.fetchAuthenticationDetails -> {
+										return Resource.success(tag, response.body()!!)
+									}
+
 									else -> {
-										return if (response.body()!!.success) {
-											Resource.success(tag, response.body()!!)
-										} else {
-											if (response.body()!!.message.isEmpty()) {
-												Resource.error(
-													tag,
-													Veeps.appContext.getString(R.string.unknown_error)
-												)
-											} else {
-												Resource.error(tag, response.body()!!.message)
-											}
-										}
+										return Resource.success(tag, response.body()!!)
 									}
 								}
 							} ?: return Resource.error(
@@ -53,18 +48,7 @@ abstract class BaseDataSource {
 							response.body()?.let {
 								when (tag) {
 									else -> {
-										return if (response.body()!!.success) {
-											Resource.success(tag, response.body()!!)
-										} else {
-											if (response.body()!!.message.isEmpty()) {
-												Resource.error(
-													tag,
-													Veeps.appContext.getString(R.string.unknown_error)
-												)
-											} else {
-												Resource.error(tag, response.body()!!.message)
-											}
-										}
+										return Resource.success(tag, response.body()!!)
 									}
 								}
 							} ?: return Resource.error(
@@ -77,17 +61,41 @@ abstract class BaseDataSource {
 				else -> {
 					when (response.code()) {
 						400 -> {
-							var error: String = Veeps.appContext.getString(R.string.unknown_error)
-							response.errorBody()?.let { errorBody ->
-								val errorObject = JSONObject(errorBody.string())
-								if (errorObject.has("message")) {
-									error = Html.fromHtml(
-										errorObject.getString("message"),
-										HtmlCompat.FROM_HTML_MODE_LEGACY
-									).toString()
+							when (tag) {
+								APIConstants.authenticationPolling -> {
+									var error = Veeps.appContext.getString(R.string.unknown_error)
+									response.errorBody()?.let { errorBody ->
+										val errorObject = JSONObject(errorBody.string())
+										if (errorObject.has("error_description")) {
+											error = Html.fromHtml(
+												errorObject.getString("error"),
+												HtmlCompat.FROM_HTML_MODE_LEGACY
+											).toString()
+										} else if (errorObject.has("error")) {
+											error = Html.fromHtml(
+												errorObject.getString("error"),
+												HtmlCompat.FROM_HTML_MODE_LEGACY
+											).toString()
+										}
+									}
+									return Resource.error(tag, error)
+								}
+
+								else -> {
+									var error: String =
+										Veeps.appContext.getString(R.string.unknown_error)
+									response.errorBody()?.let { errorBody ->
+										val errorObject = JSONObject(errorBody.string())
+										if (errorObject.has("message")) {
+											error = Html.fromHtml(
+												errorObject.getString("message"),
+												HtmlCompat.FROM_HTML_MODE_LEGACY
+											).toString()
+										}
+									}
+									return Resource.error(tag, error)
 								}
 							}
-							return Resource.error(tag, error)
 						}
 
 						else -> {

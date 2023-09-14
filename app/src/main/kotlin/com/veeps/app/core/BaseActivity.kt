@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.activity.OnBackPressedCallback
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.isVisible
 import androidx.core.widget.ContentLoadingProgressBar
@@ -12,6 +13,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.veeps.app.R
+import com.veeps.app.util.APIConstants
 import com.veeps.app.util.Logger
 import io.github.inflationx.viewpump.ViewPumpContextWrapper
 import java.lang.reflect.ParameterizedType
@@ -21,6 +23,7 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 	lateinit var viewModel: VM
 	lateinit var binding: VB
 	lateinit var backPressedCallback: OnBackPressedCallback
+	private lateinit var layoutContainer: ConstraintLayout
 	private lateinit var screenLoader: ContentLoadingProgressBar
 
 	override fun attachBaseContext(newBase: Context?) {
@@ -33,12 +36,14 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 			installSplashScreen()
 		}
 		super.onCreate(savedInstanceState)
+		actionBar?.hide()
 		viewModel = ViewModelProvider(this)[getViewModelClass()]
 		binding = getViewBinding()
 		binding.lifecycleOwner = this        /*loader = Loader.getLoader(this)*/
 		setContentView(binding.root)
 		backPressedCallback = getBackCallback()
 		onBackPressedDispatcher.addCallback(this, backPressedCallback)
+		layoutContainer = binding.root.findViewById(R.id.layout_container)
 		screenLoader = binding.root.findViewById(R.id.loader)
 		onRendered(viewModel, binding)
 
@@ -67,13 +72,17 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 		dataResource: BaseDataSource.Resource<T>,
 		isLoaderEnabled: Boolean = true,
 		canUserAccessScreen: Boolean = false,
+		shouldBeInBackground: Boolean = true,
 		block: () -> Unit
 	) {
 		when (dataResource.callStatus) {
 			BaseDataSource.Resource.CallStatus.SUCCESS -> {
 				if (isLoaderEnabled) {
-					screenLoader.show()
-					screenLoader.visibility = View.VISIBLE
+					screenLoader.hide()
+					screenLoader.visibility = View.GONE
+					if (!shouldBeInBackground) {
+						layoutContainer.visibility = View.VISIBLE
+					}
 				}
 				block.invoke()
 				Logger.print("API Call is successful for ${dataResource.tag}")
@@ -81,19 +90,37 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 
 			BaseDataSource.Resource.CallStatus.LOADING -> {
 				if (isLoaderEnabled && !screenLoader.isVisible) {
-                    screenLoader.show()
+					screenLoader.show()
 					screenLoader.visibility = View.VISIBLE
-                }
-				Logger.print("API Call is loading for ${dataResource.tag}")
+					if (!shouldBeInBackground) {
+						layoutContainer.visibility = View.GONE
+					}
+				}
+				Logger.print("API Call is initiating for ${dataResource.tag}. Loader should be visible.")
 			}
 
 			BaseDataSource.Resource.CallStatus.ERROR -> {
 				if (isLoaderEnabled) {
 					screenLoader.hide()
 					screenLoader.visibility = View.GONE
+					if (!shouldBeInBackground) {
+						layoutContainer.visibility = View.VISIBLE
+					}
 				}
-				dataResource.message?.let { message -> showError(dataResource.tag, message) }
-					?: showError(dataResource.tag, getString(R.string.unknown_error))
+				when (dataResource.tag) {
+					APIConstants.authenticationPolling -> {
+						block.invoke()
+					}
+
+					else -> {
+						dataResource.message?.let { message ->
+							showError(
+								dataResource.tag,
+								message
+							)
+						} ?: showError(dataResource.tag, getString(R.string.unknown_error))
+					}
+				}
 				Logger.print("Error While Calling API for ${dataResource.tag} - " + dataResource.message)
 			}
 		}

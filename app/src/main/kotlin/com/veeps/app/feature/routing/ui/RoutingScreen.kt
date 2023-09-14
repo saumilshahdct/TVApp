@@ -6,7 +6,6 @@ import androidx.activity.OnBackPressedCallback
 import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
 import com.veeps.app.databinding.ActivityRoutingScreenBinding
-import com.veeps.app.extension.isFreshInstall
 import com.veeps.app.extension.openActivity
 import com.veeps.app.extension.showToast
 import com.veeps.app.feature.routing.viewModel.RoutingViewModel
@@ -90,10 +89,7 @@ class RoutingScreen : BaseActivity<RoutingViewModel, ActivityRoutingScreenBindin
 				}
 				binding.logo.animate().scaleXBy(0.5f).scaleYBy(0.5f).setDuration(1500)
 					.withEndAction {
-						if (!AppPreferences.get(
-								AppConstants.isUserAuthenticated, false
-							)
-						) {
+						if (!AppPreferences.get(AppConstants.isUserAuthenticated, false)) {
 							AppPreferences.removeAuthenticatedUser()
 							openActivity<RoutingScreen>(true, Pair("type", ""))
 						} else {
@@ -102,10 +98,10 @@ class RoutingScreen : BaseActivity<RoutingViewModel, ActivityRoutingScreenBindin
 					}.start()
 			}
 		}
-		fetchGuestUserToken()
+//		fetchGuestUserToken()
 	}
 
-	private fun fetchGuestUserToken() {
+	/*private fun fetchGuestUserToken() {
 		viewModel.fetchGuestUserToken().observe(this@RoutingScreen) { guestUserTokenCall ->
 			fetch(guestUserTokenCall, isLoaderEnabled = false, canUserAccessScreen = false) {
 				guestUserTokenCall.response?.let { guestUserTokenResponse ->
@@ -119,7 +115,7 @@ class RoutingScreen : BaseActivity<RoutingViewModel, ActivityRoutingScreenBindin
 				} ?: showError(guestUserTokenCall.tag, getString(R.string.unknown_error))
 			}
 		}
-	}
+	}*/
 
 	private fun setupSplashScreenConfiguration() {        /*Comment: This keeps splash open till manually moved to next activity
 		splashScreen.setKeepOnScreenCondition { true }*/

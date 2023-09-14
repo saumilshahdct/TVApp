@@ -27,3 +27,13 @@ fun isAppConnected(): Boolean {
 	}
 	return isOnline
 }
+
+fun Int?.isGreaterThan(other: Int?) = this != null && other != null && this > other
+
+fun Int?.isGreaterThanOrEqualTo(other: Int?) = this != null && other != null && this >= other
+
+fun Int?.isLessThan(other: Int?) = this != null && other != null && this < other
+
+fun Int?.isLessThanOrEqualTo(other: Int?) = this != null && other != null && this <= other
+
+fun Int?.convertToMilli() = if (this != null && this.isGreaterThan(0)) this * 1000 else 0

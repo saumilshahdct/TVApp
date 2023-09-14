@@ -13,6 +13,10 @@ object Logger {
 		Log.d(AppConstants.TAG, message.toString())
 	}
 
+	fun printMessage(message: Any) {
+		Log.d("AppConstants.TAG", message.toString())
+	}
+
 	fun printError(message: Any) {
 		Log.e(AppConstants.TAG, message.toString())
 	}

@@ -5,6 +5,9 @@ import com.google.gson.GsonBuilder
 import com.veeps.app.BuildConfig
 import com.veeps.app.data.common.BaseResponseGeneric
 import com.veeps.app.extension.isAppConnected
+import com.veeps.app.feature.signIn.model.PollingData
+import com.veeps.app.feature.signIn.model.SignInData
+import com.veeps.app.feature.user.model.UserData
 import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppConstants
 import com.veeps.app.util.AppPreferences
@@ -19,7 +22,12 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
+import retrofit2.http.Body
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.Query
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 
@@ -38,14 +46,9 @@ object APIUtil {
 				var request = chain.request()
 
 				val builder: Request.Builder = request.newBuilder().header(
-					"Authorization", "Bearer " + if (AppPreferences.get(
-							AppConstants.isUserAuthenticated, false
-						) && !AppPreferences.get(AppConstants.authenticatedUserToken, "")
-							.isNullOrEmpty()
-					) AppPreferences.get(
+					"Authorization", "Bearer " + AppPreferences.get(
 						AppConstants.authenticatedUserToken, "AuthenticatedUserToken"
 					)
-					else ""
 				)
 				request = builder.build()
 				chain.proceed(request)
@@ -91,7 +94,20 @@ object APIUtil {
 	}
 
 	interface APIService {
-		@GET(APIConstants.fetchGuestUserToken)
-		suspend fun fetchGuestUserToken(): Response<BaseResponseGeneric<String>>
+		@POST(APIConstants.fetchAuthenticationDetails)
+		suspend fun fetchAuthenticationDetails(@Query("client_id") clientId: String): Response<SignInData>
+
+		@POST(APIConstants.authenticationPolling)
+		@FormUrlEncoded
+		suspend fun authenticationPolling(
+			@Field("grant_type") grantType: String,
+			@Field("device_code") deviceCode: String,
+			@Field("client_id") clientId: String,
+			@Field("client_secret") clientSecret: String
+		): Response<PollingData>
+
+		@GET(APIConstants.fetchUserDetails)
+		suspend fun fetchUserDetails(): Response<BaseResponseGeneric<UserData>>
+
 	}
 }

@@ -22,4 +22,11 @@
     <string name="terms_label">Terms of Service</string>
     <string name="and">and</string>
     <string name="privacy_label">Privacy Policy</string>
+
+    <!-- Sign In -->
+    <string name="auth_login_label">To create an account or log in, go to</string>
+    <string name="auth_code_label">And enter this code:</string>
+    <string name="qr_code_label">Or scan QR code:</string>
+
+
 </resources>

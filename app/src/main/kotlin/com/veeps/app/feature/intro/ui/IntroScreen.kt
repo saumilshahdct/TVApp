@@ -6,9 +6,12 @@ import androidx.activity.OnBackPressedCallback
 import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
 import com.veeps.app.databinding.ActivityIntroScreenBinding
+import com.veeps.app.extension.openActivity
 import com.veeps.app.feature.intro.viewModel.IntroViewModel
+import com.veeps.app.feature.signIn.ui.SignInScreen
 import com.veeps.app.util.AppConstants
 import com.veeps.app.util.Logger
+import com.veeps.app.util.Screens
 import kotlin.system.exitProcess
 
 
@@ -21,6 +24,7 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 		val backPressedCallback = object : OnBackPressedCallback(true) {
 			override fun handleOnBackPressed() {
 				Logger.print("Back Pressed on ${this@IntroScreen.localClassName} Finishing Activity")
+//				finish()
 				finishAffinity()
 				exitProcess(0)
 			}
@@ -90,6 +94,7 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 			introScreen = this@IntroScreen
 			lifecycleOwner = this@IntroScreen
 			errorContainer.visibility = View.GONE
+			signIn.requestFocus()
 		}
 		notifyAppEvents()
 		setupSplashScreenConfiguration()
@@ -105,14 +110,16 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 	}
 
 	fun onSignIn() {
-		showError("SIGN_IN", "Error")
+		openActivity<SignInScreen>(
+			false, Pair(AppConstants.TAG, Screens.SIGN_IN)
+		)
 	}
 
 	private fun setupBlurView() {
 		binding.errorContainer.setupWith(binding.container).setBlurRadius(12.5f)
 	}
 
-	private fun setupSplashScreenConfiguration() {		/* Comment: This keeps splash open till manually moved to next activity
+	private fun setupSplashScreenConfiguration() {        /* Comment: This keeps splash open till manually moved to next activity
 		splashScreen.setKeepOnScreenCondition { true } */
 
 		val content: View = findViewById(android.R.id.content)

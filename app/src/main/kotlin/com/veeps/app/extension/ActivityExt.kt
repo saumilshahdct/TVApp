@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.widget.Button
 import android.widget.Toast
+import com.veeps.app.application.Veeps
 import java.io.Serializable
 
 fun Activity.showToast(message: CharSequence) =
@@ -14,7 +15,7 @@ fun Activity.showToast(message: CharSequence) =
 inline fun <reified T : Activity> Activity.openActivity(
 	requiredSingleTop: Boolean, vararg params: Pair<String, Any>
 ) {
-	val intent = Intent(this, T::class.java)
+	val intent = Intent(Veeps.appContext, T::class.java)
 	intent.putExtras(*params)
 	if (requiredSingleTop) {
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
