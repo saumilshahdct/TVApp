@@ -8,7 +8,7 @@ import androidx.activity.OnBackPressedCallback
 import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
 import com.veeps.app.databinding.ActivityIntroScreenBinding
-import com.veeps.app.extension.openActivity
+import com.veeps.app.extension.goToScreen
 import com.veeps.app.feature.home.ui.HomeScreen
 import com.veeps.app.feature.intro.viewModel.IntroViewModel
 import com.veeps.app.feature.signIn.ui.SignInScreen
@@ -110,7 +110,7 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 				""
 			).isNullOrEmpty()
 		) {
-			openActivity<HomeScreen>(true, Pair(AppConstants.TAG, Screens.BROWSE))
+			goToScreen<HomeScreen>(true, AppConstants.TAG to Screens.BROWSE)
 		} else
 			Handler(Looper.getMainLooper()).postDelayed({
 				viewModel.contentHasLoaded.postValue(true)
@@ -122,7 +122,7 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 	}
 
 	fun onSignIn() {
-		openActivity<SignInScreen>(
+		goToScreen<SignInScreen>(
 			false, Pair(AppConstants.TAG, Screens.SIGN_IN)
 		)
 	}

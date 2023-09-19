@@ -11,7 +11,7 @@ import com.veeps.app.databinding.ActivitySignInScreenBinding
 import com.veeps.app.extension.convertToMilli
 import com.veeps.app.extension.isGreaterThan
 import com.veeps.app.extension.loadImage
-import com.veeps.app.extension.openActivity
+import com.veeps.app.extension.goToScreen
 import com.veeps.app.feature.home.ui.HomeScreen
 import com.veeps.app.feature.signIn.viewModel.SignInViewModel
 import com.veeps.app.util.APIConstants
@@ -155,7 +155,6 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 			) {
 				when (pollingDetails.callStatus) {
 					SUCCESS -> {
-						Logger.printMessage("POLL SUCCESS")
 						pollingDetails.response?.let { pollingData ->
 							if (this::polling.isInitialized && this::pollTask.isInitialized) {
 								polling.removeCallbacks(pollTask)
@@ -178,11 +177,9 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 					ERROR -> {
 						when (pollingDetails.message) {
 							PollingStatus.PENDING -> {
-								Logger.printMessage("POLL ERROR - TOKEN PENDING")
 							}
 
 							PollingStatus.SLOW_DOWN -> {
-								Logger.printMessage("POLL ERROR - SLOWING DOWN")
 								val interval = viewModel.pollingInterval.value
 								viewModel.pollingInterval.value =
 									max(IntValue.NUMBER_10.convertToMilli(), interval!!)
@@ -190,13 +187,11 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 
 							PollingStatus.EXPIRED_TOKEN -> {
 								viewModel.tokenExpiryTime.value = IntValue.NUMBER_100
-								Logger.printMessage("POLL ERROR - TOKEN Expired")
 							}
 						}
 					}
 
 					LOADING -> {
-						Logger.printMessage("POLL LOADING")
 					}
 				}                /* TODO: Handle 401 Unauthorized 422 Unprocessable Entity */
 			}
@@ -227,7 +222,7 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 						AppPreferences.set(AppConstants.userAvatar, user.avatarURL)
 						AppPreferences.set(AppConstants.userTimeZoneAbbr, user.timeZoneAbbr)
 						AppPreferences.set(AppConstants.isUserAuthenticated, value = true)
-						openActivity<HomeScreen>(true, Pair(AppConstants.TAG, Screens.BROWSE))
+						goToScreen<HomeScreen>(true, AppConstants.TAG to Screens.BROWSE)
 					} ?: showError(userDetails.tag, getString(R.string.unknown_error))
 				} ?: showError(userDetails.tag, getString(R.string.unknown_error))
 			}
@@ -242,7 +237,6 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 			binding.qrCode.loadImage(qrCode, ImageTags.QR)
 		}
 		viewModel.pollingInterval.observe(this@SignInScreen) { pollingInterval ->
-			Logger.printMessage("Interval - $pollingInterval")
 			if (pollingInterval.isGreaterThan(0)) {
 				if (this::polling.isInitialized && this::pollTask.isInitialized) {
 					polling.removeCallbacks(pollTask)
@@ -250,21 +244,18 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 				}
 				pollTask = Runnable {
 					authenticationPolling()
-					Logger.printMessage("Inner Interval - $pollingInterval")
 					polling.postDelayed(pollTask, pollingInterval?.toLong()!!)
 				}
 				polling.postDelayed(pollTask, pollingInterval.toLong())
 			}
 		}
 		viewModel.tokenExpiryTime.observe(this@SignInScreen) { tokenExpiryTime ->
-			Logger.printMessage("Expiry - $tokenExpiryTime")
 			if (tokenExpiryTime.isGreaterThan(0)) {
 				if (this::tokenExpiry.isInitialized && this::expiryTask.isInitialized) {
 					tokenExpiry.removeCallbacks(expiryTask)
 					tokenExpiry.removeCallbacksAndMessages(expiryTask)
 				}
 				expiryTask = Runnable {
-					Logger.printMessage("Internal Expiry - $tokenExpiryTime")
 					fetchAuthenticationDetails(isRefreshing = true)
 					tokenExpiry.postDelayed(expiryTask, tokenExpiryTime?.toLong()!!)
 				}

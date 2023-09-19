@@ -1,22 +1,32 @@
 package com.veeps.app.feature.home.ui
 
 import android.animation.ValueAnimator
+import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.OnBackPressedCallback
+import androidx.core.os.bundleOf
+import androidx.fragment.app.Fragment
 import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
 import com.veeps.app.databinding.ActivityHomeScreenBinding
+import com.veeps.app.extension.goToPage
+import com.veeps.app.feature.browse.ui.BrowseScreen
 import com.veeps.app.feature.home.viewModel.HomeViewModel
+import com.veeps.app.feature.search.ui.SearchScreen
+import com.veeps.app.feature.shows.ui.ShowsScreen
+import com.veeps.app.feature.user.ui.ProfileScreen
 import com.veeps.app.util.AppConstants
+import com.veeps.app.util.AppHelper
 import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
 import com.veeps.app.widget.navigationMenu.NavigationItem
 import com.veeps.app.widget.navigationMenu.NavigationItems
+import com.veeps.app.widget.navigationMenu.NavigationMenu
 import kotlin.system.exitProcess
 
 
-class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), NavigationItem {
+class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), NavigationItem, AppHelper {
 
 	private var isNavigationMenuVisible = false
 	override fun isSplashScreenRequired(): Boolean {
@@ -30,7 +40,13 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 					AppConstants.lastKeyPressTime = System.currentTimeMillis()
 					clearNavigationMenuUI()
 				} else {
-					showError(Screens.EXIT_APP, resources.getString(R.string.exit_app))
+					if (supportFragmentManager.backStackEntryCount == 1) {
+						if (binding.errorContainer.visibility == View.GONE) {
+							showError(Screens.EXIT_APP, resources.getString(R.string.exit_app))
+						}
+					} else {
+						supportFragmentManager.popBackStack()
+					}
 				}
 				Logger.print(
 					"Back Pressed on ${
@@ -56,6 +72,13 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 				viewModel.errorNegativeLabel.postValue(getString(R.string.no_label))
 				viewModel.isErrorPositiveApplicable.postValue(true)
 				viewModel.isErrorNegativeApplicable.postValue(true)
+			}
+
+			Screens.BROWSE -> {
+				viewModel.errorPositiveLabel.postValue(getString(R.string.ok_label))
+				viewModel.errorNegativeLabel.postValue(getString(R.string.cancel_label))
+				viewModel.isErrorPositiveApplicable.postValue(true)
+				viewModel.isErrorNegativeApplicable.postValue(false)
 			}
 
 			else -> {
@@ -105,8 +128,12 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 				exitProcess(0)
 			}
 
+			Screens.BROWSE -> {
+				binding.errorContainer.visibility = View.GONE
+			}
+
 			else -> {
-				backPressedCallback.handleOnBackPressed()
+				binding.errorContainer.visibility = View.GONE
 			}
 		}
 	}
@@ -117,16 +144,20 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 				binding.errorContainer.visibility = View.GONE
 			}
 
+			Screens.BROWSE -> {
+				binding.errorContainer.visibility = View.GONE
+			}
+
 			else -> {
-				backPressedCallback.handleOnBackPressed()
+				binding.errorContainer.visibility = View.GONE
 			}
 		}
 	}
 
 	override fun onRendered(viewModel: HomeViewModel, binding: ActivityHomeScreenBinding) {
 		binding.apply {
-			browse = viewModel
-			browseScreen = this@HomeScreen
+			home = viewModel
+			homeScreen = this@HomeScreen
 			lifecycleOwner = this@HomeScreen
 			errorContainer.visibility = View.GONE
 			loader.visibility = View.GONE
@@ -137,11 +168,11 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	private fun loadAppContent() {
-
 	}
 
 	private fun notifyAppEvents() {
 		binding.navigationMenu.setupDefaultNavigationMenu(NavigationItems.BROWSE_MENU)
+		select(NavigationItems.BROWSE_MENU)
 		setupFocusOnNavigationMenu()
 		setupBlurView()
 	}
@@ -149,12 +180,10 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	private fun setupFocusOnNavigationMenu() {
 		binding.navigationMenu.setOnFocusChangeListener { view, hasFocus ->
 			if (hasFocus) {
-				Logger.print("Focus gained by menu ")
 				binding.navigationMenu.onFocusChangeListener = null
 				isNavigationMenuVisible = true
 				showNavigationMenu(view)
 			} else {
-				Logger.print("Focus lost by menu ")
 				isNavigationMenuVisible = false
 				hideNavigationMenu(view)
 			}
@@ -191,27 +220,53 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	override fun select(selectedItem: Int) {
+
+		lateinit var tag: String
+		lateinit var fragment: Class<out Fragment>
+		lateinit var arguments: Bundle
+		var shouldReplace = false
+		var shouldAddToBackStack = false
 		when (binding.navigationMenu.getSelectedItem(selectedItem)) {
 			NavigationItems.PROFILE -> {
+				tag = NavigationItems.PROFILE
+				arguments = bundleOf(AppConstants.TAG to tag)
+				fragment = ProfileScreen::class.java
+				shouldReplace = true
+				shouldAddToBackStack = true
 				binding.navigationMenu.setCurrentSelected(selectedItem)
 			}
 
 			NavigationItems.BROWSE -> {
+				tag = NavigationItems.BROWSE
+				arguments = bundleOf(AppConstants.TAG to tag)
+				fragment = BrowseScreen::class.java
+				shouldReplace = true
+				shouldAddToBackStack = true
 				binding.navigationMenu.setCurrentSelected(selectedItem)
 			}
 
 			NavigationItems.SEARCH -> {
+				tag = NavigationItems.SEARCH
+				arguments = bundleOf(AppConstants.TAG to tag)
+				fragment = SearchScreen::class.java
+				shouldReplace = true
+				shouldAddToBackStack = true
 				binding.navigationMenu.setCurrentSelected(selectedItem)
 			}
 
 			NavigationItems.MY_SHOWS -> {
+				tag = NavigationItems.MY_SHOWS
+				arguments = bundleOf(AppConstants.TAG to tag)
+				fragment = ShowsScreen::class.java
+				shouldReplace = true
+				shouldAddToBackStack = true
 				binding.navigationMenu.setCurrentSelected(selectedItem)
 			}
 		}
 		isNavigationMenuVisible = false
 		hideNavigationMenu(binding.navigationMenu)
+		goToPage(supportFragmentManager, shouldReplace, fragment, arguments, tag, shouldAddToBackStack)
 		setupFocusOnNavigationMenu()
-		Logger.print("Here in select method")
 	}
 
 	override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -239,5 +294,13 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	override fun onDestroy() {
 		binding.navigationMenu.onFocusChangeListener = null
 		super.onDestroy()
+	}
+
+	override fun selectNavigationMenu(selectedItem: Int) {
+		binding.navigationMenu.setCurrentSelected(selectedItem)
+	}
+
+	override fun showErrorOnScreen(tag: String, message: String) {
+		showError(tag, message)
 	}
 }

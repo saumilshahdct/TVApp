@@ -32,7 +32,6 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		if (isSplashScreenRequired()) {
-			Logger.print("Splash Required -- ${isSplashScreenRequired()}")
 			installSplashScreen()
 		}
 		super.onCreate(savedInstanceState)

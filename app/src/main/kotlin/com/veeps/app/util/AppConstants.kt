@@ -39,7 +39,11 @@ object AppConstants {
 object Screens {
 	const val INTRO = "intro"
 	const val SIGN_IN = "signIn"
+	const val HOME = "HOME"
+	const val PROFILE = "PROFILE"
 	const val BROWSE = "BROWSE"
+	const val SEARCH = "SEARCH"
+	const val SHOWS = "SHOWS"
 	const val EXIT_APP = "EXIT_APP"
 }
 

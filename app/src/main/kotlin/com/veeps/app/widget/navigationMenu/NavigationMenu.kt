@@ -307,8 +307,6 @@ class NavigationMenu : LinearLayout {
 				this.isFocusable = isExpanded
 				this.isFocusableInTouchMode = isExpanded
 				this.setOnFocusChangeListener { view, hasFocus ->
-					val focusLabel = if (hasFocus) "gained" else "lost"
-					Logger.print("Focus $focusLabel on item ${i + 1}, do something for background if needed, earlier dark background for focused and non focused if selected half trans and not selected then full trans")
 					(view.findViewById<View>(R.id.label) as TextView).setTextColor(
 						ContextCompat.getColor(
 							context, if (hasFocus) R.color.black else R.color.white
@@ -340,9 +338,6 @@ class NavigationMenu : LinearLayout {
 				if (!isExpanded) {
 					this.clearFocus()
 					highlightCurrentSelectedNavigationMenu()
-					//				Logger.print("Menu is collapsed, loop is on item ${i+1}, clearing focus and highlighting, do something for background if needed, earlier if selected more than half trans and not selected then full trans")
-				} else {
-					//				Logger.print("Menu is expanded, loop is on item ${i+1}, do something for background if needed, earlier if selected half trans and not selected then full trans")
 				}
 			}
 		}
@@ -352,7 +347,6 @@ class NavigationMenu : LinearLayout {
 		currentSelectedItem = navigationMenuItemId
 		isNavigationMenuVisible = false
 		changeNavigationMenuFocusStatus(false)
-//		setupNavigationMenuExpandedUI(context)
 	}
 
 	override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {

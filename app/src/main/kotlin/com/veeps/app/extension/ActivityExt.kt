@@ -12,7 +12,7 @@ import java.io.Serializable
 fun Activity.showToast(message: CharSequence) =
 	Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
 
-inline fun <reified T : Activity> Activity.openActivity(
+inline fun <reified T : Activity> Activity.goToScreen(
 	requiredSingleTop: Boolean, vararg params: Pair<String, Any>
 ) {
 	val intent = Intent(Veeps.appContext, T::class.java)

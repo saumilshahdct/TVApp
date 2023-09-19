@@ -9,11 +9,11 @@
         <import type="android.view.View" />
 
         <variable
-            name="browse"
+            name="home"
             type="com.veeps.app.feature.home.viewModel.HomeViewModel" />
 
         <variable
-            name="browseScreen"
+            name="homeScreen"
             type="com.veeps.app.feature.home.ui.HomeScreen" />
 
     </data>
@@ -38,7 +38,7 @@
 
             <include layout="@layout/guidelines" />
 
-            <FrameLayout
+            <androidx.fragment.app.FragmentContainerView
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:id="@+id/fragment_container"
@@ -114,7 +114,7 @@
                     android:layout_marginBottom="10dp"
                     android:elevation="5dp"
                     android:padding="10dp"
-                    android:text="@{browse.errorMessage}"
+                    android:text="@{home.errorMessage}"
                     android:textColor="@color/white"
                     android:textIsSelectable="false"
                     android:textSize="16sp"
@@ -152,13 +152,13 @@
                         android:focusable="true"
                         android:focusableInTouchMode="true"
                         android:lines="1"
-                        android:onClick="@{(v)-> browseScreen.onErrorPositive(v.tag)}"
-                        android:text="@{browse.errorPositiveLabel}"
+                        android:onClick="@{(v)-> homeScreen.onErrorPositive(v.tag)}"
+                        android:text="@{home.errorPositiveLabel}"
                         android:textAllCaps="false"
                         android:textColor="@color/selector_button_label_white"
                         android:textIsSelectable="false"
                         android:textSize="12sp"
-                        android:visibility="@{browse.isErrorPositiveApplicable() ? View.VISIBLE : View.GONE}"
+                        android:visibility="@{home.isErrorPositiveApplicable() ? View.VISIBLE : View.GONE}"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toStartOf="@+id/negative"
                         app:layout_constraintHorizontal_chainStyle="packed"
@@ -179,13 +179,13 @@
                         android:focusable="true"
                         android:focusableInTouchMode="true"
                         android:lines="1"
-                        android:onClick="@{(v)-> browseScreen.onErrorNegative(v.tag)}"
-                        android:text="@{browse.errorNegativeLabel}"
+                        android:onClick="@{(v)-> homeScreen.onErrorNegative(v.tag)}"
+                        android:text="@{home.errorNegativeLabel}"
                         android:textAllCaps="false"
                         android:textColor="@color/selector_button_label_white"
                         android:textIsSelectable="false"
                         android:textSize="12sp"
-                        android:visibility="@{browse.isErrorNegativeApplicable() ? View.VISIBLE : View.GONE}"
+                        android:visibility="@{home.isErrorNegativeApplicable() ? View.VISIBLE : View.GONE}"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toEndOf="@+id/positive"

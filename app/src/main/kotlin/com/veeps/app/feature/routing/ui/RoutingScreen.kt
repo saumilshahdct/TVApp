@@ -6,7 +6,7 @@ import androidx.activity.OnBackPressedCallback
 import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
 import com.veeps.app.databinding.ActivityRoutingScreenBinding
-import com.veeps.app.extension.openActivity
+import com.veeps.app.extension.goToScreen
 import com.veeps.app.extension.showToast
 import com.veeps.app.feature.routing.viewModel.RoutingViewModel
 import com.veeps.app.util.AppConstants
@@ -91,9 +91,9 @@ class RoutingScreen : BaseActivity<RoutingViewModel, ActivityRoutingScreenBindin
 					.withEndAction {
 						if (!AppPreferences.get(AppConstants.isUserAuthenticated, false)) {
 							AppPreferences.removeAuthenticatedUser()
-							openActivity<RoutingScreen>(true, Pair("type", ""))
+							goToScreen<RoutingScreen>(true, Pair("type", ""))
 						} else {
-							openActivity<RoutingScreen>(true, Pair("type", ""))
+							goToScreen<RoutingScreen>(true, Pair("type", ""))
 						}
 					}.start()
 			}

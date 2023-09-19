@@ -1,5 +1,7 @@
 package com.veeps.app.core
 
+import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,7 +14,9 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.veeps.app.R
+import com.veeps.app.feature.home.ui.HomeScreen
 import com.veeps.app.util.APIConstants
+import com.veeps.app.util.AppHelper
 import com.veeps.app.util.Logger
 import java.lang.reflect.ParameterizedType
 
@@ -22,6 +26,7 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 	lateinit var binding: VB
 	private lateinit var screenLoader: ContentLoadingProgressBar
 	private lateinit var layoutContainer: ConstraintLayout
+	lateinit var helper: AppHelper
 
 	override fun onCreateView(
 		inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -35,14 +40,22 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 		return binding.root
 	}
 
+	override fun onAttach(context: Context) {
+		super.onAttach(context)
+		val activity: Activity = context as HomeScreen
+		try {
+			helper = activity as AppHelper
+		} catch (e: ClassCastException) {
+			throw ClassCastException("$activity must implement Interface")
+		}
+	}
+
 	private fun getViewModelClass(): Class<VM> {
 		val type = (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0]
 		return type as Class<VM>
 	}
 
 	abstract fun getViewBinding(): VB
-
-	open fun showError(tag: String, message: String) {}
 
 	open fun <T> fetch(
 		dataResource: BaseDataSource.Resource<T>,
@@ -68,6 +81,7 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 				if (isLoaderEnabled && !screenLoader.isVisible) {
 					screenLoader.show()
 					screenLoader.visibility = View.VISIBLE
+					if (!canUserAccessScreen) screenLoader.requestFocus()
 					if (!shouldBeInBackground) {
 						layoutContainer.visibility = View.GONE
 					}
@@ -90,10 +104,11 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 
 					else -> {
 						dataResource.message?.let { message ->
-							showError(
-								dataResource.tag, message
-							)
-						} ?: showError(dataResource.tag, getString(R.string.unknown_error))
+							helper.showErrorOnScreen(dataResource.tag, message)
+						} ?: helper.showErrorOnScreen(
+							dataResource.tag,
+							getString(R.string.unknown_error)
+						)
 					}
 				}
 				Logger.print("Error While Calling API for ${dataResource.tag} - " + dataResource.message)
