@@ -43,6 +43,10 @@
             android:name=".feature.signIn.ui.SignInScreen"
             android:exported="true" />
 
+        <activity
+            android:name=".feature.home.ui.HomeScreen"
+            android:exported="true" />
+
         <!-- Required: set your sentry.io project identifier (DSN) -->
         <meta-data
             android:name="io.sentry.dsn"

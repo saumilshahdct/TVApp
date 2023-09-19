@@ -2,7 +2,6 @@ package com.veeps.app.extension
 
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.EditText
@@ -11,12 +10,11 @@ import androidx.annotation.LayoutRes
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.load.resource.bitmap.DrawableTransformation
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.veeps.app.R
-import com.veeps.app.util.IntValue
 import com.veeps.app.util.ImageTags
+import com.veeps.app.util.IntValue
 import com.veeps.app.util.Logger
 
 
@@ -47,6 +45,36 @@ fun ImageView.loadImage(resource: Any, tag: Any) {
 							.error(android.R.color.transparent).into(this)
 					}
 
+					ImageTags.QR -> {
+						this.clipToOutline = true
+						Glide.with(this.context).load(resource)
+							.diskCacheStrategy(DiskCacheStrategy.ALL).transition(withCrossFade())
+							.thumbnail(
+								Glide.with(context).asDrawable().load(resource)
+									.sizeMultiplier(0.25f).transform(
+										CenterInside(), RoundedCorners(IntValue.NUMBER_5)
+									)
+							).transform(
+								CenterInside(), RoundedCorners(IntValue.NUMBER_5)
+							).placeholder(this.drawable)
+							.error(R.drawable.qr_code_background_transparent).into(this)
+					}
+
+					ImageTags.HEADER -> {
+						this.clipToOutline = true
+						Glide.with(this.context).load(resource)
+							.diskCacheStrategy(DiskCacheStrategy.ALL).transition(withCrossFade())
+							.thumbnail(
+								Glide.with(context).asDrawable().load(resource)
+									.sizeMultiplier(0.25f).transform(
+										CenterInside(), RoundedCorners(IntValue.NUMBER_10)
+									)
+							).transform(
+								CenterInside(), RoundedCorners(IntValue.NUMBER_10)
+							).placeholder(this.drawable)
+							.error(R.drawable.qr_code_background_transparent).into(this)
+					}
+
 					ImageTags.ROUNDED -> {
 						this.clipToOutline = true
 						Glide.with(this.context).load(resource)
@@ -54,10 +82,10 @@ fun ImageView.loadImage(resource: Any, tag: Any) {
 							.thumbnail(
 								Glide.with(context).asDrawable().load(resource)
 									.sizeMultiplier(0.25f).transform(
-										CenterInside(), RoundedCorners(IntValue.SIZE_5)
+										CenterInside(), RoundedCorners(IntValue.NUMBER_100)
 									)
 							).transform(
-								CenterInside(), RoundedCorners(IntValue.SIZE_5)
+								CenterInside(), RoundedCorners(IntValue.NUMBER_100)
 							).placeholder(this.drawable)
 							.error(R.drawable.qr_code_background_transparent).into(this)
 					}

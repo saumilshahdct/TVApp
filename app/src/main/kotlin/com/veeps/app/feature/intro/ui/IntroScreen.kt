@@ -1,5 +1,7 @@
 package com.veeps.app.feature.intro.ui
 
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.view.ViewTreeObserver
 import androidx.activity.OnBackPressedCallback
@@ -7,9 +9,12 @@ import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
 import com.veeps.app.databinding.ActivityIntroScreenBinding
 import com.veeps.app.extension.openActivity
+import com.veeps.app.feature.home.ui.HomeScreen
 import com.veeps.app.feature.intro.viewModel.IntroViewModel
 import com.veeps.app.feature.signIn.ui.SignInScreen
 import com.veeps.app.util.AppConstants
+import com.veeps.app.util.AppPreferences
+import com.veeps.app.util.IntValue
 import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
 import kotlin.system.exitProcess
@@ -32,9 +37,7 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 		return backPressedCallback
 	}
 
-	override fun getViewBinding(): ActivityIntroScreenBinding {
-		return ActivityIntroScreenBinding.inflate(layoutInflater)
-	}
+	override fun getViewBinding(): ActivityIntroScreenBinding = ActivityIntroScreenBinding.inflate(layoutInflater)
 
 	override fun showError(tag: String, message: String) {
 		setupBlurView()
@@ -102,7 +105,16 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 	}
 
 	private fun loadAppContent() {
-		viewModel.contentHasLoaded.postValue(true)
+		if (AppPreferences.get(AppConstants.isUserAuthenticated, false) && !AppPreferences.get(
+				AppConstants.authenticatedUserToken,
+				""
+			).isNullOrEmpty()
+		) {
+			openActivity<HomeScreen>(true, Pair(AppConstants.TAG, Screens.BROWSE))
+		} else
+			Handler(Looper.getMainLooper()).postDelayed({
+				viewModel.contentHasLoaded.postValue(true)
+			}, IntValue.NUMBER_2000.toLong())
 	}
 
 	private fun notifyAppEvents() {

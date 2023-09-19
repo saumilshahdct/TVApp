@@ -1,0 +1,103 @@
+package com.veeps.app.core
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
+import androidx.core.widget.ContentLoadingProgressBar
+import androidx.databinding.ViewDataBinding
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.veeps.app.R
+import com.veeps.app.util.APIConstants
+import com.veeps.app.util.Logger
+import java.lang.reflect.ParameterizedType
+
+abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
+
+	lateinit var viewModel: VM
+	lateinit var binding: VB
+	private lateinit var screenLoader: ContentLoadingProgressBar
+	private lateinit var layoutContainer: ConstraintLayout
+
+	override fun onCreateView(
+		inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+	): View {
+		super.onCreateView(inflater, container, savedInstanceState)
+		viewModel = ViewModelProvider(requireActivity())[getViewModelClass()]
+		binding = getViewBinding()
+		binding.lifecycleOwner = viewLifecycleOwner
+		layoutContainer = binding.root.findViewById(R.id.layout_container)
+		screenLoader = binding.root.findViewById(R.id.loader)
+		return binding.root
+	}
+
+	private fun getViewModelClass(): Class<VM> {
+		val type = (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0]
+		return type as Class<VM>
+	}
+
+	abstract fun getViewBinding(): VB
+
+	open fun showError(tag: String, message: String) {}
+
+	open fun <T> fetch(
+		dataResource: BaseDataSource.Resource<T>,
+		isLoaderEnabled: Boolean = true,
+		canUserAccessScreen: Boolean = false,
+		shouldBeInBackground: Boolean = true,
+		block: () -> Unit
+	) {
+		when (dataResource.callStatus) {
+			BaseDataSource.Resource.CallStatus.SUCCESS -> {
+				if (isLoaderEnabled) {
+					screenLoader.hide()
+					screenLoader.visibility = View.GONE
+					if (!shouldBeInBackground) {
+						layoutContainer.visibility = View.VISIBLE
+					}
+				}
+				block.invoke()
+				Logger.print("API Call is successful for ${dataResource.tag}")
+			}
+
+			BaseDataSource.Resource.CallStatus.LOADING -> {
+				if (isLoaderEnabled && !screenLoader.isVisible) {
+					screenLoader.show()
+					screenLoader.visibility = View.VISIBLE
+					if (!shouldBeInBackground) {
+						layoutContainer.visibility = View.GONE
+					}
+				}
+				Logger.print("API Call is initiating for ${dataResource.tag}. Loader should be visible.")
+			}
+
+			BaseDataSource.Resource.CallStatus.ERROR -> {
+				if (isLoaderEnabled) {
+					screenLoader.hide()
+					screenLoader.visibility = View.GONE
+					if (!shouldBeInBackground) {
+						layoutContainer.visibility = View.VISIBLE
+					}
+				}
+				when (dataResource.tag) {
+					APIConstants.authenticationPolling -> {
+						block.invoke()
+					}
+
+					else -> {
+						dataResource.message?.let { message ->
+							showError(
+								dataResource.tag, message
+							)
+						} ?: showError(dataResource.tag, getString(R.string.unknown_error))
+					}
+				}
+				Logger.print("Error While Calling API for ${dataResource.tag} - " + dataResource.message)
+			}
+		}
+	}
+}

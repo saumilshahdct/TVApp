@@ -33,6 +33,9 @@
     <color name="off_white">#FFE5E7E9</color>
     <color name="red">#FFEA0034</color>
     <color name="dark_red">#FF600000</color>
+    <color name="yellow">#FFD600</color>
+    <color name="orange">#FF6D00</color>
+    <color name="green">#2E7D32</color>
 
 </resources>
 

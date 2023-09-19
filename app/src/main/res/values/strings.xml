@@ -12,6 +12,8 @@
 
     <string name="ok_label">OK</string>
     <string name="cancel_label">Cancel</string>
+    <string name="yes_label">Yes</string>
+    <string name="no_label">No</string>
 
     <!-- Intro Screen -->
     <string name="welcome_label">Welcome to VEEPS</string>
@@ -28,5 +30,13 @@
     <string name="auth_code_label">And enter this code:</string>
     <string name="qr_code_label">Or scan QR code:</string>
 
+    <!-- Navigation Menu -->
+    <string name="profile">Profile</string>
+    <string name="home">Home</string>
+    <string name="search">Search</string>
+    <string name="my_shows">My Shows</string>
+
+    <!-- Home Screen -->
+    <string name="exit_app">Are you sure you want to exit?</string>
 
 </resources>

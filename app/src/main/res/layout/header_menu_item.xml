@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/menu_item"
+    android:layout_width="match_parent"
+    android:focusable="true"
+    android:layout_marginBottom="157dp"
+    android:focusableInTouchMode="true"
+    android:layout_height="32dp"
+    android:background="@drawable/selector_menu_background"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
+
+    <RelativeLayout
+        android:id="@+id/container"
+        android:layout_width="0dp"
+        android:layout_height="20dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/label"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/menu_image_background"
+            android:contentDescription="@string/app_description" />
+
+        <TextView
+            android:id="@+id/image_label"
+            fontPath="fonts/SaansMedium.ttf"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textAlignment="gravity"
+            android:textAllCaps="true"
+            android:textColor="@color/selector_menu_item_label"
+            android:textIsSelectable="false"
+            android:textSize="13sp"
+            tools:ignore="MissingPrefix" />
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/label"
+        fontPath="fonts/SaansMedium.ttf"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:gravity="center_vertical"
+        android:lineSpacingExtra="9sp"
+        android:textAlignment="gravity"
+        android:textColor="@color/selector_menu_item_label"
+        android:textIsSelectable="false"
+        android:textSize="13sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/container"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingPrefix" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

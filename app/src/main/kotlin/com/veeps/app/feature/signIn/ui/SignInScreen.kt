@@ -11,6 +11,8 @@ import com.veeps.app.databinding.ActivitySignInScreenBinding
 import com.veeps.app.extension.convertToMilli
 import com.veeps.app.extension.isGreaterThan
 import com.veeps.app.extension.loadImage
+import com.veeps.app.extension.openActivity
+import com.veeps.app.feature.home.ui.HomeScreen
 import com.veeps.app.feature.signIn.viewModel.SignInViewModel
 import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppConstants
@@ -19,6 +21,7 @@ import com.veeps.app.util.ImageTags
 import com.veeps.app.util.IntValue
 import com.veeps.app.util.Logger
 import com.veeps.app.util.PollingStatus
+import com.veeps.app.util.Screens
 import kotlin.math.max
 
 
@@ -49,9 +52,7 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 		return backPressedCallback
 	}
 
-	override fun getViewBinding(): ActivitySignInScreenBinding {
-		return ActivitySignInScreenBinding.inflate(layoutInflater)
-	}
+	override fun getViewBinding(): ActivitySignInScreenBinding = ActivitySignInScreenBinding.inflate(layoutInflater)
 
 	override fun showError(tag: String, message: String) {
 		viewModel.contentHasLoaded.postValue(true)
@@ -184,11 +185,11 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 								Logger.printMessage("POLL ERROR - SLOWING DOWN")
 								val interval = viewModel.pollingInterval.value
 								viewModel.pollingInterval.value =
-									max(IntValue.SIZE_10.convertToMilli(), interval!!)
+									max(IntValue.NUMBER_10.convertToMilli(), interval!!)
 							}
 
 							PollingStatus.EXPIRED_TOKEN -> {
-								viewModel.tokenExpiryTime.value = IntValue.SIZE_100
+								viewModel.tokenExpiryTime.value = IntValue.NUMBER_100
 								Logger.printMessage("POLL ERROR - TOKEN Expired")
 							}
 						}
@@ -226,6 +227,7 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 						AppPreferences.set(AppConstants.userAvatar, user.avatarURL)
 						AppPreferences.set(AppConstants.userTimeZoneAbbr, user.timeZoneAbbr)
 						AppPreferences.set(AppConstants.isUserAuthenticated, value = true)
+						openActivity<HomeScreen>(true, Pair(AppConstants.TAG, Screens.BROWSE))
 					} ?: showError(userDetails.tag, getString(R.string.unknown_error))
 				} ?: showError(userDetails.tag, getString(R.string.unknown_error))
 			}
@@ -237,7 +239,7 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 		tokenExpiry = Handler(Looper.getMainLooper())
 		setupBlurView()
 		viewModel.authenticationQRCode.observe(this@SignInScreen) { qrCode ->
-			binding.qrCode.loadImage(qrCode, ImageTags.ROUNDED)
+			binding.qrCode.loadImage(qrCode, ImageTags.QR)
 		}
 		viewModel.pollingInterval.observe(this@SignInScreen) { pollingInterval ->
 			Logger.printMessage("Interval - $pollingInterval")

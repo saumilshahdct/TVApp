@@ -27,19 +27,19 @@ object AppPreferences {
 		sharedPreference.edit().putBoolean(key, value).apply()
 	}
 
-	fun get(key: String?, value: String?): String? {
+	fun get(key: String?, defaultValue: String?): String? {
 		open()
-		return sharedPreference.getString(key, value)
+		return sharedPreference.getString(key, defaultValue)
 	}
 
-	fun get(key: String?, value: Int): Int {
+	fun get(key: String?, defaultValue: Int): Int {
 		open()
-		return sharedPreference.getInt(key, value)
+		return sharedPreference.getInt(key, defaultValue)
 	}
 
-	fun get(key: String?, value: Boolean): Boolean {
+	fun get(key: String?, defaultValue: Boolean): Boolean {
 		open()
-		return sharedPreference.getBoolean(key, value)
+		return sharedPreference.getBoolean(key, defaultValue)
 	}
 
 	fun remove(key: String?) {
