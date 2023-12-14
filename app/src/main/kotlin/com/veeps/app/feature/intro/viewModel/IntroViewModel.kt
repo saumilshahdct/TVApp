@@ -2,12 +2,13 @@ package com.veeps.app.feature.intro.viewModel
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.veeps.app.util.DEFAULT
 
 class IntroViewModel : ViewModel() {
 	var contentHasLoaded = MutableLiveData(false)
-	var errorMessage = MutableLiveData("")
-	var errorPositiveLabel = MutableLiveData("")
-	var errorNegativeLabel = MutableLiveData("")
+	var errorMessage = MutableLiveData(DEFAULT.EMPTY_STRING)
+	var errorPositiveLabel = MutableLiveData(DEFAULT.EMPTY_STRING)
+	var errorNegativeLabel = MutableLiveData(DEFAULT.EMPTY_STRING)
 	var isErrorPositiveApplicable = MutableLiveData(false)
 	var isErrorNegativeApplicable = MutableLiveData(false)
 }

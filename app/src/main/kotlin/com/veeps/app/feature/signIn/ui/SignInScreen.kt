@@ -6,12 +6,14 @@ import android.view.View
 import androidx.activity.OnBackPressedCallback
 import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
-import com.veeps.app.core.BaseDataSource.Resource.CallStatus.*
+import com.veeps.app.core.BaseDataSource.Resource.CallStatus.ERROR
+import com.veeps.app.core.BaseDataSource.Resource.CallStatus.LOADING
+import com.veeps.app.core.BaseDataSource.Resource.CallStatus.SUCCESS
 import com.veeps.app.databinding.ActivitySignInScreenBinding
 import com.veeps.app.extension.convertToMilli
+import com.veeps.app.extension.goToScreen
 import com.veeps.app.extension.isGreaterThan
 import com.veeps.app.extension.loadImage
-import com.veeps.app.extension.goToScreen
 import com.veeps.app.feature.home.ui.HomeScreen
 import com.veeps.app.feature.signIn.viewModel.SignInViewModel
 import com.veeps.app.util.APIConstants
@@ -32,11 +34,7 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 	private lateinit var tokenExpiry: Handler
 	private lateinit var expiryTask: Runnable
 
-	override fun isSplashScreenRequired(): Boolean {
-		return false
-	}
-
-	override fun getBackCallback(): OnBackPressedCallback {
+	private fun getBackCallback(): OnBackPressedCallback {
 		val backPressedCallback = object : OnBackPressedCallback(true) {
 			override fun handleOnBackPressed() {
 				Logger.print(
@@ -52,9 +50,10 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 		return backPressedCallback
 	}
 
-	override fun getViewBinding(): ActivitySignInScreenBinding = ActivitySignInScreenBinding.inflate(layoutInflater)
+	override fun getViewBinding(): ActivitySignInScreenBinding =
+		ActivitySignInScreenBinding.inflate(layoutInflater)
 
-	override fun showError(tag: String, message: String) {
+	override fun showError(tag: String, message: String, description: String) {
 		viewModel.contentHasLoaded.postValue(true)
 		viewModel.errorMessage.postValue(message)
 		when (tag) {
@@ -106,6 +105,8 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 	}
 
 	override fun onRendered(viewModel: SignInViewModel, binding: ActivitySignInScreenBinding) {
+		backPressedCallback = getBackCallback()
+		onBackPressedDispatcher.addCallback(this, backPressedCallback)
 		binding.apply {
 			signIn = viewModel
 			signInScreen = this@SignInScreen
@@ -151,7 +152,7 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 				pollingDetails,
 				isLoaderEnabled = false,
 				canUserAccessScreen = true,
-				shouldBeInBackground = true
+				shouldBeInBackground = true,
 			) {
 				when (pollingDetails.callStatus) {
 					SUCCESS -> {
@@ -181,12 +182,15 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 
 							PollingStatus.SLOW_DOWN -> {
 								val interval = viewModel.pollingInterval.value
-								viewModel.pollingInterval.value =
-									max(IntValue.NUMBER_10.convertToMilli(), interval!!)
+								viewModel.pollingInterval.postValue(
+									max(
+										IntValue.NUMBER_10.convertToMilli(), interval!!
+									)
+								)
 							}
 
 							PollingStatus.EXPIRED_TOKEN -> {
-								viewModel.tokenExpiryTime.value = IntValue.NUMBER_100
+								viewModel.tokenExpiryTime.postValue(IntValue.NUMBER_100)
 							}
 						}
 					}
@@ -232,7 +236,7 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 	private fun notifyAppEvents() {
 		polling = Handler(Looper.getMainLooper())
 		tokenExpiry = Handler(Looper.getMainLooper())
-		setupBlurView()
+		setupBlur()
 		viewModel.authenticationQRCode.observe(this@SignInScreen) { qrCode ->
 			binding.qrCode.loadImage(qrCode, ImageTags.QR)
 		}
@@ -264,7 +268,7 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 		}
 	}
 
-	private fun setupBlurView() {
+	private fun setupBlur() {
 		binding.errorContainer.setupWith(binding.container).setBlurRadius(12.5f)
 	}
 

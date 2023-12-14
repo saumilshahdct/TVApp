@@ -3,9 +3,9 @@ package com.veeps.app.core
 import android.content.Context
 import android.os.Bundle
 import android.view.View
+import android.window.OnBackInvokedDispatcher
 import androidx.activity.OnBackPressedCallback
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.isVisible
 import androidx.core.widget.ContentLoadingProgressBar
 import androidx.databinding.ViewDataBinding
@@ -31,26 +31,25 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		if (isSplashScreenRequired()) {
-			installSplashScreen()
-		}
+//		if (isSplashScreenRequired()) {
+//			installSplashScreen()
+//		}
 		super.onCreate(savedInstanceState)
 		actionBar?.hide()
 		viewModel = ViewModelProvider(this)[getViewModelClass()]
 		binding = getViewBinding()
 		binding.lifecycleOwner = this        /*loader = Loader.getLoader(this)*/
 		setContentView(binding.root)
-		backPressedCallback = getBackCallback()
-		onBackPressedDispatcher.addCallback(this, backPressedCallback)
 		layoutContainer = binding.root.findViewById(R.id.layout_container)
 		screenLoader = binding.root.findViewById(R.id.loader)
+		Logger.print("Screen Rendered")
 		onRendered(viewModel, binding)
 
 	}
 
-	abstract fun isSplashScreenRequired(): Boolean
+//	abstract fun isSplashScreenRequired(): Boolean
 
-	abstract fun getBackCallback(): OnBackPressedCallback
+//	abstract fun getBackCallback(): OnBackPressedCallback
 
 	private fun getViewModelClass(): Class<VM> {
 		val type = (javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0]
@@ -65,14 +64,14 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 
 	open fun onRendered(viewModel: VM, binding: VB) {}
 
-	open fun showError(tag: String, message: String) {}
+	open fun showError(tag: String, message: String, description: String = "") {}
 
 	open fun <T> fetch(
 		dataResource: BaseDataSource.Resource<T>,
 		isLoaderEnabled: Boolean = true,
 		canUserAccessScreen: Boolean = false,
 		shouldBeInBackground: Boolean = true,
-		block: () -> Unit
+		block: () -> Unit,
 	) {
 		when (dataResource.callStatus) {
 			BaseDataSource.Resource.CallStatus.SUCCESS -> {
@@ -111,11 +110,14 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 						block.invoke()
 					}
 
+					APIConstants.fetchEventStreamDetails, APIConstants.fetchEventDetails, APIConstants.fetchEventProductDetails, APIConstants.clearAllReservations, APIConstants.fetchStoryBoard -> {
+						block.invoke()
+					}
+
 					else -> {
 						dataResource.message?.let { message ->
 							showError(
-								dataResource.tag,
-								message
+								dataResource.tag, message
 							)
 						} ?: showError(dataResource.tag, getString(R.string.unknown_error))
 					}

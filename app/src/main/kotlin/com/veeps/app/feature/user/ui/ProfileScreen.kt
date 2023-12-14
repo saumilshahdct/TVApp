@@ -17,7 +17,7 @@ class ProfileScreen : BaseFragment<ProfileViewModel, FragmentProfileScreenBindin
 		binding.apply {
 			profile = viewModel
 			profileScreen = this@ProfileScreen
-			lifecycleOwner = this@ProfileScreen
+			lifecycleOwner = viewLifecycleOwner
 			lifecycle.addObserver(viewModel)
 			loader.visibility = View.GONE
 			label.requestFocus()
@@ -31,8 +31,11 @@ class ProfileScreen : BaseFragment<ProfileViewModel, FragmentProfileScreenBindin
 	}
 
 	private fun notifyAppEvents() {
-		viewModel.isVisible.observe(viewLifecycleOwner) { isVisible ->
-			if (isVisible) helper.selectNavigationMenu(NavigationItems.PROFILE_MENU)
+		viewModel.isVisible.observeForever  { isVisible ->
+			if (isVisible) {
+				helper.selectNavigationMenu(NavigationItems.PROFILE_MENU)
+				helper.completelyHideNavigationMenu()
+			}
 			Logger.print(
 				"Visibility Changed to $isVisible On ${
 					this@ProfileScreen.javaClass.name.substringAfterLast(

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <vector android:width="15dp" android:height="15dp" android:autoMirrored="true" android:viewportWidth="24" android:viewportHeight="24">
+            <path android:fillColor="@color/dark_black" android:fillType="evenOdd" android:pathData="M13,3H11V11L3,11V13H11V21H13V13H21V11L13,11V3Z" />
+        </vector>
+    </item>
+    <item>
+        <vector android:width="15dp" android:height="15dp" android:autoMirrored="true" android:viewportWidth="24" android:viewportHeight="24">
+            <path android:fillColor="@color/white" android:fillType="evenOdd" android:pathData="M13,3H11V11L3,11V13H11V21H13V13H21V11L13,11V3Z" />
+        </vector>
+    </item>
+
+</selector>

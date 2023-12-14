@@ -4,17 +4,37 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.veeps.app.data.common.APIRepository
+import com.veeps.app.feature.contentRail.model.RailData
 
 class SearchViewModel : ViewModel(), DefaultLifecycleObserver {
 	var contentHasLoaded = MutableLiveData(false)
 	var isVisible = MutableLiveData(false)
+	var upcomingRail = MutableLiveData(ArrayList<RailData>())
+	var searchResult = MutableLiveData(ArrayList<RailData>())
+	var noResult = MutableLiveData(false)
+	var search = MutableLiveData("")
 
 	override fun onResume(owner: LifecycleOwner) {
-		isVisible.value = true
 		super.onResume(owner)
+		isVisible.postValue(true)
 	}
 
 	override fun onPause(owner: LifecycleOwner) {
-		isVisible.value = false
+		isVisible.postValue(false)
+		super.onPause(owner)
 	}
+
+	override fun onStart(owner: LifecycleOwner) {
+		super.onStart(owner)
+		isVisible.postValue(true)
+	}
+
+	override fun onStop(owner: LifecycleOwner) {
+		isVisible.postValue(false)
+		super.onStop(owner)
+	}
+
+	fun fetchUpcomingEvents() = APIRepository().fetchUpcomingEvents()
+	fun fetchSearchResult() = APIRepository().fetchSearchResult(search = search.value.orEmpty())
 }

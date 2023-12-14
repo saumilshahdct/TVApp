@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.veeps.app.R
 import com.veeps.app.feature.home.ui.HomeScreen
+import com.veeps.app.feature.home.viewModel.HomeViewModel
 import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppHelper
 import com.veeps.app.util.Logger
@@ -27,16 +28,19 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 	private lateinit var screenLoader: ContentLoadingProgressBar
 	private lateinit var layoutContainer: ConstraintLayout
 	lateinit var helper: AppHelper
+	lateinit var homeViewModel: HomeViewModel
 
 	override fun onCreateView(
-		inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+		inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?,
 	): View {
 		super.onCreateView(inflater, container, savedInstanceState)
+		homeViewModel = ViewModelProvider(requireActivity())[HomeViewModel::class.java]
 		viewModel = ViewModelProvider(requireActivity())[getViewModelClass()]
 		binding = getViewBinding()
 		binding.lifecycleOwner = viewLifecycleOwner
 		layoutContainer = binding.root.findViewById(R.id.layout_container)
 		screenLoader = binding.root.findViewById(R.id.loader)
+		Logger.print("View is Created")
 		return binding.root
 	}
 
@@ -61,17 +65,17 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 		dataResource: BaseDataSource.Resource<T>,
 		isLoaderEnabled: Boolean = true,
 		canUserAccessScreen: Boolean = false,
-		shouldBeInBackground: Boolean = true,
-		block: () -> Unit
+		shouldBeInBackground: Boolean = false,
+		block: () -> Unit,
 	) {
 		when (dataResource.callStatus) {
 			BaseDataSource.Resource.CallStatus.SUCCESS -> {
 				if (isLoaderEnabled) {
 					screenLoader.hide()
 					screenLoader.visibility = View.GONE
-					if (!shouldBeInBackground) {
-						layoutContainer.visibility = View.VISIBLE
-					}
+//					if (!shouldBeInBackground) {
+//						layoutContainer.visibility = View.VISIBLE
+//					}
 				}
 				block.invoke()
 				Logger.print("API Call is successful for ${dataResource.tag}")
@@ -82,9 +86,9 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 					screenLoader.show()
 					screenLoader.visibility = View.VISIBLE
 					if (!canUserAccessScreen) screenLoader.requestFocus()
-					if (!shouldBeInBackground) {
-						layoutContainer.visibility = View.GONE
-					}
+//					if (!shouldBeInBackground) {
+//						layoutContainer.visibility = View.GONE
+//					}
 				}
 				Logger.print("API Call is initiating for ${dataResource.tag}. Loader should be visible.")
 			}
@@ -93,12 +97,16 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 				if (isLoaderEnabled) {
 					screenLoader.hide()
 					screenLoader.visibility = View.GONE
-					if (!shouldBeInBackground) {
-						layoutContainer.visibility = View.VISIBLE
-					}
+//					if (!shouldBeInBackground) {
+//						layoutContainer.visibility = View.VISIBLE
+//					}
 				}
 				when (dataResource.tag) {
 					APIConstants.authenticationPolling -> {
+						block.invoke()
+					}
+
+					APIConstants.fetchEventStreamDetails, APIConstants.fetchEventDetails, APIConstants.fetchEventProductDetails, APIConstants.clearAllReservations, APIConstants.fetchStoryBoard -> {
 						block.invoke()
 					}
 
@@ -106,8 +114,7 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 						dataResource.message?.let { message ->
 							helper.showErrorOnScreen(dataResource.tag, message)
 						} ?: helper.showErrorOnScreen(
-							dataResource.tag,
-							getString(R.string.unknown_error)
+							dataResource.tag, getString(R.string.unknown_error)
 						)
 					}
 				}

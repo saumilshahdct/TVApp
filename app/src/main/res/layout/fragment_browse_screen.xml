@@ -4,75 +4,439 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".feature.browse.ui.BrowseScreen">
 
+    <!-- Data -->
     <data>
 
         <import type="android.view.View" />
 
+        <!-- View Model -->
         <variable
             name="browse"
             type="com.veeps.app.feature.browse.viewModel.BrowseViewModel" />
 
+        <!-- Screen -->
         <variable
             name="browseScreen"
             type="com.veeps.app.feature.browse.ui.BrowseScreen" />
 
     </data>
 
+    <!-- Container -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/dark_black">
+        android:layout_height="match_parent">
 
-        <include layout="@layout/guidelines" />
-
+        <!-- Layout Container -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/layout_container"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="@color/dark_black"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
+            <!-- Inner Guidelines -->
             <include layout="@layout/guidelines" />
 
-            <TextView
-                android:id="@+id/label"
-                fontPath="fonts/SaansMedium.ttf"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:layout_marginBottom="10dp"
-                android:elevation="5dp"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:padding="10dp"
-                android:text="Browse"
-                android:textColor="@color/white"
-                android:textIsSelectable="false"
-                android:textSize="26sp"
+            <!-- Video Player -->
+            <androidx.media3.ui.PlayerView
+                android:id="@+id/video_player"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                app:animation_enabled="true"
+                app:artwork_display_mode="fill"
+                app:auto_show="true"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:resize_mode="fill"
+                app:show_buffering="never"
+                app:use_artwork="true"
+                app:use_controller="false" />
+
+            <!-- Hero Image -->
+            <ImageView
+                android:id="@+id/hero_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/app_description"
+                android:scaleType="centerCrop"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
+            <!-- Hero Image Gradient -->
+            <ImageView
+                android:id="@+id/hero_image_gradient"
+                android:layout_width="match_parent"
+                android:layout_height="342dp"
+                android:contentDescription="@string/app_description"
+                android:src="@drawable/browse_hero_gradient"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/carousel"
+                android:layout_width="match_parent"
+                android:layout_height="455dp"
+                android:layout_marginStart="75dp"
+                app:layout_constraintBottom_toTopOf="@+id/listing"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <View
+                    android:id="@+id/space"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    app:layout_constraintBottom_toTopOf="@+id/carousel_logo"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- Logo -->
+                <ImageView
+                    android:id="@+id/carousel_logo"
+                    android:layout_width="137.5dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:contentDescription="@string/app_description"
+                    android:scaleType="fitStart"
+                    app:layout_constraintBottom_toTopOf="@id/carousel_title"
+                    app:layout_constraintHeight_max="50dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/space" />
+
+                <TextView
+                    android:id="@+id/carousel_title"
+                    fontPath="fonts/RuderPlakatRegular.ttf"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="182dp"
+                    android:gravity="center_vertical"
+                    android:includeFontPadding="false"
+                    android:lineSpacingExtra="-21sp"
+                    android:maxLines="2"
+                    android:textAlignment="gravity"
+                    android:textAllCaps="true"
+                    android:textColor="@color/white"
+                    android:textIsSelectable="false"
+                    android:textSize="62sp"
+                    app:layout_constraintBottom_toTopOf="@+id/cta_container"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/carousel_logo"
+                    tools:ignore="MissingPrefix" />
+
+                <!-- CTA Container -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/cta_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/carousel_title">
+
+                    <eightbitlab.com.blurview.BlurView
+                        android:id="@+id/primary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:layout_marginBottom="4dp"
+                        android:background="@drawable/selector_browse_button_background"
+                        android:elevation="2dp"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:onClick="@{(v)-> browseScreen.onPrimaryClicked()}"
+                        android:paddingStart="20dp"
+                        android:paddingTop="8dp"
+                        android:paddingEnd="20dp"
+                        android:paddingBottom="8dp"
+                        app:blurOverlayColor="@color/white_10"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/my_shows"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <TextView
+                            android:id="@+id/primary_label"
+                            fontPath="fonts/SaansMedium.ttf"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:includeFontPadding="false"
+                            android:letterSpacing="0.03"
+                            android:lines="1"
+                            android:paddingBottom="1dp"
+                            android:textAlignment="gravity"
+                            android:textAllCaps="false"
+                            android:textColor="@color/selector_button_label_carousel"
+                            android:textIsSelectable="false"
+                            android:textSize="13sp"
+                            tools:ignore="MissingPrefix" />
+
+                    </eightbitlab.com.blurview.BlurView>
+
+                    <!-- Add / Remove My Shows CTA -->
+                    <eightbitlab.com.blurview.BlurView
+                        android:id="@+id/my_shows"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:layout_marginBottom="4dp"
+                        android:background="@drawable/selector_browse_button_background"
+                        android:elevation="2dp"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:onClick="@{(v)-> browseScreen.addRemoveWatchListEvent(browse.eventId)}"
+                        android:paddingStart="20dp"
+                        android:paddingTop="8dp"
+                        android:paddingEnd="20dp"
+                        android:paddingBottom="8dp"
+                        app:blurOverlayColor="@color/white_10"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/date"
+                        app:layout_constraintStart_toEndOf="@+id/primary"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <TextView
+                            android:id="@+id/my_shows_label"
+                            fontPath="fonts/SaansMedium.ttf"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center"
+                            android:drawablePadding="4dp"
+                            android:gravity="center"
+                            android:includeFontPadding="false"
+                            android:letterSpacing="0.03"
+                            android:lines="1"
+                            android:text="@string/my_shows_label"
+                            android:textAlignment="gravity"
+                            android:textAllCaps="false"
+                            android:textColor="@color/selector_button_label_my_shows"
+                            android:textIsSelectable="false"
+                            android:textSize="13sp"
+                            tools:ignore="MissingPrefix" />
+
+                    </eightbitlab.com.blurview.BlurView>
+
+                    <TextView
+                        android:id="@+id/date"
+                        fontPath="fonts/SaansMedium.ttf"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="15dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="15dp"
+                        android:layout_marginBottom="4dp"
+                        android:gravity="center_vertical"
+                        android:includeFontPadding="false"
+                        android:lines="1"
+                        android:textAlignment="gravity"
+                        android:textColor="@color/white_50"
+                        android:textIsSelectable="false"
+                        android:textSize="13sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/live_now"
+                        app:layout_constraintStart_toEndOf="@id/my_shows"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:ignore="MissingPrefix" />
+
+                    <TextView
+                        android:id="@+id/live_now"
+                        fontPath="fonts/SaansMedium.ttf"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="15dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="15dp"
+                        android:layout_marginBottom="4dp"
+                        android:drawableStart="@drawable/rounded_card_background_red"
+                        android:drawablePadding="8dp"
+                        android:gravity="center_vertical"
+                        android:includeFontPadding="false"
+                        android:lines="1"
+                        android:text="@string/live_now"
+                        android:textAlignment="gravity"
+                        android:textColor="@color/white_50"
+                        android:textIsSelectable="false"
+                        android:textSize="13sp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/view"
+                        app:layout_constraintStart_toEndOf="@id/date"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:ignore="MissingPrefix" />
+
+                    <View
+                        android:id="@+id/view"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginBottom="4dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@id/live_now"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Image -->
+            <ImageView
+                android:id="@+id/dark_background"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/app_description"
+                android:src="@color/dark_black"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.leanback.widget.VerticalGridView
+                android:id="@+id/listing"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/carousel" />
+
+            <!-- Watermark Logo -->
+            <ImageView
+                android:id="@+id/watermark"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_margin="30dp"
+                android:contentDescription="@string/app_description"
+                android:src="@drawable/watermark"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Logo -->
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="50dp"
+                android:layout_height="10dp"
+                android:layout_marginTop="41.5dp"
+                android:layout_marginEnd="30dp"
+                android:contentDescription="@string/app_description"
+                android:src="@drawable/logo"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Browse Text Background Blur -->
+            <eightbitlab.com.blurview.BlurView
+                android:id="@+id/browse_label"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/selector_browse_button_background"
+                android:elevation="2dp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:onClick="@{(v)-> browseScreen.onBrowseLabelClicked()}"
+                app:blurOverlayColor="@color/white_10"
+                app:layout_constraintEnd_toStartOf="@+id/on_demand_label"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <!-- Browse Text -->
+                <TextView
+                    android:id="@+id/browse_text"
+                    fontPath="fonts/SaansMedium.ttf"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:letterSpacing="0.03"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="1dp"
+                    android:text="@string/browse_label"
+                    android:textAlignment="gravity"
+                    android:textColor="@color/selector_home_label"
+                    android:textIsSelectable="false"
+                    android:textSize="11sp" />
+
+            </eightbitlab.com.blurview.BlurView>
+
+            <!-- On Demand Text Background Blur -->
+            <eightbitlab.com.blurview.BlurView
+                android:id="@+id/on_demand_label"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/selector_browse_button_background"
+                android:elevation="2dp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:onClick="@{(v)-> browseScreen.onOnDemandLabelClicked()}"
+                app:blurOverlayColor="@color/white_10"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/browse_label"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <!-- On Demand Text -->
+                <TextView
+                    android:id="@+id/on_demand_text"
+                    fontPath="fonts/SaansMedium.ttf"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:letterSpacing="0.03"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="1dp"
+                    android:text="@string/on_demand_label"
+                    android:textAlignment="gravity"
+                    android:textColor="@color/selector_home_label"
+                    android:textIsSelectable="false"
+                    android:textSize="11sp" />
+
+            </eightbitlab.com.blurview.BlurView>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- Loader -->
         <androidx.core.widget.ContentLoadingProgressBar
             android:id="@+id/loader"
             style="?android:attr/progressBarStyleLarge"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:indeterminateTint="@color/white"
-            android:progress="50"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:focusable="true"
             android:focusableInTouchMode="true"
-            app:layout_constraintBottom_toBottomOf="@+id/bottom"
-            app:layout_constraintEnd_toEndOf="@+id/end"
-            app:layout_constraintStart_toStartOf="@+id/start"
-            app:layout_constraintTop_toBottomOf="@id/top" />
+            android:indeterminateTint="@color/white"
+            android:progress="50"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

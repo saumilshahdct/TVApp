@@ -9,6 +9,13 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
 import com.veeps.app.R
 import com.veeps.app.application.Veeps
+import com.veeps.app.feature.contentRail.model.Entities
+import com.veeps.app.util.AppUtil
+import com.veeps.app.util.DEFAULT
+import com.veeps.app.util.DateTimeCompareDifference
+import com.veeps.app.util.EventTypes
+import com.veeps.app.util.Logger
+import kotlin.math.round
 
 val Context.isFreshInstall
 	get() = with(packageManager.getPackageInfo(packageName, 0)) {
@@ -33,26 +40,86 @@ fun isAppConnected(): Boolean {
 	return isOnline
 }
 
+fun Double.round(decimals: Int): Double {
+	var multiplier = 1.0
+	repeat(decimals) { multiplier *= 10 }
+	return round(this * multiplier) / multiplier
+}
+
 fun goToPage(
 	manager: FragmentManager,
 	shouldReplace: Boolean,
 	fragment: Class<out Fragment>,
 	arguments: Bundle,
 	tag: String,
-	shouldAddToBackStack: Boolean
+	shouldAddToBackStack: Boolean,
 ) {
 	manager.commit {
-		setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
+		setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
 		if (shouldReplace) {
-			replace(
-				R.id.fragment_container, fragment, arguments, tag
-			)
+			replace(R.id.fragment_container, fragment, arguments, tag)
 		} else {
-			add(
-				R.id.fragment_container, fragment, arguments, tag
-			)
+			add(R.id.fragment_container, fragment, arguments, tag)
 		}
 		if (shouldAddToBackStack) addToBackStack(tag)
+		Logger.print(
+			"Page is asked to load -- ${
+				fragment.javaClass.name.substringAfterLast(".")
+			}"
+		)
+	}
+}
+
+fun <T> ArrayList<T>.filterFor(filters: ArrayList<(T) -> Boolean>) = run {
+	val filteredList = filter { listItem -> filters.any { filter -> filter(listItem) } }
+	return@run if (filteredList.isEmpty()) arrayListOf<T>() else ArrayList<T>(filteredList)
+}
+
+fun Entities.isOfType(eventType: String) = when (eventType) {
+	EventTypes.LIVE -> {
+		((status ?: DEFAULT.EMPTY_STRING).contains(EventTypes.LIVE, true) && (watchStatus
+			?: DEFAULT.EMPTY_STRING).contains("watchable", true))
+	}
+
+	EventTypes.UPCOMING -> {
+		((status ?: DEFAULT.EMPTY_STRING).contains(EventTypes.LIVE, true) && !(watchStatus
+			?: DEFAULT.EMPTY_STRING).contains(
+			"watchable", true
+		) && !(watchStatus ?: DEFAULT.EMPTY_STRING).contains("expired", true)) || ((status
+			?: DEFAULT.EMPTY_STRING).contains(
+			EventTypes.UPCOMING, true
+		)) || ((status ?: DEFAULT.EMPTY_STRING).contains(
+			EventTypes.ON_DEMAND, true
+		) && (watchUntil
+			?: DEFAULT.EMPTY_STRING).isNotBlank() && AppUtil.compare(watchUntil) == DateTimeCompareDifference.GREATER_THAN && !(watchStatus
+			?: DEFAULT.EMPTY_STRING).contains(
+			"watchable_ondemand", true
+		)) || ((status ?: DEFAULT.EMPTY_STRING).contains(EventTypes.ENDED, true) && !(watchStatus
+			?: DEFAULT.EMPTY_STRING).contains("expired", true))
+	}
+
+	EventTypes.ON_DEMAND -> {
+		((status ?: DEFAULT.EMPTY_STRING).contains(EventTypes.ON_DEMAND, true) && (watchUntil
+			?: DEFAULT.EMPTY_STRING).isBlank()) || ((status ?: DEFAULT.EMPTY_STRING).contains(
+			EventTypes.ON_DEMAND, true
+		) && (watchUntil
+			?: DEFAULT.EMPTY_STRING).isNotBlank() && AppUtil.compare(watchUntil) == DateTimeCompareDifference.GREATER_THAN && (watchStatus
+			?: DEFAULT.EMPTY_STRING).contains(
+			"watchable_ondemand", true
+		))
+	}
+
+	else -> {
+		((status ?: DEFAULT.EMPTY_STRING).contains(EventTypes.LIVE, true) && (watchStatus
+			?: DEFAULT.EMPTY_STRING).contains(
+			"expired", true
+		)) || ((status ?: DEFAULT.EMPTY_STRING).contains(
+			EventTypes.ON_DEMAND, true
+		) && (watchUntil
+			?: DEFAULT.EMPTY_STRING).isNotBlank() && AppUtil.compare(watchUntil) != DateTimeCompareDifference.GREATER_THAN) || ((status
+			?: DEFAULT.EMPTY_STRING).contains(
+			EventTypes.ENDED, true
+		) && (watchStatus ?: DEFAULT.EMPTY_STRING).contains("expired", true))
 	}
 }
 

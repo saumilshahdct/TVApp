@@ -5,9 +5,19 @@ import com.google.gson.GsonBuilder
 import com.veeps.app.BuildConfig
 import com.veeps.app.data.common.BaseResponseGeneric
 import com.veeps.app.extension.isAppConnected
+import com.veeps.app.feature.artist.model.ArtistResponse
+import com.veeps.app.feature.contentRail.model.Entities
+import com.veeps.app.feature.contentRail.model.ProductsResponse
+import com.veeps.app.feature.contentRail.model.RailData
+import com.veeps.app.feature.contentRail.model.RailResponse
+import com.veeps.app.feature.contentRail.model.UserStatsResponse
+import com.veeps.app.feature.event.model.OrderGeneration
+import com.veeps.app.feature.event.model.Reservation
+import com.veeps.app.feature.search.model.SearchResponse
 import com.veeps.app.feature.signIn.model.PollingData
 import com.veeps.app.feature.signIn.model.SignInData
 import com.veeps.app.feature.user.model.UserData
+import com.veeps.app.feature.video.model.StoryBoardImages
 import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppConstants
 import com.veeps.app.util.AppPreferences
@@ -26,8 +36,11 @@ import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
+import retrofit2.http.HTTP
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Url
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 
@@ -44,13 +57,14 @@ object APIUtil {
 			if (isAppConnected()) {
 				startNs = System.nanoTime()
 				var request = chain.request()
-
+				val originalHttpUrl = request.url
 				val builder: Request.Builder = request.newBuilder().header(
 					"Authorization", "Bearer " + AppPreferences.get(
-						AppConstants.authenticatedUserToken, "AuthenticatedUserToken"
+						if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats) AppConstants.generatedJWT else AppConstants.authenticatedUserToken, "AuthenticatedUserToken"
 					)
 				)
 				request = builder.build()
+				if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats) AppPreferences.remove(AppConstants.generatedJWT)
 				chain.proceed(request)
 			} else {
 				throw NoConnectivityException()
@@ -61,10 +75,10 @@ object APIUtil {
 			var bodyString: String
 			response.body.let {
 				bodyString = response.body.string()
-				isBodyEncoded =
-					bodyString.split("\\.".toRegex()).size > 2 && !bodyString.startsWith("{") && !bodyString.endsWith(
-						"}"
-					)
+				isBodyEncoded = false
+//					bodyString.split("\\.".toRegex()).size > 2 && !bodyString.startsWith("{") && !bodyString.endsWith(
+//						"}"
+//					)
 				if (isBodyEncoded) {
 					val jsonObject = JSONObject(
 						String(
@@ -103,11 +117,83 @@ object APIUtil {
 			@Field("grant_type") grantType: String,
 			@Field("device_code") deviceCode: String,
 			@Field("client_id") clientId: String,
-			@Field("client_secret") clientSecret: String
+			@Field("client_secret") clientSecret: String,
 		): Response<PollingData>
 
 		@GET(APIConstants.fetchUserDetails)
 		suspend fun fetchUserDetails(): Response<BaseResponseGeneric<UserData>>
+
+		@GET(APIConstants.fetchBrowseRails)
+		suspend fun fetchBrowseRails(): Response<RailResponse>
+
+		@GET(APIConstants.fetchOnDemandRails)
+		suspend fun fetchOnDemandRails(): Response<RailResponse>
+
+		@GET(APIConstants.fetchContinueWatchingRail)
+		suspend fun fetchContinueWatchingRail(): Response<RailData>
+
+		@GET
+		suspend fun fetchUserStats(@Url userStatsAPIURL: String, @Query("e") eventIds: String): Response<UserStatsResponse>
+
+		@GET(APIConstants.fetchUpcomingEvents)
+		suspend fun fetchUpcomingEvents(): Response<RailData>
+
+		@GET(APIConstants.fetchSearchResult)
+		suspend fun fetchSearchResult(@Query("q") search: String): Response<SearchResponse>
+
+		@GET(APIConstants.fetchEntityDetails)
+		suspend fun fetchEntityDetails(
+			@Path("ENTITY") entity: String,
+			@Path("ENTITY_ID") entityId: String,
+		): Response<ArtistResponse>
+
+		@GET(APIConstants.fetchEntityUpcomingEvents)
+		suspend fun fetchEntityUpcomingEvents(@Query("scope") entityScope: String): Response<RailData>
+
+		@GET(APIConstants.fetchEntityOnDemandEvents)
+		suspend fun fetchEntityOnDemandEvents(@Query("scope") entityScope: String): Response<RailData>
+
+		@GET(APIConstants.fetchEntityPastEvents)
+		suspend fun fetchEntityPastEvents(@Query("scope") entityScope: String): Response<RailData>
+
+		@GET(APIConstants.fetchAllPurchasedEvents)
+		suspend fun fetchAllPurchasedEvents(): Response<RailData>
+
+		@GET(APIConstants.watchListEvents)
+		suspend fun fetchAllWatchListEvents(): Response<RailData>
+
+		@POST(APIConstants.watchListEvents)
+		suspend fun addWatchListEvent(@Body hashMap: HashMap<String, Any>):  Response<BaseResponseGeneric<Any>>
+
+		@HTTP(method = "DELETE", path = APIConstants.removeWatchListEvents, hasBody = true)
+		suspend fun removeWatchListEvent(@Body hashMap: HashMap<String, Any>):  Response<BaseResponseGeneric<Any>>
+
+		@GET(APIConstants.fetchEventStreamDetails)
+		suspend fun fetchEventStreamDetails(@Path("EVENT_ID") entity: String): Response<BaseResponseGeneric<Entities>>
+
+		@GET(APIConstants.fetchEventDetails)
+		suspend fun fetchEventDetails(@Path("EVENT_ID") entity: String): Response<BaseResponseGeneric<Entities>>
+
+		@GET(APIConstants.fetchEventProductDetails)
+		suspend fun fetchEventProductDetails(@Path("EVENT_ID") entity: String): Response<ProductsResponse>
+
+		@GET(APIConstants.claimFreeTicketForEvent)
+		suspend fun claimFreeTicketForEvent(@Path("EVENT_ID") entity: String): Response<BaseResponseGeneric<Any>>
+
+		@GET(APIConstants.clearAllReservations)
+		suspend fun clearAllReservations(): Response<BaseResponseGeneric<Any>>
+
+		@POST(APIConstants.setNewReservation)
+		suspend fun setNewReservation(@Body hashMap: HashMap<String, Any>): Response<BaseResponseGeneric<Reservation>>
+
+		@GET(APIConstants.generateNewOrder)
+		suspend fun generateNewOrder(): Response<BaseResponseGeneric<OrderGeneration>>
+
+		@POST(APIConstants.createOrder)
+		suspend fun createOrder(@Body hashMap: HashMap<String, Any>): Response<BaseResponseGeneric<Any>>
+
+		@GET
+		suspend fun fetchStoryBoard(@Url storyBoardURL: String): Response<StoryBoardImages>
 
 	}
 }

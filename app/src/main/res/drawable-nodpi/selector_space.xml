@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:state_focused="true">
+		<vector android:width="15dp" android:height="5.142857dp" android:autoMirrored="true" android:viewportWidth="35" android:viewportHeight="12">
+			<path android:fillColor="@android:color/transparent" android:pathData="M3,10.5L34.03,10.5" android:strokeWidth="3" android:strokeColor="@color/black" />
+			<path android:fillColor="@android:color/transparent" android:pathData="M2.47,12L2.47,0" android:strokeWidth="3" android:strokeColor="@color/black" />
+			<path android:fillColor="@android:color/transparent" android:pathData="M33.5,12L33.5,0" android:strokeWidth="3" android:strokeColor="@color/black" />
+		</vector>
+	</item>
+	<item>
+		<vector android:width="15dp" android:height="5.142857dp" android:autoMirrored="true" android:viewportWidth="35" android:viewportHeight="12">
+			<path android:fillColor="@android:color/transparent" android:pathData="M3,10.5L34.03,10.5" android:strokeWidth="3" android:strokeColor="@color/white" />
+			<path android:fillColor="@android:color/transparent" android:pathData="M2.47,12L2.47,0" android:strokeWidth="3" android:strokeColor="@color/white" />
+			<path android:fillColor="@android:color/transparent" android:pathData="M33.5,12L33.5,0" android:strokeWidth="3" android:strokeColor="@color/white" />
+		</vector>
+	</item>
+
+</selector>

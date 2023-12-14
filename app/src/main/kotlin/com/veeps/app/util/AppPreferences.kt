@@ -5,50 +5,39 @@ import android.content.SharedPreferences
 import com.veeps.app.application.Veeps
 
 object AppPreferences {
-	private lateinit var sharedPreference: SharedPreferences
-
-	private fun open() {
-		if (!this::sharedPreference.isInitialized) sharedPreference =
-			Veeps.appContext.getSharedPreferences(AppConstants.PREFS_FILENAME, Context.MODE_PRIVATE)
+	private val sharedPreference: SharedPreferences by lazy {
+		Veeps.appContext.getSharedPreferences(AppConstants.PREFS_FILENAME, Context.MODE_PRIVATE)
 	}
 
 	fun set(key: String?, value: String?) {
-		open()
 		sharedPreference.edit().putString(key, value).apply()
 	}
 
 	fun set(key: String?, value: Int) {
-		open()
 		sharedPreference.edit().putInt(key, value).apply()
 	}
 
 	fun set(key: String?, value: Boolean) {
-		open()
 		sharedPreference.edit().putBoolean(key, value).apply()
 	}
 
 	fun get(key: String?, defaultValue: String?): String? {
-		open()
 		return sharedPreference.getString(key, defaultValue)
 	}
 
 	fun get(key: String?, defaultValue: Int): Int {
-		open()
 		return sharedPreference.getInt(key, defaultValue)
 	}
 
 	fun get(key: String?, defaultValue: Boolean): Boolean {
-		open()
 		return sharedPreference.getBoolean(key, defaultValue)
 	}
 
 	fun remove(key: String?) {
-		open()
 		sharedPreference.edit().remove(key).apply()
 	}
 
 	fun removeAuthenticatedUser() {
-		open()
 		remove(AppConstants.isUserAuthenticated)
 		remove(AppConstants.userID)
 		remove(AppConstants.userEmailAddress)
@@ -61,6 +50,7 @@ object AppPreferences {
 		remove(AppConstants.userTimeZoneAbbr)
 		remove(AppConstants.userBeaconBaseURL)
 		remove(AppConstants.authenticatedUserToken)
+		remove(AppConstants.generatedJWT)
 		Logger.print("Authenticated User Details Are Removed.")
 	}
 }

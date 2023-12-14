@@ -10,11 +10,15 @@ import kotlin.math.min
 object Logger {
 
 	fun print(message: Any) {
-		Log.d(AppConstants.TAG, message.toString())
+		Log.wtf(AppConstants.TAG, message.toString())
+	}
+
+	fun printWithTag(tag: String, message: Any) {
+		Log.wtf(tag, message.toString())
 	}
 
 	fun printMessage(message: Any) {
-		Log.d("AppConstants.TAG", message.toString())
+		Log.wtf("AppConstants.TAG", message.toString())
 	}
 
 	fun printError(message: Any) {
@@ -22,13 +26,16 @@ object Logger {
 	}
 
 	fun printAPILogs(
-		chain: Interceptor.Chain, response: Response, bodyString: String, tookMs: Long, tookS: Long
+		chain: Interceptor.Chain, response: Response, bodyString: String, tookMs: Long, tookS: Long,
 	) {
-		print("Request URL :: ${chain.request().method} ${chain.request().url} \n\n")
-		print("Request Time :: $tookS Seconds ( $tookMs ms ) \n\n")
+		printWithTag(
+			"VeepsAPI",
+			"Request URL :: ${chain.request().method} ${chain.request().url} \n\n"
+		)
+		printWithTag("VeepsAPI", "Request Time :: $tookS Seconds ( $tookMs ms ) \n\n")
 		for (i in 0 until chain.request().headers.size) {
-			print(
-				"Request Headers :: ${chain.request().headers.name(i)} : ${
+			printWithTag(
+				"VeepsAPI", "Request Headers :: ${chain.request().headers.name(i)} : ${
 					chain.request().headers.value(
 						i
 					)
@@ -39,18 +46,30 @@ object Logger {
 			val buffer = Buffer()
 			val body = chain.request().body
 			body?.writeTo(buffer)
-			print("Request Body :: ${if (buffer.size != 0L) buffer.readUtf8() else "null"} \n\n")
+			printWithTag(
+				"VeepsAPI",
+				"Request Body :: ${if (buffer.size != 0L) buffer.readUtf8() else "null"} \n\n"
+			)
 		} catch (e: IOException) {
 			e.printStackTrace()
-			print("EXCEPTION Occurred while printing API Logs -- " + e.message + " \n\n")
+			printWithTag(
+				"VeepsAPI",
+				"EXCEPTION Occurred while printing API Logs -- " + e.message + " \n\n"
+			)
 		}
-		print("Response Code :: ${response.code} \n\n")
+		printWithTag("VeepsAPI", "Response Code :: ${response.code} \n\n")
 		val maxLogSize = 4000
 		for (i in 0..bodyString.length / maxLogSize) {
 			val start = i * maxLogSize
 			var end = (i + 1) * maxLogSize
 			end = min(end, bodyString.length)
-			print((if (i == 0) "Response :: " else "") + bodyString.substring(start, end))
+			printWithTag(
+				"VeepsAPI",
+				(if (i == 0) "Response :: " else DEFAULT.EMPTY_STRING) + bodyString.substring(
+					start,
+					end
+				)
+			)
 		}
 	}
 }

@@ -1,29 +1,28 @@
 package com.veeps.app.widget.navigationMenu
 
-import android.animation.ValueAnimator
 import android.content.Context
 import android.content.res.ColorStateList
 import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.view.Gravity
-import android.view.KeyEvent
 import android.view.View
-import android.view.animation.AccelerateInterpolator
-import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.veeps.app.R
+import com.veeps.app.extension.fadeInNow
+import com.veeps.app.extension.fadeOutNow
+import com.veeps.app.extension.fadeOutNowWith
 import com.veeps.app.extension.inflate
 import com.veeps.app.extension.loadImage
 import com.veeps.app.util.AppConstants
 import com.veeps.app.util.AppPreferences
+import com.veeps.app.util.DEFAULT
 import com.veeps.app.util.ImageTags
 import com.veeps.app.util.IntValue
-import com.veeps.app.util.Logger
 
 class NavigationMenu : LinearLayout {
 
@@ -51,7 +50,7 @@ class NavigationMenu : LinearLayout {
 		val dp32 = context.resources.getDimensionPixelOffset(R.dimen.dp32)
 		orientation = VERTICAL
 		gravity = Gravity.CENTER_HORIZONTAL
-		setPadding(dp16, dp32, dp16, dp32)
+		setPadding(16, 32, 16, 32)
 		setBackgroundColor(ContextCompat.getColor(this.context, android.R.color.transparent))
 
 		val profile = this.inflate(R.layout.header_menu_item)
@@ -60,19 +59,21 @@ class NavigationMenu : LinearLayout {
 		val profileImage = profile.findViewById<ImageView>(R.id.image)
 		val profileImageLabel = profile.findViewById<TextView>(R.id.image_label)
 		val profileLabel = profile.findViewById<TextView>(R.id.label)
-		if (AppPreferences.get(AppConstants.userAvatar, "").isNullOrBlank()) {
-			profileImage.loadImage(R.drawable.menu_image_background, ImageTags.HEADER)
+		if (AppPreferences.get(AppConstants.userAvatar, DEFAULT.EMPTY_STRING).isNullOrBlank()) {
+			profileImage.loadImage(R.drawable.menu_image_background, ImageTags.AVATAR)
 			profileImage.imageTintList = ColorStateList.valueOf(
 				ContextCompat.getColor(
 					context, R.color.white
 				)
 			)
 			profileImageLabel.text =
-				AppPreferences.get(AppConstants.userDisplayName, "V")?.get(0).toString()
+				AppPreferences.get(AppConstants.userFullName, "V")?.get(0).toString()
 		} else {
 			profileImage.loadImage(
-				AppPreferences.get(AppConstants.userAvatar, "")!!, ImageTags.HEADER
+				AppPreferences.get(AppConstants.userAvatar, DEFAULT.EMPTY_STRING)!!,
+				ImageTags.AVATAR
 			)
+			profileImageLabel.text = DEFAULT.EMPTY_STRING
 		}
 		profile.setOnClickListener {
 			navigationItem!!.select(NavigationItems.PROFILE_MENU)
@@ -133,33 +134,38 @@ class NavigationMenu : LinearLayout {
 		getChildAt(currentSelectedItem).requestFocus()
 	}
 
-	private fun highlightCurrentSelectedNavigationMenu() {
-		(getChildAt(currentSelectedItem).findViewById<View>(R.id.label) as TextView).setTextColor(
-			ContextCompat.getColor(
-				context, R.color.white
+	private fun highlightCurrentSelectedNavigationMenu(isExpanded: Boolean) {
+		for (position in 0 until childCount) {
+			(getChildAt(position).findViewById<View>(R.id.label) as TextView).setTextColor(
+				ContextCompat.getColor(
+					context, R.color.white
+				)
 			)
-		)
-		if (currentSelectedItem == 0) {
-			if (AppPreferences.get(AppConstants.userAvatar, "").isNullOrBlank()) {
-				(getChildAt(currentSelectedItem).findViewById<View>(R.id.image) as ImageView).imageTintList =
-					ColorStateList.valueOf(
+			if (position == 0) {
+				if (AppPreferences.get(AppConstants.userAvatar, DEFAULT.EMPTY_STRING)
+						.isNullOrBlank()
+				) {
+					(getChildAt(position).findViewById<View>(R.id.image) as ImageView).imageTintList =
+						ColorStateList.valueOf(
+							ContextCompat.getColor(
+								context, R.color.white
+							)
+						)
+					(getChildAt(position).findViewById<View>(R.id.image_label) as TextView).setTextColor(
 						ContextCompat.getColor(
 							context, R.color.white
 						)
 					)
-				(getChildAt(currentSelectedItem).findViewById<View>(R.id.image_label) as TextView).setTextColor(
-					ContextCompat.getColor(
-						context, R.color.white
+				}
+			} else {
+				(getChildAt(position).findViewById<View>(R.id.image) as ImageView).imageTintList =
+					ColorStateList.valueOf(
+						ContextCompat.getColor(
+							context,
+							if (!isExpanded && position != currentSelectedItem) R.color.white_50 else R.color.white
+						)
 					)
-				)
 			}
-		} else {
-			(getChildAt(currentSelectedItem).findViewById<View>(R.id.image) as ImageView).imageTintList =
-				ColorStateList.valueOf(
-					ContextCompat.getColor(
-						context, R.color.white
-					)
-				)
 		}
 	}
 
@@ -170,7 +176,7 @@ class NavigationMenu : LinearLayout {
 			)
 		)
 		if (currentSelectedItem == 0) {
-			if (AppPreferences.get(AppConstants.userAvatar, "").isNullOrBlank()) {
+			if (AppPreferences.get(AppConstants.userAvatar, DEFAULT.EMPTY_STRING).isNullOrBlank()) {
 				(getChildAt(currentSelectedItem).findViewById<View>(R.id.image) as ImageView).imageTintList =
 					ColorStateList.valueOf(
 						ContextCompat.getColor(
@@ -200,7 +206,7 @@ class NavigationMenu : LinearLayout {
 			)
 		)
 		if (currentSelectedItem == 0) {
-			if (AppPreferences.get(AppConstants.userAvatar, "").isNullOrBlank()) {
+			if (AppPreferences.get(AppConstants.userAvatar, DEFAULT.EMPTY_STRING).isNullOrBlank()) {
 				(getChildAt(currentSelectedItem).findViewById<View>(R.id.image) as ImageView).imageTintList =
 					ColorStateList.valueOf(
 						ContextCompat.getColor(
@@ -241,20 +247,24 @@ class NavigationMenu : LinearLayout {
 		return getChildAt(selectedItem).tag.toString()
 	}
 
-	private fun clearNavigationMenuLabel() {
+	private fun clearNavigationMenuLabel(doesCompletelyHiddenRequired: Boolean) {
 		for (i in 0 until childCount) {
-			val fadeOutAnimation = AlphaAnimation(1.0f, 0.0f)
-			fadeOutAnimation.duration = IntValue.NUMBER_100.toLong()
-			fadeOutAnimation.fillAfter = true
-			fadeOutAnimation.setAnimationListener(object : Animation.AnimationListener {
-				override fun onAnimationStart(animation: Animation) {}
-				override fun onAnimationEnd(animation: Animation) {
-					(getChildAt(i).findViewById<View>(R.id.label) as TextView).text = ""
+			/*if (doesCompletelyHiddenRequired) {
+				getChildAt(i).findViewById<View>(R.id.image).fadeOutNow(IntValue.NUMBER_100)
+				if (i == 0) {
+					getChildAt(i).findViewById<View>(R.id.image_label).fadeOutNow(IntValue.NUMBER_100)
 				}
+			}*/
+			getChildAt(i).findViewById<View>(R.id.label)
+				.fadeOutNowWith(IntValue.NUMBER_100, object : Animation.AnimationListener {
+					override fun onAnimationStart(animation: Animation) {}
+					override fun onAnimationEnd(animation: Animation) {
+						(getChildAt(i).findViewById<View>(R.id.label) as TextView).text =
+							DEFAULT.EMPTY_STRING
+					}
 
-				override fun onAnimationRepeat(animation: Animation) {}
-			})
-			getChildAt(i).findViewById<View>(R.id.label).startAnimation(fadeOutAnimation)
+					override fun onAnimationRepeat(animation: Animation) {}
+				})
 		}
 	}
 
@@ -262,22 +272,22 @@ class NavigationMenu : LinearLayout {
 		for (i in 0 until childCount) {
 			when (getChildAt(i).tag) {
 				NavigationItems.PROFILE -> (getChildAt(i).findViewById<View>(R.id.label) as TextView).text =
-					context.resources.getString(R.string.profile)
+					context.resources.getString(R.string.profile_label)
 
 				NavigationItems.BROWSE -> (getChildAt(i).findViewById<View>(R.id.label) as TextView).text =
-					context.resources.getString(R.string.home)
+					context.resources.getString(R.string.home_label)
 
 				NavigationItems.SEARCH -> (getChildAt(i).findViewById<View>(R.id.label) as TextView).text =
-					context.resources.getString(R.string.search)
+					context.resources.getString(R.string.search_label)
 
 				NavigationItems.MY_SHOWS -> (getChildAt(i).findViewById<View>(R.id.label) as TextView).text =
-					context.resources.getString(R.string.my_shows)
+					context.resources.getString(R.string.my_shows_label)
 			}
-
-			val fadeInAnimation = AlphaAnimation(0.25f, 1.0f)
-			fadeInAnimation.duration = IntValue.NUMBER_333.toLong()
-			fadeInAnimation.fillAfter = true
-			getChildAt(i).findViewById<View>(R.id.label).startAnimation(fadeInAnimation)
+			/*getChildAt(i).findViewById<View>(R.id.image).fadeInNow(IntValue.NUMBER_333)
+			if (i == 0) {
+				getChildAt(i).findViewById<View>(R.id.image_label).fadeInNow(IntValue.NUMBER_333)
+			}*/
+			getChildAt(i).findViewById<View>(R.id.label).fadeInNow(IntValue.NUMBER_333)
 		}
 	}
 
@@ -287,11 +297,11 @@ class NavigationMenu : LinearLayout {
 			changeNavigationMenuFocusStatus(true)
 			focusCurrentSelectedNavigationMenu()
 			isNavigationMenuVisible = true
-		}, IntValue.NUMBER_300.toLong())
+		}, IntValue.NUMBER_200.toLong())
 	}
 
-	fun setupNavigationMenuCollapsedUI() {
-		clearNavigationMenuLabel()
+	fun setupNavigationMenuCollapsedUI(doesCompletelyHiddenRequired: Boolean) {
+		clearNavigationMenuLabel(doesCompletelyHiddenRequired)
 		changeNavigationMenuFocusStatus(false)
 		isNavigationMenuVisible = false
 	}
@@ -313,7 +323,9 @@ class NavigationMenu : LinearLayout {
 						)
 					)
 					if (i == 0) {
-						if (AppPreferences.get(AppConstants.userAvatar, "").isNullOrBlank()) {
+						if (AppPreferences.get(AppConstants.userAvatar, DEFAULT.EMPTY_STRING)
+								.isNullOrBlank()
+						) {
 							(view.findViewById<View>(R.id.image) as ImageView).imageTintList =
 								ColorStateList.valueOf(
 									ContextCompat.getColor(
@@ -335,10 +347,8 @@ class NavigationMenu : LinearLayout {
 							)
 					}
 				}
-				if (!isExpanded) {
-					this.clearFocus()
-					highlightCurrentSelectedNavigationMenu()
-				}
+				if (!isExpanded) this.clearFocus()
+				highlightCurrentSelectedNavigationMenu(isExpanded)
 			}
 		}
 	}
@@ -349,40 +359,14 @@ class NavigationMenu : LinearLayout {
 		changeNavigationMenuFocusStatus(false)
 	}
 
-	override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-		val currentTime = System.currentTimeMillis()
-		return if (currentTime - AppConstants.lastKeyPressTime < AppConstants.keyPressShortDelayTime) {
-			true
-		} else {
-			AppConstants.lastKeyPressTime = currentTime
-			super.onKeyDown(keyCode, event)
-		}
-	}
-
-	fun animateView(
-		navigationMenuView: View,
-		valueAnimator: ValueAnimator,
-	) {
-		valueAnimator.addUpdateListener { animation ->
-			navigationMenuView.layoutParams.width = animation.animatedValue as Int
-			navigationMenuView.requestLayout()
-		}
-
-		valueAnimator.interpolator = AccelerateInterpolator()
-		valueAnimator.duration = IntValue.NUMBER_333.toLong()
-		valueAnimator.start()
-
-		val fadeInAnimation = AlphaAnimation(0.0f, 1.0f)
-		fadeInAnimation.duration = IntValue.NUMBER_333.toLong()
-		fadeInAnimation.fillAfter = true
-
-		val fadeOutAnimation = AlphaAnimation(1.0f, 0.0f)
-		fadeOutAnimation.duration = IntValue.NUMBER_333.toLong()
-		fadeOutAnimation.fillAfter = true
-
-//		if (childCount > 0) getChildAt(0).startAnimation(fadeInAnimation)
-
-	}
-
-
+//	override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+//		Logger.printWithTag("saumil","On key down in menu")
+//		val currentTime = System.currentTimeMillis()
+//		return if (currentTime - AppConstants.lastKeyPressTime < AppConstants.keyPressShortDelayTime) {
+//			true
+//		} else {
+//			AppConstants.lastKeyPressTime = currentTime
+//			super.onKeyDown(keyCode, event)
+//		}
+//	}
 }

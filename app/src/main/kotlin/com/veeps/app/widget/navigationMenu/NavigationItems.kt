@@ -6,6 +6,7 @@ object NavigationItems {
 	const val SEARCH = "Search"
 	const val MY_SHOWS = "My Shows"
 
+	const val NO_MENU = 0
 	const val PROFILE_MENU = 0
 	const val BROWSE_MENU = 1
 	const val SEARCH_MENU = 2

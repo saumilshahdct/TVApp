@@ -1,41 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="dark_black">#FF000000</color>
-    <color name="dark_black_10">#1A000000</color>
-    <color name="dark_black_33">#54000000</color>
-    <color name="dark_black_40">#66000000</color>
-    <color name="dark_black_50">#80000000</color>
-    <color name="dark_black_66">#A8000000</color>
-    <color name="dark_black_75">#BF000000</color>
-    <color name="dark_black_90">#E6000000</color>
+	<color name="dark_black">#FF000000</color>
+	<color name="dark_black_10">#1A000000</color>
+	<color name="dark_black_33">#54000000</color>
+	<color name="dark_black_40">#66000000</color>
+	<color name="dark_black_50">#80000000</color>
+	<color name="dark_black_66">#A8000000</color>
+	<color name="dark_black_70">#B3000000</color>
+	<color name="dark_black_75">#BF000000</color>
+	<color name="dark_black_90">#E6000000</color>
 
-    <color name="black">#FF0E0E0E</color>
-    <color name="black_10">#1A0E0E0E</color>
-    <color name="black_33">#540E0E0E</color>
-    <color name="black_40">#660E0E0E</color>
-    <color name="black_50">#800E0E0E</color>
-    <color name="black_66">#A80E0E0E</color>
-    <color name="black_75">#BF0E0E0E</color>
-    <color name="black_90">#E60E0E0E</color>
+	<color name="black">#FF0E0E0E</color>
+	<color name="black_10">#1A0E0E0E</color>
+	<color name="black_33">#540E0E0E</color>
+	<color name="black_40">#660E0E0E</color>
+	<color name="black_50">#800E0E0E</color>
+	<color name="black_66">#A80E0E0E</color>
+	<color name="black_75">#BF0E0E0E</color>
+	<color name="black_90">#E60E0E0E</color>
 
-    <color name="white">#FFEEEEEE</color>
-    <color name="white_10">#1AEEEEEE</color>
-    <color name="white_15">#26EEEEEE</color>
-    <color name="white_30">#4DEEEEEE</color>
-    <color name="white_33">#54EEEEEE</color>
-    <color name="white_50">#80EEEEEE</color>
-    <color name="white_66">#A8EEEEEE</color>
-    <color name="white_90">#E6EEEEEE</color>
+	<color name="white">#FFEEEEEE</color>
+	<color name="white_05">#0DEEEEEE</color>
+	<color name="white_10">#1AEEEEEE</color>
+	<color name="white_15">#26EEEEEE</color>
+	<color name="white_30">#4DEEEEEE</color>
+	<color name="white_33">#54EEEEEE</color>
+	<color name="white_50">#80EEEEEE</color>
+	<color name="white_66">#A8EEEEEE</color>
+	<color name="white_90">#E6EEEEEE</color>
 
-    <color name="dark_gray">#565656</color>
-    <color name="gray_300">#FF9898A1</color>
-    <color name="off_white">#FFE5E7E9</color>
-    <color name="red">#FFEA0034</color>
-    <color name="dark_red">#FF600000</color>
-    <color name="yellow">#FFD600</color>
-    <color name="orange">#FF6D00</color>
-    <color name="green">#2E7D32</color>
+	<color name="dark_gray">#565656</color>
+	<color name="gray_300">#FF9898A1</color>
+	<color name="off_white">#FFE5E7E9</color>
+	<color name="red">#FFEA0034</color>
+	<color name="dark_red">#FF600000</color>
+	<color name="yellow">#FFD600</color>
+	<color name="orange">#FF6D00</color>
+	<color name="green">#2E7D32</color>
 
 </resources>
 

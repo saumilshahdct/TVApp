@@ -4,11 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/menu_item"
     android:layout_width="match_parent"
-    android:focusable="true"
-    android:layout_marginBottom="157dp"
-    android:focusableInTouchMode="true"
     android:layout_height="32dp"
+    android:layout_marginBottom="157dp"
     android:background="@drawable/selector_menu_background"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:paddingStart="8dp"
     android:paddingEnd="8dp">
 
@@ -27,8 +27,8 @@
             android:id="@+id/image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/menu_image_background"
-            android:contentDescription="@string/app_description" />
+            android:contentDescription="@string/app_description"
+            android:src="@drawable/menu_image_background" />
 
         <TextView
             android:id="@+id/image_label"
@@ -36,11 +36,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
+            android:includeFontPadding="false"
+            android:paddingBottom="1dp"
             android:textAlignment="gravity"
             android:textAllCaps="true"
             android:textColor="@color/selector_menu_item_label"
             android:textIsSelectable="false"
-            android:textSize="13sp"
+            android:textSize="11sp"
             tools:ignore="MissingPrefix" />
 
     </RelativeLayout>
@@ -51,7 +53,9 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:gravity="center_vertical"
+        android:includeFontPadding="false"
         android:lineSpacingExtra="9sp"
+        android:lines="1"
         android:textAlignment="gravity"
         android:textColor="@color/selector_menu_item_label"
         android:textIsSelectable="false"

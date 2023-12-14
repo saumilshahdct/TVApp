@@ -10,11 +10,22 @@ class ProfileViewModel : ViewModel(), DefaultLifecycleObserver {
 	var isVisible = MutableLiveData(false)
 
 	override fun onResume(owner: LifecycleOwner) {
-		isVisible.value = true
 		super.onResume(owner)
+		isVisible.postValue(true)
 	}
 
 	override fun onPause(owner: LifecycleOwner) {
-		isVisible.value = false
+		isVisible.postValue(false)
+		super.onPause(owner)
+	}
+
+	override fun onStart(owner: LifecycleOwner) {
+		super.onStart(owner)
+		isVisible.postValue(true)
+	}
+
+	override fun onStop(owner: LifecycleOwner) {
+		isVisible.postValue(false)
+		super.onStop(owner)
 	}
 }

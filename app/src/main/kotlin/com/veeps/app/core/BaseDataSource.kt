@@ -1,7 +1,6 @@
 package com.veeps.app.core
 
 import android.text.Html
-import android.widget.Toast
 import androidx.core.text.HtmlCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.liveData
@@ -9,7 +8,6 @@ import com.veeps.app.R
 import com.veeps.app.application.Veeps
 import com.veeps.app.data.network.NoConnectivityException
 import com.veeps.app.util.APIConstants
-import com.veeps.app.util.DEFAULT
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -21,7 +19,7 @@ import java.io.IOException
 abstract class BaseDataSource {
 
 	protected suspend fun <T> getResult(
-		tag: String, call: suspend () -> Response<T>
+			tag: String, call: suspend () -> Response<T>,
 	): Resource<T> {
 		try {
 			val response = call()
@@ -40,20 +38,24 @@ abstract class BaseDataSource {
 									}
 								}
 							} ?: return Resource.error(
-								tag, Veeps.appContext.getString(R.string.unknown_error)
+									tag, Veeps.appContext.getString(R.string.unknown_error)
 							)
 						}
 
 						else -> {
-							response.body()?.let {
-								when (tag) {
-									else -> {
-										return Resource.success(tag, response.body()!!)
+							if (tag == APIConstants.removeWatchListEvents) {
+								return Resource.successWithNullResponse(tag, response.body())
+							} else {
+								response.body()?.let {
+									when (tag) {
+										else -> {
+											return Resource.success(tag, response.body()!!)
+										}
 									}
-								}
-							} ?: return Resource.error(
-								tag, Veeps.appContext.getString(R.string.unknown_error)
-							)
+								} ?: return Resource.error(
+										tag, Veeps.appContext.getString(R.string.unknown_error)
+								)
+							}
 						}
 					}
 				}
@@ -68,13 +70,13 @@ abstract class BaseDataSource {
 										val errorObject = JSONObject(errorBody.string())
 										if (errorObject.has("error_description")) {
 											error = Html.fromHtml(
-												errorObject.getString("error"),
-												HtmlCompat.FROM_HTML_MODE_LEGACY
+													errorObject.getString("error"),
+													HtmlCompat.FROM_HTML_MODE_LEGACY
 											).toString()
 										} else if (errorObject.has("error")) {
 											error = Html.fromHtml(
-												errorObject.getString("error"),
-												HtmlCompat.FROM_HTML_MODE_LEGACY
+													errorObject.getString("error"),
+													HtmlCompat.FROM_HTML_MODE_LEGACY
 											).toString()
 										}
 									}
@@ -83,13 +85,13 @@ abstract class BaseDataSource {
 
 								else -> {
 									var error: String =
-										Veeps.appContext.getString(R.string.unknown_error)
+											Veeps.appContext.getString(R.string.unknown_error)
 									response.errorBody()?.let { errorBody ->
 										val errorObject = JSONObject(errorBody.string())
 										if (errorObject.has("message")) {
 											error = Html.fromHtml(
-												errorObject.getString("message"),
-												HtmlCompat.FROM_HTML_MODE_LEGACY
+													errorObject.getString("message"),
+													HtmlCompat.FROM_HTML_MODE_LEGACY
 											).toString()
 										}
 									}
@@ -104,8 +106,8 @@ abstract class BaseDataSource {
 								val errorObject = JSONObject(errorBody.string())
 								if (errorObject.has("message")) {
 									error = Html.fromHtml(
-										errorObject.getString("message"),
-										HtmlCompat.FROM_HTML_MODE_LEGACY
+											errorObject.getString("message"),
+											HtmlCompat.FROM_HTML_MODE_LEGACY
 									).toString()
 								}
 							}
@@ -133,7 +135,7 @@ abstract class BaseDataSource {
 	}
 
 	fun <T> performFlowOperation(
-		tag: String, networkCall: suspend () -> Resource<T>
+			tag: String, networkCall: suspend () -> Resource<T>,
 	): Flow<Resource<T?>> = flow {
 		try {
 			emit(Resource.loading(tag, response = null))
@@ -145,7 +147,7 @@ abstract class BaseDataSource {
 	}.flowOn(Dispatchers.Main)
 
 	fun <T> performOperation(
-		tag: String, networkCall: suspend () -> Resource<T>
+			tag: String, networkCall: suspend () -> Resource<T>,
 	): LiveData<Resource<T?>> = liveData(Dispatchers.IO) {
 		try {
 			emit(Resource.loading(tag, response = null))
@@ -157,7 +159,7 @@ abstract class BaseDataSource {
 	}
 
 	data class Resource<out T>(
-		val callStatus: CallStatus, val response: T?, val message: String?, val tag: String
+			val callStatus: CallStatus, val response: T?, val message: String?, val tag: String,
 	) {
 		enum class CallStatus {
 			SUCCESS, ERROR, LOADING
@@ -165,6 +167,10 @@ abstract class BaseDataSource {
 
 		companion object {
 			fun <T> success(tag: String, response: T): Resource<T> {
+				return Resource(CallStatus.SUCCESS, response, null, tag)
+			}
+
+			fun <T> successWithNullResponse(tag: String, response: T?): Resource<T> {
 				return Resource(CallStatus.SUCCESS, response, null, tag)
 			}
 
