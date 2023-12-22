@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.AttributeSet
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.View
 import android.view.animation.Animation
 import android.widget.ImageView
@@ -23,6 +24,7 @@ import com.veeps.app.util.AppPreferences
 import com.veeps.app.util.DEFAULT
 import com.veeps.app.util.ImageTags
 import com.veeps.app.util.IntValue
+import com.veeps.app.util.Logger
 
 class NavigationMenu : LinearLayout {
 
@@ -359,14 +361,14 @@ class NavigationMenu : LinearLayout {
 		changeNavigationMenuFocusStatus(false)
 	}
 
-//	override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-//		Logger.printWithTag("saumil","On key down in menu")
-//		val currentTime = System.currentTimeMillis()
-//		return if (currentTime - AppConstants.lastKeyPressTime < AppConstants.keyPressShortDelayTime) {
-//			true
-//		} else {
-//			AppConstants.lastKeyPressTime = currentTime
-//			super.onKeyDown(keyCode, event)
-//		}
-//	}
+	override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+		Logger.printWithTag("saumil","On key down in menu")
+		val currentTime = System.currentTimeMillis()
+		return if (currentTime - AppConstants.lastKeyPressTime < AppConstants.keyPressShortDelayTime) {
+			true
+		} else {
+			AppConstants.lastKeyPressTime = currentTime
+			super.onKeyDown(keyCode, event)
+		}
+	}
 }

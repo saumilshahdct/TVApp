@@ -37,9 +37,6 @@ import com.veeps.app.util.Image
 import com.veeps.app.util.IntValue
 import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -72,34 +69,33 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 			val currentTime = System.currentTimeMillis()
 			if (keyEvent.action == KeyEvent.ACTION_DOWN) {
 				if (holder.bindingAdapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
-					AppConstants.lastKeyPressTime = currentTime
-					if (screen == Screens.BROWSE || screen == Screens.SHOWS || screen == Screens.ARTIST || screen == Screens.VENUE || screen == Screens.EVENT) helper.showNavigationMenu()
-					else if (screen == Screens.SEARCH) {
-						helper.focusItem()
+					when (screen) {
+						Screens.BROWSE, Screens.SHOWS, Screens.ARTIST, Screens.VENUE, Screens.EVENT -> {
+							Logger.printWithTag("saumil", "here in card key listener - requested show")
+							helper.showNavigationMenu()
+							true
+						}
+
+						Screens.SEARCH -> {
+							helper.focusItem()
+							true
+						}
+
+						else -> false
 					}
-					true
 				} else if (adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-					AppConstants.lastKeyPressTime = currentTime
 					helper.translateCarouselToBottom(true)
-					false
+					true
 				} else if (adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
 					if (screen == Screens.ARTIST || screen == Screens.VENUE) {
-						helper.focusItem()
-					}
-					false
+						action.focusDown()
+						true
+					} else false
 				} else if (adapterPosition == 1 && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
 					if (screen == Screens.EVENT) {
 						helper.focusItem()
-					}
-					false
-				} else {
-					false
-				}
-			} else if (keyEvent.action == KeyEvent.ACTION_UP) {
-				if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-					AppConstants.lastKeyPressTime = currentTime
-					helper.translateCarouselToTop(true)
-					false
+						true
+					} else false
 				} else {
 					false
 				}
@@ -176,6 +172,7 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 		}
 
 		holder.binding.container.setOnFocusChangeListener { _, hasFocus ->
+			if (hasFocus) helper.translateCarouselToTop(true)
 			if (cardType == CardTypes.CIRCLE) {
 				holder.binding.artistVenueThumbnailContainer.setImageResource(if (hasFocus) R.drawable.rounded_card_image_background_focused else (if (entitiesType == EntityTypes.ARTIST) R.drawable.rounded_card_image_background_white_10 else R.drawable.rounded_card_image_background_transparent))
 			} else {
@@ -203,23 +200,22 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 				if (entitiesType == EntityTypes.ARTIST) holder.binding.artistVenueThumbnailContainer.setImageResource(
 					R.drawable.rounded_card_image_background_white_10
 				)
-				CoroutineScope(Dispatchers.Main).launch {
-					val newResource = image.replace(Image.DEFAULT, Image.CIRCLE)
-					Glide.with(holder.binding.artistVenueThumbnail.context).load(newResource)
-						.diskCacheStrategy(DiskCacheStrategy.ALL).override(
-							holder.binding.artistVenueThumbnail.measuredWidth,
-							holder.binding.artistVenueThumbnail.measuredHeight
-						)
+				val newResource = image.replace(Image.DEFAULT, Image.CIRCLE)
+				Glide.with(holder.binding.artistVenueThumbnail.context).load(newResource)
+					.diskCacheStrategy(DiskCacheStrategy.ALL).override(
+						holder.binding.artistVenueThumbnail.measuredWidth,
+						holder.binding.artistVenueThumbnail.measuredHeight
+					)
 //						.transition(DrawableTransitionOptions.withCrossFade())
-						.transform(
-							CenterCrop(),
-							RoundedCorners(holder.binding.artistVenueThumbnail.measuredWidth / 2)
-						)
+					.transform(
+						CenterCrop(),
+						RoundedCorners(context.resources.getDimensionPixelSize(R.dimen.row_width_circle) / 2)
+					)
 //						.placeholder(R.drawable.rounded_card_background_white_10)
-						.error(R.drawable.rounded_card_background_white_10)
-						.into(holder.binding.artistVenueThumbnail)
-					Logger.printMessage("Artist or Venue Image url with optimized ($newResource) is requested to load.")
-				}
+					.error(R.drawable.rounded_card_background_white_10)
+					.into(holder.binding.artistVenueThumbnail)
+//					Logger.printMessage("Artist or Venue Image url with optimized ($newResource) is requested to load.")
+
 //				holder.binding.container.nextFocusDownId = R.id.artist_venue_follow
 				holder.binding.artistVenueFollow.visibility = View.GONE
 				holder.binding.artistVenueContainer.visibility = View.VISIBLE
@@ -230,20 +226,20 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 				holder.binding.eventTitle.visibility = View.GONE
 				holder.binding.eventLogoLabel.text = title
 				holder.binding.eventLogo.visibility = View.GONE
-				CoroutineScope(Dispatchers.Main).launch {
-					val newResource = image.replace(Image.DEFAULT, Image.CARD)
-					Glide.with(holder.binding.eventThumbnail.context).load(newResource)
-						.diskCacheStrategy(DiskCacheStrategy.ALL).override(
-							holder.binding.eventThumbnail.measuredWidth,
-							holder.binding.eventThumbnail.measuredHeight
-						)
+
+				val newResource = image.replace(Image.DEFAULT, Image.CARD)
+				Glide.with(holder.binding.eventThumbnail.context).load(newResource)
+					.diskCacheStrategy(DiskCacheStrategy.ALL).override(
+						holder.binding.eventThumbnail.measuredWidth,
+						holder.binding.eventThumbnail.measuredHeight
+					)
 //						.transition(DrawableTransitionOptions.withCrossFade())
-						.transform(CenterCrop(), RoundedCorners(IntValue.NUMBER_10))
+					.transform(CenterCrop(), RoundedCorners(IntValue.NUMBER_10))
 //						.placeholder(R.drawable.rounded_card_background_black)
-						.error(R.drawable.rounded_card_background_black)
-						.into(holder.binding.eventThumbnail)
-					Logger.printMessage("Card Image url with optimized ($newResource) is requested to load.")
-				}
+					.error(R.drawable.rounded_card_background_black)
+					.into(holder.binding.eventThumbnail)
+//					Logger.printMessage("Card Image url with optimized ($newResource) is requested to load.")
+
 				holder.binding.eventDateContainer.visibility = View.GONE
 				holder.binding.artistVenueFollow.visibility = View.GONE
 				holder.binding.artistVenueContainer.visibility = View.GONE
@@ -314,20 +310,19 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 			holder.binding.eventTitle.text = title
 			holder.binding.eventLogoLabel.text = artistTitle
 			holder.binding.eventLogo.visibility = View.GONE
-			CoroutineScope(Dispatchers.Main).launch {
-				val newResource = image.replace(Image.DEFAULT, Image.CARD)
-				Glide.with(holder.binding.eventThumbnail.context).load(newResource)
-					.diskCacheStrategy(DiskCacheStrategy.ALL).override(
-						holder.binding.eventThumbnail.measuredWidth,
-						holder.binding.eventThumbnail.measuredHeight
-					)
+
+			val newResource = image.replace(Image.DEFAULT, Image.CARD)
+			Glide.with(holder.binding.eventThumbnail.context).load(newResource)
+				.diskCacheStrategy(DiskCacheStrategy.ALL).override(
+					holder.binding.eventThumbnail.measuredWidth,
+					holder.binding.eventThumbnail.measuredHeight
+				)
 //					.transition(DrawableTransitionOptions.withCrossFade())
-					.transform(CenterCrop(), RoundedCorners(IntValue.NUMBER_10))
+				.transform(CenterCrop(), RoundedCorners(IntValue.NUMBER_10))
 //					.placeholder(R.drawable.rounded_card_background_black)
-					.error(R.drawable.rounded_card_background_black)
-					.into(holder.binding.eventThumbnail)
-				Logger.printMessage("Card Image url with optimized ($newResource) is requested to load.")
-			}
+				.error(R.drawable.rounded_card_background_black).into(holder.binding.eventThumbnail)
+//				Logger.printMessage("Card Image url with optimized ($newResource) is requested to load.")
+
 			holder.binding.eventDateContainer.setupWith(holder.binding.container)
 				.setBlurRadius(12.5f)
 			holder.binding.eventDateContainer.outlineProvider = ViewOutlineProvider.BACKGROUND

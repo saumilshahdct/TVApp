@@ -343,13 +343,21 @@ object AppUtil {
 			contentBadgeList.forEach { badge ->
 				when (badge.uppercase()) {
 					ContentBadges.BADGE_5_1 -> contentBadges.add(ContentBadgeValues.BADGE_5_1)
+					ContentBadges.BADGE_DOLBY_5_1 -> contentBadges.add(ContentBadgeValues.BADGE_5_1)
 					ContentBadges.BADGE_6_1 -> contentBadges.add(ContentBadgeValues.BADGE_6_1)
+					ContentBadges.BADGE_DOLBY_6_1 -> contentBadges.add(ContentBadgeValues.BADGE_6_1)
 					ContentBadges.BADGE_7_1 -> contentBadges.add(ContentBadgeValues.BADGE_7_1)
+					ContentBadges.BADGE_DOLBY_7_1 -> contentBadges.add(ContentBadgeValues.BADGE_7_1)
 					ContentBadges.BADGE_ATMOS -> contentBadges.add(ContentBadgeValues.BADGE_ATMOS)
+					ContentBadges.BADGE_DOLBY_ATMOS -> contentBadges.add(ContentBadgeValues.BADGE_ATMOS)
 					ContentBadges.BADGE_DIGITAL_PLUS -> contentBadges.add(ContentBadgeValues.BADGE_DIGITAL_PLUS)
+					ContentBadges.BADGE_DOLBY_DIGITAL_PLUS -> contentBadges.add(ContentBadgeValues.BADGE_DIGITAL_PLUS)
 					ContentBadges.BADGE_DIGITAL -> contentBadges.add(ContentBadgeValues.BADGE_DIGITAL)
+					ContentBadges.BADGE_DOLBY_DIGITAL -> contentBadges.add(ContentBadgeValues.BADGE_DIGITAL)
 					ContentBadges.BADGE_TRUEHD -> contentBadges.add(ContentBadgeValues.BADGE_TRUEHD)
+					ContentBadges.BADGE_DOLBY_TRUEHD -> contentBadges.add(ContentBadgeValues.BADGE_TRUEHD)
 					ContentBadges.BADGE_VISION -> contentBadges.add(ContentBadgeValues.BADGE_VISION)
+					ContentBadges.BADGE_DOLBY_VISION -> contentBadges.add(ContentBadgeValues.BADGE_VISION)
 					ContentBadges.BADGE_GLOBAL -> contentBadges.add(ContentBadgeValues.BADGE_GLOBAL)
 					ContentBadges.BADGE_DTS_HD -> contentBadges.add(ContentBadgeValues.BADGE_DTS_HD)
 					ContentBadges.BADGE_DTS_X -> contentBadges.add(ContentBadgeValues.BADGE_DTS_X)
@@ -363,7 +371,8 @@ object AppUtil {
 	}
 
 	fun getPrimaryLabelText(entity: Entities, screen: String, isEventPurchased: Boolean): String {
-		val isUserSubscribed = AppPreferences.get(AppConstants.userSubscriptionStatus, "none") != "none"
+		val isUserSubscribed =
+			AppPreferences.get(AppConstants.userSubscriptionStatus, "none") != "none"
 		val currentDate = DateTime.now()
 		val streamStartAt =
 			entity.eventStreamStartsAt?.ifBlank { currentDate.toString() } ?: currentDate.toString()

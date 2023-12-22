@@ -60,11 +60,11 @@ object APIUtil {
 				val originalHttpUrl = request.url
 				val builder: Request.Builder = request.newBuilder().header(
 					"Authorization", "Bearer " + AppPreferences.get(
-						if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats) AppConstants.generatedJWT else AppConstants.authenticatedUserToken, "AuthenticatedUserToken"
+						if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppConstants.generatedJWT else AppConstants.authenticatedUserToken, "AuthenticatedUserToken"
 					)
 				)
 				request = builder.build()
-				if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats) AppPreferences.remove(AppConstants.generatedJWT)
+				if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppPreferences.remove(AppConstants.generatedJWT)
 				chain.proceed(request)
 			} else {
 				throw NoConnectivityException()
@@ -177,7 +177,7 @@ object APIUtil {
 		@GET(APIConstants.fetchEventProductDetails)
 		suspend fun fetchEventProductDetails(@Path("EVENT_ID") entity: String): Response<ProductsResponse>
 
-		@GET(APIConstants.claimFreeTicketForEvent)
+		@POST(APIConstants.claimFreeTicketForEvent)
 		suspend fun claimFreeTicketForEvent(@Path("EVENT_ID") entity: String): Response<BaseResponseGeneric<Any>>
 
 		@GET(APIConstants.clearAllReservations)
@@ -194,6 +194,9 @@ object APIUtil {
 
 		@GET
 		suspend fun fetchStoryBoard(@Url storyBoardURL: String): Response<StoryBoardImages>
+
+		@GET
+		suspend fun addStats(@Url addStatsAPIURL: String, @Query("cur") currentTime: String, @Query("pld") duration: String, @Query("plv") playerVersion: String, @Query("dvm") deviceModel: String, @Query("dvv") deviceVendor: String, @Query("pls") playbackStreamType: String, @Query("p") platform: String, @Query("s") userType: String): Response<BaseResponseGeneric<Any>>
 
 	}
 }

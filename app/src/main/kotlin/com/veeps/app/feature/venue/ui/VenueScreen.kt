@@ -6,11 +6,11 @@ import android.view.KeyEvent
 import android.view.View
 import androidx.leanback.widget.BaseGridView
 import androidx.recyclerview.widget.PagerSnapHelper
-import androidx.recyclerview.widget.SimpleItemAnimator
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.veeps.app.R
 import com.veeps.app.core.BaseFragment
 import com.veeps.app.databinding.FragmentVenueDetailsScreenBinding
-import com.veeps.app.extension.loadImage
 import com.veeps.app.feature.contentRail.adapter.ContentRailsAdapter
 import com.veeps.app.feature.contentRail.model.Entities
 import com.veeps.app.feature.contentRail.model.RailData
@@ -19,7 +19,7 @@ import com.veeps.app.util.AppAction
 import com.veeps.app.util.CardTypes
 import com.veeps.app.util.DEFAULT
 import com.veeps.app.util.EntityTypes
-import com.veeps.app.util.ImageTags
+import com.veeps.app.util.Image
 import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
 import com.veeps.app.widget.navigationMenu.NavigationItems
@@ -31,8 +31,21 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 	private var entityId = ""
 	private var entityScope = ""
 	private var entities: ArrayList<Entities> = arrayListOf()
+	var allEventsRail: ArrayList<RailData> = arrayListOf()
 	private val action by lazy {
 		object : AppAction {
+			override fun focusDown() {
+				if (!binding.description.text.isNullOrBlank()) {
+					binding.description.requestFocus()
+					if (!allEventsRail.none { it.entities.isNotEmpty() }) {
+						binding.listing.visibility = View.GONE
+					} else {
+						binding.darkBackground.visibility = View.VISIBLE
+						binding.carousel.visibility = View.GONE
+					}
+				}
+			}
+
 			override fun onAction() {
 				Logger.print(
 					"Action performed on ${
@@ -53,11 +66,14 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 			venueScreen = this@VenueScreen
 			lifecycleOwner = viewLifecycleOwner
 			lifecycle.addObserver(viewModel)
-			loader.visibility = View.GONE
-			image.tag = ""
-			title.requestFocus()
+			loader.visibility = View.VISIBLE
+			darkBackground.visibility = View.GONE
+			carousel.visibility = View.GONE
+			listing.visibility = View.GONE
+			description.visibility = View.GONE
+			loader.requestFocus()
 			entities.toMutableList().clear()
-			viewModel.allEventsRail.postValue(arrayListOf())
+			allEventsRail.toMutableList().clear()
 		}
 		notifyAppEvents()
 		loadAppContent()
@@ -126,17 +142,32 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 						entities.addAll(railData.data)
 					}
 				}
-				val rails: ArrayList<RailData> = arrayListOf()
+
 				if (entities.isNotEmpty()) {
-					val allEventsRail = RailData(
+					val rail = RailData(
 						name = getString(R.string.all_events_label),
 						entities = entities,
 						cardType = CardTypes.PORTRAIT,
 						entitiesType = EntityTypes.EVENT
 					)
-					rails.add(allEventsRail)
+					allEventsRail.add(rail)
 				}
-				viewModel.allEventsRail.postValue(rails)
+				if (allEventsRail.none { it.entities.isNotEmpty() }) {
+					binding.listing.visibility = View.GONE
+				} else {
+					binding.listing.apply {
+						setNumColumns(1)
+						windowAlignment = BaseGridView.WINDOW_ALIGN_HIGH_EDGE
+						windowAlignmentOffsetPercent = 0f
+						isItemAlignmentOffsetWithPadding = true
+						itemAlignmentOffsetPercent = 0f
+						adapter = ContentRailsAdapter(
+							rails = allEventsRail, helper, Screens.ARTIST, action
+						)
+						onFlingListener = PagerSnapHelper()
+					}
+					binding.listing.visibility = View.VISIBLE
+				}
 			}
 		}
 	}
@@ -147,18 +178,26 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 				fetch(
 					entityDetails,
 					isLoaderEnabled = true,
-					canUserAccessScreen = true,
-					shouldBeInBackground = true,
+					canUserAccessScreen = false,
+					shouldBeInBackground = false,
 				) {
-					entityDetails.response?.let { venueResponse ->
-						venueResponse.data.let { venue ->
-							venue.let {
-								val posterImage = venue?.landscapeUrl ?: DEFAULT.EMPTY_STRING
-								val logoImage = venue?.logoUrl ?: DEFAULT.EMPTY_STRING
-								val title = venue?.name ?: DEFAULT.EMPTY_STRING
-								val description = venue?.bio ?: DEFAULT.EMPTY_STRING
-								binding.image.loadImage(posterImage, ImageTags.HERO)
-								binding.logo.loadImage(logoImage, ImageTags.LOGO)
+					entityDetails.response?.let { artistResponse ->
+						artistResponse.data.let { artist ->
+							artist.let {
+								val posterImage = (artist?.landscapeUrl
+									?: DEFAULT.EMPTY_STRING).replace(Image.DEFAULT, Image.HERO)
+								val logoImage = (artist?.logoUrl ?: DEFAULT.EMPTY_STRING).replace(
+									Image.DEFAULT, Image.LOGO
+								)
+								val title = artist?.name ?: DEFAULT.EMPTY_STRING
+								val description = artist?.bio ?: DEFAULT.EMPTY_STRING
+
+								Glide.with(binding.image.context).load(posterImage)
+									.diskCacheStrategy(DiskCacheStrategy.ALL).into(binding.image)
+
+								Glide.with(binding.logo.context).load(logoImage)
+									.diskCacheStrategy(DiskCacheStrategy.ALL).into(binding.logo)
+
 								binding.title.text = title.ifBlank { DEFAULT.EMPTY_STRING }
 								context?.let {
 									Markwon.create(it).setMarkdown(binding.description, description)
@@ -167,6 +206,10 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 										Html.fromHtml(description, Html.FROM_HTML_MODE_LEGACY)
 											.ifBlank { DEFAULT.EMPTY_STRING }
 								}
+								binding.description.visibility = View.VISIBLE
+								binding.darkBackground.visibility = View.GONE
+								binding.carousel.visibility = View.VISIBLE
+								binding.title.requestFocus()
 							}
 						}
 					}
@@ -175,48 +218,32 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 	}
 
 	private fun notifyAppEvents() {
-		homeViewModel.focusItem.observe(viewLifecycleOwner) { hasFocus ->
-			if (hasFocus && !binding.description.text.isNullOrBlank()) {
-				binding.description.requestFocus()
-				if (viewModel.allEventsRail.value?.none { it.entities.isNotEmpty() } == false) {
-					binding.listing.visibility = View.GONE
-				} else {
-					binding.image.visibility = View.GONE
-					binding.logo.visibility = View.GONE
-					binding.title.visibility = View.GONE
-				}
-			}
-		}
 		homeViewModel.translateCarouselToTop.observe(viewLifecycleOwner) { shouldTranslate ->
 			if (shouldTranslate && viewModel.isVisible.value == true) {
-				binding.image.visibility = View.GONE
-				binding.logo.visibility = View.GONE
-				binding.title.visibility = View.GONE
+				binding.darkBackground.visibility = View.VISIBLE
+				binding.carousel.visibility = View.GONE
 			}
 		}
 		homeViewModel.translateCarouselToBottom.observe(viewLifecycleOwner) { shouldTranslate ->
 			if (shouldTranslate && viewModel.isVisible.value == true) {
-				binding.image.visibility = View.VISIBLE
-				binding.logo.visibility = View.VISIBLE
-				binding.title.visibility = View.VISIBLE
+				binding.carousel.visibility = View.VISIBLE
 				binding.title.requestFocus()
+				binding.darkBackground.visibility = View.GONE
 			}
 		}
 
 		binding.title.setOnKeyListener { _, keyCode, keyEvent ->
 			if (keyEvent.action == KeyEvent.ACTION_DOWN) {
 				if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-					if (viewModel.allEventsRail.value?.none { it.entities.isNotEmpty() } == true) {
+					if (allEventsRail.none { it.entities.isNotEmpty() }) {
 						if (!binding.description.text.isNullOrBlank()) {
+							binding.darkBackground.visibility = View.VISIBLE
 							binding.description.requestFocus()
-							binding.image.visibility = View.GONE
-							binding.logo.visibility = View.GONE
-							binding.title.visibility = View.GONE
+							binding.carousel.visibility = View.GONE
 						}
 					} else {
-						binding.image.visibility = View.GONE
-						binding.logo.visibility = View.GONE
-						binding.title.visibility = View.GONE
+						binding.darkBackground.visibility = View.VISIBLE
+						binding.carousel.visibility = View.GONE
 					}
 				}
 			}
@@ -230,14 +257,13 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 				}
 				if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
 					if (binding.scrollView.scrollY == 0) {
-						if (viewModel.allEventsRail.value?.none { it.entities.isNotEmpty() } == false) {
+						if (!allEventsRail.none { it.entities.isNotEmpty() }) {
 							binding.listing.visibility = View.VISIBLE
 							binding.listing.requestFocus()
 						} else {
-							binding.image.visibility = View.VISIBLE
-							binding.logo.visibility = View.VISIBLE
-							binding.title.visibility = View.VISIBLE
+							binding.carousel.visibility = View.VISIBLE
 							binding.title.requestFocus()
+							binding.darkBackground.visibility = View.GONE
 						}
 					} else {
 						binding.scrollView.pageScroll(View.FOCUS_UP)
@@ -247,26 +273,7 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 			return@setOnKeyListener false
 		}
 
-		viewModel.allEventsRail.observe(viewLifecycleOwner) { rails ->
-			if (rails.none { it.entities.isNotEmpty() }) {
-				binding.listing.visibility = View.GONE
-			} else {
-				binding.listing.apply {
-					itemAnimator = null
-					setNumColumns(1)
-					setHasFixedSize(true)
-					windowAlignment = BaseGridView.WINDOW_ALIGN_HIGH_EDGE
-					windowAlignmentOffsetPercent = 0f
-					isItemAlignmentOffsetWithPadding = true
-					itemAlignmentOffsetPercent = 0f
-					adapter = ContentRailsAdapter(rails = rails, helper, Screens.VENUE, action)
-					onFlingListener = PagerSnapHelper()
-				}
-				binding.listing.visibility = View.VISIBLE
-			}
-		}
-
-		viewModel.isVisible.observeForever  { isVisible ->
+		viewModel.isVisible.observeForever { isVisible ->
 			if (isVisible) {
 				helper.selectNavigationMenu(NavigationItems.NO_MENU)
 				helper.completelyHideNavigationMenu()

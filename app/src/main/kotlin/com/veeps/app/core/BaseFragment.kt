@@ -73,9 +73,9 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 				if (isLoaderEnabled) {
 					screenLoader.hide()
 					screenLoader.visibility = View.GONE
-//					if (!shouldBeInBackground) {
-//						layoutContainer.visibility = View.VISIBLE
-//					}
+					if (!shouldBeInBackground) {
+						layoutContainer.visibility = View.VISIBLE
+					}
 				}
 				block.invoke()
 				Logger.print("API Call is successful for ${dataResource.tag}")
@@ -86,9 +86,9 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 					screenLoader.show()
 					screenLoader.visibility = View.VISIBLE
 					if (!canUserAccessScreen) screenLoader.requestFocus()
-//					if (!shouldBeInBackground) {
-//						layoutContainer.visibility = View.GONE
-//					}
+					if (!shouldBeInBackground) {
+						layoutContainer.visibility = View.GONE
+					}
 				}
 				Logger.print("API Call is initiating for ${dataResource.tag}. Loader should be visible.")
 			}
@@ -97,9 +97,9 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 				if (isLoaderEnabled) {
 					screenLoader.hide()
 					screenLoader.visibility = View.GONE
-//					if (!shouldBeInBackground) {
-//						layoutContainer.visibility = View.VISIBLE
-//					}
+					if (!shouldBeInBackground) {
+						layoutContainer.visibility = View.VISIBLE
+					}
 				}
 				when (dataResource.tag) {
 					APIConstants.authenticationPolling -> {

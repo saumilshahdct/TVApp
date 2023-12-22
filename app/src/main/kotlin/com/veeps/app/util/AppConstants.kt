@@ -21,7 +21,7 @@ object AppConstants {
 	const val deviceUniqueID: String = "device_unique_id"
 
 	var lastKeyPressTime: Long = IntValue.NUMBER_0.toLong()
-	const val keyPressLongDelayTime: Long = IntValue.NUMBER_300.toLong()
+	const val keyPressLongDelayTime: Long = IntValue.NUMBER_333.toLong()
 	const val keyPressShortDelayTime: Long = IntValue.NUMBER_100.toLong()
 
 	const val isUserAuthenticated: String = "is_user_authenticated"
@@ -118,6 +118,14 @@ object ContentBadges {
 	const val BADGE_6_1 = "6_1"
 	const val BADGE_7_1 = "7_1"
 	const val BADGE_ATMOS = "ATMOS"
+	const val BADGE_DOLBY_ATMOS = "dolby_atmos"
+	const val BADGE_DOLBY_DIGITAL = "dolby_digital"
+	const val BADGE_DOLBY_DIGITAL_PLUS = "dolby_digital_plus"
+	const val BADGE_DOLBY_TRUEHD = "dolby_truehd"
+	const val BADGE_DOLBY_VISION = "dolby_vision"
+	const val BADGE_DOLBY_5_1 = "surround_sound_5_1"
+	const val BADGE_DOLBY_6_1 = "surround_sound_6_1"
+	const val BADGE_DOLBY_7_1 = "surround_sound_7_1"
 	const val BADGE_DIGITAL_PLUS = "DIGITAL_PLUS"
 	const val BADGE_DIGITAL = "DIGITAL"
 	const val BADGE_TRUEHD = "TRUEHD"

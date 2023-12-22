@@ -4,6 +4,8 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.view.View
+import androidx.compose.ui.unit.Dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
@@ -16,6 +18,7 @@ import com.veeps.app.util.DateTimeCompareDifference
 import com.veeps.app.util.EventTypes
 import com.veeps.app.util.Logger
 import kotlin.math.round
+import kotlin.math.roundToInt
 
 val Context.isFreshInstall
 	get() = with(packageManager.getPackageInfo(packageName, 0)) {
@@ -55,7 +58,7 @@ fun goToPage(
 	shouldAddToBackStack: Boolean,
 ) {
 	manager.commit {
-		setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+//		setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
 		if (shouldReplace) {
 			replace(R.id.fragment_container, fragment, arguments, tag)
 		} else {
@@ -121,6 +124,14 @@ fun Entities.isOfType(eventType: String) = when (eventType) {
 			EventTypes.ENDED, true
 		) && (watchStatus ?: DEFAULT.EMPTY_STRING).contains("expired", true))
 	}
+}
+
+fun Fragment.dpToPx(dimension: Dp): Int {
+	return (resources.displayMetrics.density * dimension.value).roundToInt()
+}
+
+fun View.dpToPx(dimension: Dp): Int {
+	return (resources.displayMetrics.density * dimension.value).roundToInt()
 }
 
 fun Int?.isGreaterThan(other: Int?) = this != null && other != null && this > other

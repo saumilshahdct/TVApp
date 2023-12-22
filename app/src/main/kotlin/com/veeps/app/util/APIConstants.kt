@@ -43,4 +43,5 @@ object APIConstants {
 	const val generateNewOrder: String = API_VERSION + "orders/new"
 	const val createOrder: String = API_VERSION + "orders"
 	const val fetchStoryBoard: String = "fetchStoryBoard"
+	const val addStats: String = "/addstat"
 }

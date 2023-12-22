@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+With follow button - 205.5
+Without follow button - 173.5
+ -->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="145.5dp"
+    android:layout_height="173.5dp"
+    android:clipToPadding="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardCornerRadius="@dimen/dp8"
+    app:cardElevation="0dp"
+    app:cardPreventCornerOverlap="true"
+    app:cardUseCompatPadding="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="2dp"
+        android:background="@drawable/rounded_card_background_dark_black">
+
+        <ImageView
+            android:id="@+id/thumbnail_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:contentDescription="@string/app_description"
+            android:scaleType="centerCrop"
+            android:src="@drawable/rounded_card_image_background_transparent"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/CornerSize50Percent" />
+
+        <ImageView
+            android:id="@+id/thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_margin="4dp"
+            android:contentDescription="@string/app_description"
+            android:scaleType="centerCrop"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/CornerSize50Percent" />
+
+        <TextView
+            android:id="@+id/title"
+            fontPath="fonts/SaansMedium.ttf"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:lines="1"
+            android:textAlignment="gravity"
+            android:textColor="@color/white"
+            android:textIsSelectable="false"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="@+id/thumbnail_container"
+            app:layout_constraintStart_toStartOf="@+id/thumbnail_container"
+            app:layout_constraintTop_toBottomOf="@+id/thumbnail_container"
+            tools:ignore="MissingPrefix" />
+
+        <LinearLayout
+            android:id="@+id/follow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="1dp"
+            android:background="@drawable/selector_follow_background"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:gravity="center"
+            android:nextFocusLeft="@id/container"
+            android:nextFocusRight="@id/container"
+            android:nextFocusUp="@id/container"
+            android:nextFocusForward="@id/container"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="@+id/thumbnail_container"
+            app:layout_constraintStart_toStartOf="@+id/thumbnail_container"
+            app:layout_constraintTop_toBottomOf="@+id/title">
+
+            <ImageView
+                android:id="@+id/follow_icon"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginStart="7dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="2dp"
+                android:layout_marginBottom="5dp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/add_white" />
+
+            <TextView
+                android:id="@+id/follow_label"
+                fontPath="fonts/SaansMedium.ttf"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="5dp"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:lines="1"
+                android:text="@string/follow_label"
+                android:textAlignment="gravity"
+                android:textColor="@color/white"
+                android:textIsSelectable="false"
+                android:textSize="12sp"
+                tools:ignore="MissingPrefix" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

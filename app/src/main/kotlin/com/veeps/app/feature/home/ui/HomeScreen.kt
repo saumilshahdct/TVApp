@@ -2,10 +2,13 @@ package com.veeps.app.feature.home.ui
 
 import android.content.res.Resources
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.KeyEvent
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
+import androidx.core.os.postDelayed
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.amazon.device.iap.PurchasingListener
@@ -38,13 +41,10 @@ import com.veeps.app.util.AppConstants
 import com.veeps.app.util.AppHelper
 import com.veeps.app.util.AppPreferences
 import com.veeps.app.util.DEFAULT
-import com.veeps.app.util.IntValue
 import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
 import com.veeps.app.widget.navigationMenu.NavigationItem
 import com.veeps.app.widget.navigationMenu.NavigationItems
-import java.util.Timer
-import kotlin.concurrent.schedule
 import kotlin.system.exitProcess
 
 
@@ -64,23 +64,38 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	private fun handleBack(): Boolean {
-		Logger.print(
-			"Back Pressed on ${
-				this@HomeScreen.localClassName.substringAfterLast(".")
-			}"
-		)
-		if (viewModel.isNavigationMenuVisible.value!!) {
-			AppConstants.lastKeyPressTime = System.currentTimeMillis()
-			return clearNavigationMenuUI()
+		val currentTime = System.currentTimeMillis()
+		return if (currentTime - AppConstants.lastKeyPressTime < AppConstants.keyPressLongDelayTime) {
+			true
 		} else {
-			return if (supportFragmentManager.backStackEntryCount == 1) {
-				if (!binding.errorContainer.isVisible) {
-					showError(Screens.EXIT_APP, resources.getString(R.string.exit_app_warning))
-				}
-				false
+			AppConstants.lastKeyPressTime = currentTime
+			Logger.print(
+				"Back Pressed on ${
+					this@HomeScreen.localClassName.substringAfterLast(".")
+				}"
+			)
+			if (viewModel.isNavigationMenuVisible.value!!) {
+				return clearNavigationMenuUI()
 			} else {
-				supportFragmentManager.popBackStack()
-				true
+				return if (supportFragmentManager.backStackEntryCount == 1) {
+					if (!binding.errorContainer.isVisible) {
+						showError(Screens.EXIT_APP, resources.getString(R.string.exit_app_warning))
+					}
+					false
+				} else {
+					binding.navigationMenu.onFocusChangeListener = null
+					Logger.printWithTag(
+						"MenuFocus",
+						"here in setup page cange - listener is null"
+					)
+					supportFragmentManager.popBackStack()
+					Logger.printWithTag("MenuFocus", "requested to set focus after 1000")
+					Handler(Looper.getMainLooper()).postDelayed({
+						Logger.printWithTag("MenuFocus", "setting up focus after 1000")
+						setupFocusOnNavigationMenu()
+					},1000)
+					true
+				}
 			}
 		}
 	}
@@ -281,34 +296,26 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 		tag: String,
 		shouldAddToBackStack: Boolean,
 	) {
-		Thread {
-			runOnUiThread {
-				binding.navigationMenu.onFocusChangeListener = null
-			}
-			if (fragment != null) {
-				goToPage(
-					supportFragmentManager,
-					shouldReplace,
-					fragment,
-					arguments,
-					tag,
-					shouldAddToBackStack
-				)
-				runOnUiThread {
-					hideNavigationMenu(binding.navigationMenu)
-				}
-				Timer().schedule(IntValue.NUMBER_100.toLong()) {
-					runOnUiThread {
-						binding.fragmentContainer.requestFocus()
-					}
-				}
-			}
-			Timer().schedule(if (fragment != null) IntValue.NUMBER_100.toLong() else IntValue.NUMBER_100.toLong()) {
-				runOnUiThread {
-					setupFocusOnNavigationMenu()
-				}
-			}
-		}.start()
+		binding.navigationMenu.onFocusChangeListener = null
+		Logger.printWithTag(
+			"MenuFocus",
+			"here in setup page cange - listener is null"
+		)
+		if (fragment != null) {
+			goToPage(
+				supportFragmentManager,
+				shouldReplace,
+				fragment,
+				arguments,
+				tag,
+				shouldAddToBackStack
+			)
+		}
+		Logger.printWithTag("MenuFocus", "requested to set focus after 1000")
+		Handler(Looper.getMainLooper()).postDelayed({
+			Logger.printWithTag("MenuFocus", "setting up focus after 1000")
+			setupFocusOnNavigationMenu()
+		}, if (fragment != null) 1000 else 100)
 	}
 
 	override fun goToVideoPlayer(eventId: String) {
@@ -365,26 +372,38 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	private fun setupFocusOnNavigationMenu() {
-		Logger.printWithTag("saumil", "here in set up focus on navigation menu")
+		Logger.printWithTag("MenuFocus", "here in set up focus on navigation menu - focus listener is set")
 		binding.navigationMenu.setOnFocusChangeListener { view, hasFocus ->
 			if (hasFocus) {
-				binding.navigationMenu.onFocusChangeListener = null
+				Logger.printWithTag(
+					"MenuFocus",
+					"here in set up focus on navigation menu - has focus - showing now"
+				)
 				showNavigationMenu(view)
 			} else {
+				Logger.printWithTag(
+					"MenuFocus",
+					"here in set up focus on navigation menu - lost focus - hiding now and setting up focus"
+				)
 				hideNavigationMenu(view)
+				setupFocusOnNavigationMenu()
 			}
 		}
 	}
 
 	private fun showNavigationMenu(navigationMenu: View) {
+		Logger.printWithTag("MenuFocus", "here in show navigation menu")
+		binding.navigationMenu.onFocusChangeListener = null
 		navigationMenu.transformWidth(R.dimen.expanded_navigation_menu_width, false)
-		Logger.printWithTag(
-			"saumil", "here in show navigation menu - does completely hidden required - false"
-		)
 		viewModel.isNavigationMenuVisible.postValue(true)
+		Logger.printWithTag(
+			"MenuFocus",
+			"here in show navigation menu- showing menu - listener is null"
+		)
 	}
 
 	private fun hideNavigationMenu(navigationMenu: View) {
+		Logger.printWithTag("MenuFocus", "here in hide navigation menu")
 		val screen = supportFragmentManager.findFragmentById(R.id.fragment_container)
 		val doesCompletelyHiddenRequired: Boolean = when (screen?.tag) {
 			Screens.ARTIST -> {
@@ -404,13 +423,14 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 			}
 		}
 		Logger.printWithTag(
-			"saumil",
+			"MenuFocus",
 			"here in hide navigation menu - screen ${screen?.tag} and does completely hidden required - $doesCompletelyHiddenRequired"
 		)
 		navigationMenu.transformWidth(
 			R.dimen.collapsed_navigation_menu_width, doesCompletelyHiddenRequired
 		)
 		viewModel.isNavigationMenuVisible.postValue(false)
+		Logger.printWithTag("MenuFocus", "here in hide navigation menu - hidden")
 	}
 
 	private fun setupBlur() {
@@ -456,6 +476,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 				}
 			}
 		}
+		hideNavigationMenu(binding.navigationMenu)
 		setupPageChange(shouldReplace, fragment, arguments, tag, shouldAddToBackStack)
 	}
 
@@ -466,13 +487,12 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 			true
 		} else {
 			return if (keyCode == KeyEvent.KEYCODE_BACK) {
-				AppConstants.lastKeyPressTime = currentTime
 				handleBack()
 			} else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && viewModel.isNavigationMenuVisible.value!! && !binding.errorContainer.isVisible) {
 				AppConstants.lastKeyPressTime = currentTime
 				return clearNavigationMenuUI()
 			} else {
-//				AppConstants.lastKeyPressTime = currentTime
+				AppConstants.lastKeyPressTime = currentTime
 				return keyCode == KeyEvent.KEYCODE_DPAD_LEFT && viewModel.isNavigationMenuVisible.value!! && !binding.errorContainer.isVisible
 			}
 		}
@@ -502,6 +522,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	private fun clearNavigationMenuUI(): Boolean {
+		Logger.printWithTag("MenuFocus", "here in clear navigation menu - hiding navigation menu - and - setting up focus")
 		hideNavigationMenu(binding.navigationMenu)
 		setupFocusOnNavigationMenu()
 		return true
@@ -579,18 +600,33 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	override fun showNavigationMenu() {
-		Logger.printWithTag("saumil", "here in show navigation menu")
+		Logger.printWithTag("MenuFocus", "here in override show navigation menu")
 		if (binding.navigationMenu.onFocusChangeListener != null) {
+			Logger.printWithTag(
+				"MenuFocus",
+				"here in override show navigation menu - focus is not null"
+			)
 			if (!viewModel.isNavigationMenuVisible.value!!) {
-				binding.navigationMenu.onFocusChangeListener = null
+				Logger.printWithTag(
+					"MenuFocus",
+					"here in override show navigation menu - navigation menu is visible -- ${viewModel.isNavigationMenuVisible.value!!} - showing menu"
+				)
 				showNavigationMenu(binding.navigationMenu)
 			} else {
+				Logger.printWithTag(
+					"MenuFocus",
+					"here in override show navigation menu - navigation menu is visible -- ${viewModel.isNavigationMenuVisible.value!!} - closing menu"
+				)
 				clearNavigationMenuUI()
 			}
+		} else {
+			setupFocusOnNavigationMenu()
+			showNavigationMenu(binding.navigationMenu)
 		}
 	}
 
 	override fun completelyHideNavigationMenu() {
+		Logger.printWithTag("MenuFocus", "here in completely hide navigation menu - hiding navigation menu - and - setting up focus if required")
 		hideNavigationMenu(binding.navigationMenu)
 	}
 

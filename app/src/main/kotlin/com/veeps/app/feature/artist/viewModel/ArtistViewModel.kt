@@ -9,9 +9,7 @@ import com.veeps.app.data.common.APIRepository
 import com.veeps.app.feature.contentRail.model.RailData
 
 class ArtistViewModel : ViewModel(), DefaultLifecycleObserver {
-	var contentHasLoaded = MutableLiveData(false)
 	var isVisible = MutableLiveData(false)
-	var allEventsRail = MutableLiveData(ArrayList<RailData>())
 
 	override fun onResume(owner: LifecycleOwner) {
 		super.onResume(owner)

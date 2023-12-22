@@ -12,6 +12,7 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
+import android.view.animation.OvershootInterpolator
 import android.view.animation.Transformation
 import android.widget.EditText
 import android.widget.ImageView
@@ -23,6 +24,8 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.animation.addListener
 import androidx.leanback.widget.VerticalGridView
 import androidx.transition.AutoTransition
+import androidx.transition.ChangeBounds
+import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -66,11 +69,10 @@ fun ConstraintLayout.setHorizontalBias(
 	val constraintSet = ConstraintSet()
 	constraintSet.clone(this)
 	constraintSet.setHorizontalBias(targetViewId, bias)
-	val transition = AutoTransition()
-	transition.duration = 10
-	transition.interpolator = AccelerateDecelerateInterpolator()
-	TransitionManager.beginDelayedTransition(this, transition)
 	constraintSet.applyTo(this)
+	val transition = Slide()
+	transition.interpolator = AccelerateInterpolator()
+	TransitionManager.beginDelayedTransition(this, transition)
 }
 
 fun View.fadeOutNow(duration: Int) {
@@ -181,7 +183,7 @@ fun EditText.clear() {
 }
 
 fun ImageView.loadImage(resource: Any, tag: Any) {
-	CoroutineScope(Dispatchers.Main).launch {
+
 		when (resource) {
 			is Drawable -> {
 				if (resource.toString().isNotBlank()) this@loadImage.setImageDrawable(resource)
@@ -275,5 +277,5 @@ fun ImageView.loadImage(resource: Any, tag: Any) {
 				Logger.printMessage("Unknown image resource is requested to load. Check resource type and add equivalent case.")
 			}
 		}
-	}
+
 }

@@ -61,7 +61,7 @@ class ContentRailsAdapter(
 				)
 				else context.resources.getDimensionPixelSize(R.dimen.row_height_default)
 			)
-			setItemViewCacheSize(rails[position].entities.size)
+//			setItemViewCacheSize(rails[position].entities.size)
 			val cardAdapter = CardAdapter(action)
 			cardAdapter.setEntities(rails[position].entities)
 			rails[position].cardType?.let { cardAdapter.setCardType(it) }

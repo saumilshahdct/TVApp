@@ -1,8 +1,6 @@
 package com.veeps.app.feature.browse.ui
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewOutlineProvider
@@ -54,6 +52,7 @@ import org.json.JSONObject
 
 class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>() {
 
+	private lateinit var carouselData: RailData
 	private lateinit var player: ExoPlayer
 	private var posterImage: String = DEFAULT.EMPTY_STRING
 	private var playbackURL: String = DEFAULT.EMPTY_STRING
@@ -70,7 +69,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			}
 		}
 	}
-	private val browseRailAdapter by lazy {
+	private val railAdapter by lazy {
 		ContentRailsAdapter(rails = arrayListOf(), helper, Screens.BROWSE, action)
 	}
 
@@ -79,6 +78,9 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 
 	override fun onDestroyView() {
 		Logger.print("browse view is destroyed")
+		viewModel.railData.postValue(arrayListOf())
+		viewModelStore.clear()
+		releaseVideoPlayer()
 		super.onDestroyView()
 	}
 
@@ -87,11 +89,15 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		binding.apply {
 			browse = viewModel
 			browseScreen = this@BrowseScreen
+			lifecycleOwner = viewLifecycleOwner
+			lifecycle.addObserver(viewModel)
 			loader.visibility = View.VISIBLE
+			loader.requestFocus()
 			carousel.visibility = View.INVISIBLE
 			darkBackground.visibility = View.VISIBLE
 			watermark.visibility = View.GONE
 		}
+		setupBlur()
 		loadAppContent()
 		notifyAppEvents()
 	}
@@ -133,7 +139,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			player.setMediaItem(MediaItem.fromUri(playbackURL))
 			player.prepare()
 			player.play()
-			if (homeViewModel.isNavigationMenuVisible.value!!) {
+			if (homeViewModel.isNavigationMenuVisible.value!! || homeViewModel.isErrorVisible.value!! || binding.darkBackground.visibility == View.VISIBLE) {
 				if (this::player.isInitialized && player.isPlaying) {
 					player.pause()
 				}
@@ -142,7 +148,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 	}
 
 	private fun releaseVideoPlayer() {
-		if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) ) {
+		if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0)) {
 			player.playWhenReady = false
 			player.pause()
 			player.release()
@@ -153,11 +159,10 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		binding.browseLabel.setupWith(binding.container).setBlurRadius(12.5f)
 		binding.browseLabel.outlineProvider = ViewOutlineProvider.BACKGROUND
 		binding.browseLabel.clipToOutline = true
-		binding.browseLabel.setBlurEnabled(binding.browseLabel.isSelected)
+
 		binding.onDemandLabel.setupWith(binding.container).setBlurRadius(12.5f)
 		binding.onDemandLabel.outlineProvider = ViewOutlineProvider.BACKGROUND
 		binding.onDemandLabel.clipToOutline = true
-		binding.onDemandLabel.setBlurEnabled(binding.onDemandLabel.isSelected)
 
 		binding.primary.setupWith(binding.container).setBlurRadius(12.5f)
 		binding.primary.outlineProvider = ViewOutlineProvider.BACKGROUND
@@ -178,7 +183,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			windowAlignmentOffsetPercent = 0f
 			isItemAlignmentOffsetWithPadding = true
 			itemAlignmentOffsetPercent = 0f
-			adapter = browseRailAdapter
+			adapter = railAdapter
 		}
 		binding.onDemandLabel.setOnFocusChangeListener { _, hasFocus ->
 			context?.let { context ->
@@ -201,15 +206,15 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		binding.primary.setOnKeyListener { _, keyCode, keyEvent ->
 			if (keyEvent.action == KeyEvent.ACTION_DOWN) {
 				if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-					if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && player.isPlaying) {
-						player.pause()
-					}
-					binding.darkBackground.visibility = View.VISIBLE
-					binding.carousel.visibility = View.GONE
-					binding.browseLabel.visibility = View.GONE
-					binding.onDemandLabel.visibility = View.GONE
-					binding.logo.visibility = View.GONE
-					binding.watermark.visibility = View.VISIBLE
+//					if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && player.isPlaying) {
+//						player.pause()
+//					}
+//					binding.darkBackground.visibility = View.VISIBLE
+//					binding.carousel.visibility = View.GONE
+//					binding.browseLabel.visibility = View.GONE
+//					binding.onDemandLabel.visibility = View.GONE
+//					binding.logo.visibility = View.GONE
+//					binding.watermark.visibility = View.VISIBLE
 				}
 			}
 			return@setOnKeyListener false
@@ -217,15 +222,15 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		binding.myShows.setOnKeyListener { _, keyCode, keyEvent ->
 			if (keyEvent.action == KeyEvent.ACTION_DOWN) {
 				if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-					if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && player.isPlaying) {
-						player.pause()
-					}
-					binding.darkBackground.visibility = View.VISIBLE
-					binding.carousel.visibility = View.GONE
-					binding.browseLabel.visibility = View.GONE
-					binding.onDemandLabel.visibility = View.GONE
-					binding.logo.visibility = View.GONE
-					binding.watermark.visibility = View.VISIBLE
+//					if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && player.isPlaying) {
+//						player.pause()
+//					}
+//					binding.darkBackground.visibility = View.VISIBLE
+//					binding.carousel.visibility = View.GONE
+//					binding.browseLabel.visibility = View.GONE
+//					binding.onDemandLabel.visibility = View.GONE
+//					binding.logo.visibility = View.GONE
+//					binding.watermark.visibility = View.VISIBLE
 				}
 			}
 			return@setOnKeyListener false
@@ -245,13 +250,19 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 				binding.myShowsLabel.compoundDrawables.forEach { drawable ->
 					drawable?.setTint(
 						ContextCompat.getColor(
-							context, if (hasFocus.or(binding.myShows.isFocused).or(binding.myShows.hasFocus())) R.color.dark_black else R.color.white
+							context,
+							if (hasFocus.or(binding.myShows.isFocused)
+									.or(binding.myShows.hasFocus())
+							) R.color.dark_black else R.color.white
 						)
 					)
 				}
 				binding.myShowsLabel.setTextColor(
 					ContextCompat.getColor(
-						context, if (hasFocus.or(binding.myShows.isFocused).or(binding.myShows.hasFocus())) R.color.dark_black else R.color.white
+						context,
+						if (hasFocus.or(binding.myShows.isFocused)
+								.or(binding.myShows.hasFocus())
+						) R.color.dark_black else R.color.white
 					)
 				)
 			}
@@ -268,7 +279,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			} else {
 				if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && !player.isPlaying && homeViewModel.isErrorVisible.value?.equals(
 						false
-					) == true
+					) == true && binding.darkBackground.visibility == View.GONE
 				) {
 					player.play()
 				}
@@ -287,7 +298,8 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			} else {
 				if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && !player.isPlaying && homeViewModel.isErrorVisible.value?.equals(
 						false
-					) == true) {
+					) == true && binding.darkBackground.visibility == View.GONE
+				) {
 					player.play()
 				}
 			}
@@ -306,10 +318,16 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			}
 		}
 		homeViewModel.translateCarouselToBottom.observe(viewLifecycleOwner) { shouldTranslate ->
+			Logger.printWithTag(
+				"saumil", " Here in bottom - $shouldTranslate -- ${viewModel.isVisible.value}"
+			)
 			if (shouldTranslate && viewModel.isVisible.value == true) {
 				if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && !player.isPlaying && homeViewModel.isErrorVisible.value?.equals(
 						false
-					) == true) {
+					) == true && homeViewModel.isNavigationMenuVisible.value?.equals(
+						false
+					) == true
+				) {
 					player.play()
 				}
 				binding.watermark.visibility = View.GONE
@@ -323,17 +341,21 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		}
 
 		viewModel.isVisible.observeForever { isVisible ->
-			Logger.print(
+			Logger.printWithTag("MenuFocus",
 				"Visibility Changed to $isVisible On ${
 					this@BrowseScreen.javaClass.name.substringAfterLast(".")
 				}"
 			)
 			if (isVisible) {
 				helper.selectNavigationMenu(NavigationItems.BROWSE_MENU)
+
 				helper.completelyHideNavigationMenu()
 				if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && !player.isPlaying && homeViewModel.isErrorVisible.value?.equals(
 						false
-					) == true) {
+					) == true && homeViewModel.isNavigationMenuVisible.value?.equals(
+						false
+					) == true && binding.darkBackground.visibility == View.GONE
+				) {
 					player.play()
 				}
 			} else {
@@ -341,65 +363,6 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 					player.pause()
 				}
 			}
-		}
-		viewModel.carouselData.observe(viewLifecycleOwner) { carouselData ->
-			val random = 0//Random.nextInt(carouselData.entities.size)
-			val entity =
-				if (carouselData.entities.isNotEmpty()) carouselData.entities[random] else Entities()
-			binding.ctaContainer.visibility = View.INVISIBLE
-			binding.primary.alpha = 0.1f
-			binding.primaryLabel.text =
-				AppUtil.getPrimaryLabelText(entity, Screens.BROWSE, false).also { label ->
-					binding.primaryLabel.isSelected = label == ButtonLabels.UNAVAILABLE
-				}
-			viewModel.eventId = entity.id ?: DEFAULT.EMPTY_STRING
-			binding.primary.alpha = 1.0f
-			binding.myShows.visibility = if (AppPreferences.get(
-					AppConstants.userSubscriptionStatus, "none"
-				) != "none"
-			) View.VISIBLE else View.GONE
-			setupMyShows(isAdded = homeViewModel.watchlistIds.contains(entity.id?.ifBlank { DEFAULT.EMPTY_STRING }
-				?: DEFAULT.EMPTY_STRING))
-			binding.ctaContainer.visibility =
-				if (carouselData.entities.isNotEmpty()) View.VISIBLE else View.INVISIBLE
-			val currentDate = DateTime.now()
-			val otherDate =
-				DateTime(entity.eventStreamStartsAt?.ifBlank { DateTime.now().toString() }
-					?: DateTime.now().toString(),
-					DateTimeZone.UTC).withZone(DateTimeZone.getDefault()).toDateTime()
-			binding.date.text = otherDate.toString("MMM dd, yyyy${DEFAULT.SEPARATOR}ha")
-			if (AppUtil.compare(otherDate, currentDate) == DateTimeCompareDifference.GREATER_THAN) {
-				binding.date.visibility =
-					if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
-				binding.liveNow.visibility = View.GONE
-			} else {
-				binding.date.visibility =
-					if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
-				binding.liveNow.visibility = View.GONE
-			}
-			val title = entity.eventName?.ifBlank { DEFAULT.EMPTY_STRING } ?: DEFAULT.EMPTY_STRING
-			posterImage = entity.presentation.posterUrl?.ifBlank { DEFAULT.EMPTY_STRING }
-				?: DEFAULT.EMPTY_STRING
-			val logoImage = entity.presentation.logoUrl?.ifBlank { DEFAULT.EMPTY_STRING }
-				?: DEFAULT.EMPTY_STRING
-			val videoPreviewTreeMap = entity.videoPreviews ?: false
-			playbackURL = DEFAULT.EMPTY_STRING
-			if (videoPreviewTreeMap is LinkedTreeMap<*, *>) {
-				if (videoPreviewTreeMap.isNotEmpty()) {
-					val jsonObject = Gson().toJsonTree(videoPreviewTreeMap).asJsonObject
-					if (jsonObject != null && !jsonObject.isJsonNull && !jsonObject.isEmpty) {
-						val videoPreviewString: String = Gson().toJson(jsonObject)
-						val videoPreview = JSONObject(videoPreviewString)
-						if (videoPreview.has("high")) {
-							playbackURL = videoPreview.getString("high")
-						}
-					}
-				}
-			}
-			binding.carouselLogo.loadImage(logoImage, ImageTags.LOGO)
-			binding.heroImage.loadImage(posterImage, ImageTags.HERO)
-			binding.carouselTitle.text = title
-			viewModel.playbackUrl.postValue(playbackURL)
 		}
 		viewModel.railData.observe(viewLifecycleOwner) { rails ->
 			if (rails.isNotEmpty()) {
@@ -412,7 +375,8 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 						return@filterIndexed railData.cardType == CardTypes.HERO
 					}
 					if (carousel.isNotEmpty()) {
-						viewModel.carouselData.postValue(rails[carouselPosition])
+						carouselData = rails[carouselPosition]
+						setCarousel()
 						rails.removeAt(carouselPosition)
 					}
 				} else {
@@ -421,10 +385,76 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 				rails.removeIf { rail ->
 					rail.cardType.equals("wide")
 				}
-				this@BrowseScreen.adapter.setRails(rails)
+				railAdapter.setRails(rails)
 			} else {
-				this@BrowseScreen.adapter.setRails(arrayListOf())
+				railAdapter.setRails(arrayListOf())
 			}
+		}
+	}
+
+	private fun setCarousel() {
+		val random = 0//Random.nextInt(carouselData.entities.size)
+		val entity =
+			if (carouselData.entities.isNotEmpty()) carouselData.entities[random] else Entities()
+		binding.ctaContainer.visibility = View.INVISIBLE
+		binding.primary.alpha = 0.1f
+		binding.primaryLabel.text =
+			AppUtil.getPrimaryLabelText(entity, Screens.BROWSE, false).also { label ->
+				binding.primaryLabel.isSelected = label == ButtonLabels.UNAVAILABLE
+			}
+		viewModel.eventId = entity.id ?: DEFAULT.EMPTY_STRING
+		binding.primary.alpha = 1.0f
+		binding.myShows.visibility = if (AppPreferences.get(
+				AppConstants.userSubscriptionStatus, "none"
+			) != "none"
+		) View.VISIBLE else View.GONE
+		setupMyShows(isAdded = homeViewModel.watchlistIds.contains(entity.id?.ifBlank { DEFAULT.EMPTY_STRING }
+			?: DEFAULT.EMPTY_STRING))
+		binding.ctaContainer.visibility =
+			if (carouselData.entities.isNotEmpty()) View.VISIBLE else View.INVISIBLE
+		val currentDate = DateTime.now()
+		val otherDate = DateTime(entity.eventStreamStartsAt?.ifBlank { DateTime.now().toString() }
+			?: DateTime.now().toString(), DateTimeZone.UTC).withZone(DateTimeZone.getDefault())
+			.toDateTime()
+		binding.date.text = otherDate.toString("MMM dd, yyyy${DEFAULT.SEPARATOR}ha")
+		if (AppUtil.compare(otherDate, currentDate) == DateTimeCompareDifference.GREATER_THAN) {
+			binding.date.visibility =
+				if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
+			binding.liveNow.visibility = View.GONE
+		} else {
+			binding.date.visibility =
+				if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
+			binding.liveNow.visibility = View.GONE
+		}
+		val title = entity.eventName?.ifBlank { DEFAULT.EMPTY_STRING } ?: DEFAULT.EMPTY_STRING
+		posterImage =
+			entity.presentation.posterUrl?.ifBlank { DEFAULT.EMPTY_STRING } ?: DEFAULT.EMPTY_STRING
+		val logoImage =
+			entity.presentation.logoUrl?.ifBlank { DEFAULT.EMPTY_STRING } ?: DEFAULT.EMPTY_STRING
+		val videoPreviewTreeMap = entity.videoPreviews ?: false
+		playbackURL = DEFAULT.EMPTY_STRING
+		if (videoPreviewTreeMap is LinkedTreeMap<*, *>) {
+			if (videoPreviewTreeMap.isNotEmpty()) {
+				val jsonObject = Gson().toJsonTree(videoPreviewTreeMap).asJsonObject
+				if (jsonObject != null && !jsonObject.isJsonNull && !jsonObject.isEmpty) {
+					val videoPreviewString: String = Gson().toJson(jsonObject)
+					val videoPreview = JSONObject(videoPreviewString)
+					if (videoPreview.has("high")) {
+						playbackURL = videoPreview.getString("high")
+					}
+				}
+			}
+		}
+		binding.carouselLogo.loadImage(logoImage, ImageTags.LOGO)
+		binding.heroImage.loadImage(posterImage, ImageTags.HERO)
+		binding.carouselTitle.text = title
+		binding.carousel.visibility = View.VISIBLE
+		binding.primary.requestFocus()
+		binding.darkBackground.visibility = View.GONE
+		if (playbackURL.isNotBlank()) {
+			setupVideoPlayer()
+		} else {
+			releaseVideoPlayer()
 		}
 	}
 
@@ -434,7 +464,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 				fetch(
 					eventResponse,
 					isLoaderEnabled = true,
-					canUserAccessScreen = false,
+					canUserAccessScreen = true,
 					shouldBeInBackground = false
 				) {
 					eventResponse.response?.let { eventStreamData ->
@@ -501,6 +531,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 				shouldBeInBackground = false
 			) {
 				browseRail.response?.let { railResponse ->
+
 					viewModel.railData.postValue(railResponse.railData)
 					fetchContinueWatchingRail()
 				} ?: helper.showErrorOnScreen(browseRail.tag, getString(R.string.unknown_error))
@@ -513,7 +544,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			fetch(
 				onDemand,
 				isLoaderEnabled = true,
-				canUserAccessScreen = true,
+				canUserAccessScreen = false,
 				shouldBeInBackground = false
 			) {
 				onDemand.response?.let { railResponse ->
@@ -619,37 +650,35 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 
 	fun onBrowseLabelClicked() {
 		if (!binding.browseLabel.isSelected) {
-			helper.fetchAllWatchListEvents()
-			viewModel.railData.postValue(ArrayList())
-			viewModel.carouselData.postValue(RailData())
-			playbackURL = DEFAULT.EMPTY_STRING
-			viewModel.playbackUrl.postValue(DEFAULT.EMPTY_STRING)
+			releaseVideoPlayer()
+			railAdapter.setRails(arrayListOf())
+			binding.carousel.visibility = View.INVISIBLE
+			binding.darkBackground.visibility = View.VISIBLE
+			binding.loader.visibility = View.VISIBLE
+			binding.loader.requestFocus()
 			binding.browseLabel.isSelected = true
 			binding.onDemandLabel.isSelected = false
-			setupBlur()
-			setupVideoPlayer()
+			binding.browseLabel.setBlurEnabled(true)
+			binding.onDemandLabel.setBlurEnabled(false)
+			helper.fetchAllWatchListEvents()
 			fetchBrowseRails()
-			binding.primary.postDelayed({
-				binding.primary.requestFocus()
-			}, AppConstants.keyPressShortDelayTime)
 		}
 	}
 
 	fun onOnDemandLabelClicked() {
 		if (!binding.onDemandLabel.isSelected) {
-			helper.fetchAllWatchListEvents()
-			viewModel.railData.postValue(ArrayList())
-			viewModel.carouselData.postValue(RailData())
-			playbackURL = DEFAULT.EMPTY_STRING
-			viewModel.playbackUrl.postValue(DEFAULT.EMPTY_STRING)
+			releaseVideoPlayer()
+			railAdapter.setRails(arrayListOf())
+			binding.carousel.visibility = View.INVISIBLE
+			binding.darkBackground.visibility = View.VISIBLE
+			binding.loader.visibility = View.VISIBLE
+			binding.loader.requestFocus()
 			binding.onDemandLabel.isSelected = true
 			binding.browseLabel.isSelected = false
-			setupBlur()
-			setupVideoPlayer()
+			binding.onDemandLabel.setBlurEnabled(true)
+			binding.browseLabel.setBlurEnabled(false)
+			helper.fetchAllWatchListEvents()
 			fetchOnDemandRails()
-			binding.primary.postDelayed({
-				binding.primary.requestFocus()
-			}, AppConstants.keyPressShortDelayTime)
 		}
 	}
 }

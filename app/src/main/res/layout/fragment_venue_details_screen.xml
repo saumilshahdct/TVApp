@@ -6,7 +6,6 @@
 
     <!-- Data -->
     <data>
-
         <!-- View Model -->
         <variable
             name="venue"
@@ -16,7 +15,6 @@
         <variable
             name="venueScreen"
             type="com.veeps.app.feature.venue.ui.VenueScreen" />
-
     </data>
 
     <!-- Layout Container -->
@@ -31,7 +29,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:contentDescription="@string/app_description"
-            android:scaleType="centerCrop"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -49,44 +46,74 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- Logo -->
-        <ImageView
-            android:id="@+id/logo"
-            android:layout_width="137.5dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="70dp"
-            android:layout_marginTop="334dp"
-            android:layout_marginEnd="70dp"
-            android:contentDescription="@string/app_description"
-            android:maxHeight="50dp"
-            android:scaleType="fitStart"
-            app:layout_constraintBottom_toTopOf="@+id/title"
-            app:layout_constraintHeight_max="50dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/title"
-            fontPath="fonts/RuderPlakatRegular.ttf"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/carousel"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="455dp"
             android:layout_marginStart="70dp"
             android:layout_marginEnd="70dp"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:gravity="center_vertical"
-            android:includeFontPadding="false"
-            android:lines="1"
-            android:textAlignment="gravity"
-            android:textAllCaps="true"
-            android:textColor="@color/white"
-            android:textIsSelectable="false"
-            android:textSize="62sp"
+            android:animateLayoutChanges="true"
             app:layout_constraintBottom_toTopOf="@+id/listing"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/logo"
-            tools:ignore="MissingPrefix" />
+            app:layout_constraintTop_toTopOf="parent">
+
+            <View
+                android:id="@+id/space"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                app:layout_constraintBottom_toTopOf="@+id/logo"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Logo -->
+            <ImageView
+                android:id="@+id/logo"
+                android:layout_width="137.5dp"
+                android:layout_height="wrap_content"
+                android:contentDescription="@string/app_description"
+                android:maxHeight="50dp"
+                android:scaleType="fitStart"
+                app:layout_constraintBottom_toTopOf="@+id/title"
+                app:layout_constraintHeight_max="50dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/space" />
+
+            <TextView
+                android:id="@+id/title"
+                fontPath="fonts/RuderPlakatRegular.ttf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:gravity="center_vertical"
+                android:includeFontPadding="false"
+                android:lines="1"
+                android:textAlignment="gravity"
+                android:textAllCaps="true"
+                android:textColor="@color/white"
+                android:textIsSelectable="false"
+                android:textSize="62sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/logo"
+                tools:ignore="MissingPrefix" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Image -->
+        <ImageView
+            android:id="@+id/dark_background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/app_description"
+            android:src="@color/dark_black"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Listing -->
         <androidx.leanback.widget.VerticalGridView
@@ -96,12 +123,13 @@
             app:layout_constraintBottom_toTopOf="@id/scrollView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/title" />
+            app:layout_constraintTop_toBottomOf="@+id/carousel" />
 
         <ScrollView
             android:id="@+id/scrollView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:animateLayoutChanges="true"
             android:scrollbars="none"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

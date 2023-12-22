@@ -3,7 +3,10 @@ package com.veeps.app.feature.video.ui
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
@@ -31,7 +34,11 @@ import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.ui.TimeBar
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.Target
+import com.bumptech.glide.load.MultiTransformation
+import com.bumptech.glide.load.resource.bitmap.CenterInside
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.pubnub.api.PNConfiguration
@@ -51,16 +58,22 @@ import com.pubnub.api.models.consumer.pubsub.objects.PNObjectEventResult
 import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
 import com.veeps.app.databinding.ActivityVideoPlayerScreenBinding
+import com.veeps.app.extension.loadImage
 import com.veeps.app.extension.round
 import com.veeps.app.extension.setHorizontalBias
 import com.veeps.app.feature.video.model.Subtitle
 import com.veeps.app.feature.video.viewModel.VideoPlayerViewModel
+import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppConstants
 import com.veeps.app.util.AppPreferences
+import com.veeps.app.util.AppUtil
 import com.veeps.app.util.DEFAULT
+import com.veeps.app.util.EventTypes
 import com.veeps.app.util.GlideThumbnailTransformation
+import com.veeps.app.util.ImageTags
 import com.veeps.app.util.IntValue
 import com.veeps.app.util.Logger
+import com.veeps.app.util.Screens
 import org.joda.time.Period
 import org.joda.time.format.PeriodFormatterBuilder
 
@@ -69,11 +82,14 @@ import org.joda.time.format.PeriodFormatterBuilder
 class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayerScreenBinding>() {
 
 	private lateinit var getCurrentTimer: Handler
+	private lateinit var statsManagement: Handler
 	private lateinit var timerTask: Runnable
+	private lateinit var addStatsTask: Runnable
 	private lateinit var player: ExoPlayer
 	private var timeout = Handler(Looper.getMainLooper())
 	private val inactivitySeconds = 10
 	private var scrubbedPosition = 0L
+	private var isScrubVisible = false
 	var trickPlayVisible = MutableLiveData<Boolean>()
 	private val trickPlayRunnable = Runnable { trickPlayVisible.setValue(false) }
 	private lateinit var pubnub: PubNub
@@ -82,18 +98,21 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private fun getBackCallback(): OnBackPressedCallback {
 		val backPressedCallback = object : OnBackPressedCallback(true) {
 			override fun handleOnBackPressed() {
-				Logger.print(
-					"Back Pressed on ${
-						this@VideoPlayerScreen.localClassName.substringAfterLast(
-							"."
-						)
-					} Finishing Activity"
-				)
-				releaseVideoPlayer()
-				finish()
+				handleBack()
 			}
 		}
 		return backPressedCallback
+	}
+
+	private fun handleBack() {
+		if (binding.seekDuration.visibility == View.VISIBLE) {
+			timeout.removeCallbacks(trickPlayRunnable)
+			timeout.postDelayed(trickPlayRunnable, (500).toLong())
+		} else {
+			if (binding.errorContainer.visibility != View.VISIBLE) {
+				showError(Screens.EXIT_APP, "Are you sure you want to exit?", "")
+			}
+		}
 	}
 
 	override fun getViewBinding(): ActivityVideoPlayerScreenBinding =
@@ -111,7 +130,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			errorContainer.visibility = View.GONE
 			loader.visibility = View.GONE
 			progress.hideScrubber(500)
-			imagePreview.visibility = View.GONE
+			binding.progress.setKeyTimeIncrement(10)
+			imagePreview.visibility = View.VISIBLE
 			seekDuration.visibility = View.GONE
 			vodControls.visibility = View.GONE
 			liveControls.visibility = View.GONE
@@ -123,7 +143,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	}
 
 	private fun loadAppContent() {
-		Logger.printWithTag("saumil", "Video Player -- ${intent.hasExtra("eventId")} -- ${viewModel.eventId.value}")
+		Logger.printWithTag(
+			"saumil", "Video Player -- ${intent.hasExtra("eventId")} -- ${viewModel.eventId.value}"
+		)
 		if (intent != null && intent.hasExtra("eventId")) {
 			setupVideoPlayer()
 			viewModel.eventId.postValue(intent.getStringExtra("eventId"))
@@ -133,6 +155,52 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 	private fun notifyAppEvents() {
 		getCurrentTimer = Handler(Looper.getMainLooper())
+		statsManagement = Handler(Looper.getMainLooper())
+
+		addStatsTask = Runnable {
+			if (this::player.isInitialized) {
+				val currentTime: String =
+					(player.currentPosition / IntValue.NUMBER_1000).toDouble().toString()
+				val duration: String =
+					(player.duration / IntValue.NUMBER_1000).toDouble().toString()
+				val playerVersion: String =
+					"ntv"//"${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})"
+				val deviceModel: String = Build.MODEL
+				val deviceVendor: String = Build.MANUFACTURER
+				val playbackStreamType: String =
+					if (player.isCurrentMediaItemLive) EventTypes.LIVE else EventTypes.ON_DEMAND
+				val platform: String = getString(R.string.app_platform)
+				val userType: String = if (AppPreferences.get(
+						AppConstants.userSubscriptionStatus, "none"
+					) != "none"
+				) "m" else "b"
+
+				viewModel.eventId.value?.let { eventId ->
+					if (eventId.isNotBlank()) {
+						AppPreferences.set(AppConstants.generatedJWT, AppUtil.generateJWT(eventId))
+						val addStatsAPIURL = AppPreferences.get(
+							AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
+						) + APIConstants.addStats
+						addStats(
+							addStatsAPIURL.trim(),
+							currentTime,
+							duration,
+							playerVersion,
+							deviceModel,
+							deviceVendor,
+							playbackStreamType,
+							platform,
+							userType
+						)
+					}
+				}
+			}
+			if (this::statsManagement.isInitialized && this::addStatsTask.isInitialized) {
+				statsManagement.removeCallbacks(addStatsTask)
+				statsManagement.removeCallbacksAndMessages(addStatsTask)
+				statsManagement.postDelayed(addStatsTask, 30000)
+			}
+		}
 
 		setupBlur()
 
@@ -192,7 +260,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	}
 
 	private fun setupBlur() {
-		binding.errorContainer.setupWith(binding.container).setBlurRadius(12.5f)
+		binding.errorLayoutContainer.setupWith(binding.errorContainer).setBlurRadius(12.5f)
 		binding.liveLabel.setupWith(binding.liveControls).setBlurRadius(12.5f)
 	}
 
@@ -230,6 +298,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			override fun onIsPlayingChanged(isPlaying: Boolean) {
 				Logger.printWithTag("saumil", "Playing Changed -- $isPlaying")
 				if (isPlaying) {
+					if (this@VideoPlayerScreen::statsManagement.isInitialized && this@VideoPlayerScreen::addStatsTask.isInitialized) {
+						statsManagement.removeCallbacks(addStatsTask)
+						statsManagement.removeCallbacksAndMessages(addStatsTask)
+						statsManagement.post(addStatsTask)
+					}
 					binding.loader.visibility = View.GONE
 					binding.playPause.isSelected = true
 					binding.videoPlayer.postDelayed(
@@ -237,6 +310,10 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 						IntValue.NUMBER_1000.toLong()
 					)
 				} else {
+					if (this@VideoPlayerScreen::statsManagement.isInitialized && this@VideoPlayerScreen::addStatsTask.isInitialized) {
+						statsManagement.removeCallbacks(addStatsTask)
+						statsManagement.removeCallbacksAndMessages(addStatsTask)
+					}
 					binding.playPause.isSelected = false
 				}
 				super.onIsPlayingChanged(isPlaying)
@@ -313,14 +390,16 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		})
 		binding.progress.setOnFocusChangeListener { _, hasFocus ->
 			if (hasFocus) {
-				Logger.printWithTag("saumil2", "has focus")
-				scrubbedPosition = player.currentPosition
-				setImagePreview(true)
+				scrubbedPosition = player.currentPosition / IntValue.NUMBER_1000
+				Logger.printWithTag("saumil2", "scrubber has focus - $scrubbedPosition")
+				isScrubVisible = true
+				setImagePreview()
 				binding.progress.showScrubber(500)
 			} else {
-				Logger.printWithTag("saumil2", "lost focus")
-				scrubbedPosition = player.currentPosition
-				setImagePreview(false)
+				scrubbedPosition = player.currentPosition / IntValue.NUMBER_1000
+				Logger.printWithTag("saumil2", "scrubber lost focus - $scrubbedPosition")
+				isScrubVisible = false
+				setImagePreview()
 				getCurrentPlayerPosition()
 				player.playWhenReady = true
 				binding.progress.hideScrubber(500)
@@ -328,22 +407,26 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		}
 		binding.progress.addListener(object : TimeBar.OnScrubListener {
 			override fun onScrubStart(timeBar: TimeBar, position: Long) {
-				Logger.printWithTag("saumil2", "scrubber start")
+				Logger.printWithTag("saumil2", "scrubber start - $position")
 				scrubbedPosition = position
-				setImagePreview(true)
+				isScrubVisible = true
+				setImagePreview()
 				player.pause()
 			}
 
 			override fun onScrubMove(timeBar: TimeBar, position: Long) {
-				Logger.printWithTag("saumil2", "scrubber move")
+				Logger.printWithTag("saumil2", "scrubber move $position")
 				scrubbedPosition = position
-				setImagePreview(true)
+				isScrubVisible = true
+				setImagePreview()
 			}
 
 			override fun onScrubStop(timeBar: TimeBar, position: Long, canceled: Boolean) {
-				Logger.printWithTag("saumil2", "scrubber stop")
+				Logger.printWithTag("saumil2", "scrubber stop - $position $canceled")
+				binding.progress.setPosition(position)
 				scrubbedPosition = position
-				setImagePreview(true)
+				isScrubVisible = true
+				setImagePreview()
 			}
 
 		})
@@ -506,37 +589,43 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		}
 	}
 
-	private fun setImagePreview(isVisible: Boolean) {
-		if (!viewModel.tiles.value.isNullOrEmpty() && isVisible && binding.progress.hasFocus()) {
-			val positionInPercentage =
-				scrubbedPosition / (player.duration / IntValue.NUMBER_1000).toDouble().round(2)
-					.toFloat()
-			binding.vodControls.setHorizontalBias(R.id.image_preview, positionInPercentage)
-			Glide.with(binding.imagePreview.context).load(viewModel.storyBoardURL.value ?: "")
-				.override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL).transform(
-					GlideThumbnailTransformation(
-						scrubbedPosition,
-						viewModel.tileWidth.value ?: 0,
-						viewModel.tileHeight.value ?: 0,
-						viewModel.tiles.value ?: arrayListOf(),
+	private fun setImagePreview() {
+		val positionInPercentage =
+			scrubbedPosition / (player.duration / IntValue.NUMBER_1000).toDouble().round(2)
+				.toFloat()
+		binding.vodControls.setHorizontalBias(R.id.image_preview, positionInPercentage)
+		if (!viewModel.tiles.value.isNullOrEmpty() && isScrubVisible && binding.progress.hasFocus()) {
+			binding.imagePreview.clipToOutline = true
+			Glide.with(binding.imagePreview.context).asBitmap().load(viewModel.storyBoard ?: "")
+				.transform(
+					MultiTransformation(
+						GlideThumbnailTransformation(
+							scrubbedPosition,
+							viewModel.tileWidth.value ?: 0,
+							viewModel.tileHeight.value ?: 0,
+							viewModel.tiles.value ?: arrayListOf(),
+						), CenterInside(), RoundedCorners(IntValue.NUMBER_5)
 					)
-				).into(binding.imagePreview)
-			val seekDuration =
-				PeriodFormatterBuilder().printZeroAlways().minimumPrintedDigits(2).appendHours()
-					.appendSeparator(":").printZeroAlways().minimumPrintedDigits(2).appendMinutes()
-					.appendSeparator(":").printZeroAlways().minimumPrintedDigits(2).appendSeconds()
-					.toFormatter().print(
-						Period.seconds(scrubbedPosition.toInt()).normalizedStandard()
-					)
-			binding.seekDuration.text = seekDuration ?: "00:00:00"
-			binding.seekDuration.visibility = View.VISIBLE
+				).placeholder(binding.imagePreview.drawable).error(R.drawable.card_background_black)
+				.into(binding.imagePreview)
 			binding.imagePreview.visibility = View.VISIBLE
-			Logger.printWithTag("saumil2", "should be visible")
 		} else {
-			binding.seekDuration.visibility = View.GONE
-			binding.imagePreview.visibility = View.GONE
-			Logger.printWithTag("saumil2", "should be gone")
+			binding.imagePreview.visibility = View.INVISIBLE
 		}
+		val seekDuration =
+			PeriodFormatterBuilder().printZeroAlways().minimumPrintedDigits(2).appendHours()
+				.appendSeparator(":").printZeroAlways().minimumPrintedDigits(2).appendMinutes()
+				.appendSeparator(":").printZeroAlways().minimumPrintedDigits(2).appendSeconds()
+				.toFormatter().print(
+					Period.seconds(scrubbedPosition.toInt()).normalizedStandard()
+				)
+		binding.seekDuration.text = seekDuration ?: "00:00:00"
+		binding.seekDuration.visibility =
+			if (isScrubVisible && binding.progress.hasFocus()) View.VISIBLE else View.INVISIBLE
+		Logger.printWithTag(
+			"saumil2",
+			"scrubber  = $positionInPercentage - ${(scrubbedPosition / (player.duration / IntValue.NUMBER_1000))} - $isScrubVisible ${binding.progress.hasFocus()} ${binding.progress.isFocused} -- $scrubbedPosition ${(player.duration / IntValue.NUMBER_1000)}"
+		)
 	}
 
 	private fun releaseVideoPlayer() {
@@ -551,7 +640,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		val bufferedPosition = player.bufferedPosition / IntValue.NUMBER_1000
 		val currentPosition = player.currentPosition / IntValue.NUMBER_1000
 		val totalDuration = player.duration / IntValue.NUMBER_1000
-		scrubbedPosition = player.currentPosition
+		if (player.isPlaying) scrubbedPosition = currentPosition
+		setImagePreview()
 		binding.progress.setBufferedPosition(bufferedPosition)
 		binding.progress.setPosition(currentPosition)
 		binding.progress.setDuration(totalDuration)
@@ -585,13 +675,17 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				) {
 					eventStreamResponse.response?.let { eventStreamData ->
 						eventStreamData.data?.let { eventDetails ->
+							val posterImage =
+								eventDetails.presentation.posterUrl?.ifBlank { DEFAULT.EMPTY_STRING }
+									?: DEFAULT.EMPTY_STRING
+							binding.heroImage.loadImage(posterImage, ImageTags.HERO)
 							fetchStoryBoard(eventDetails.storyboards.json ?: "")
 							binding.title.text =
 								if (eventDetails.lineup.isNotEmpty()) "${eventDetails.lineup[0].name} - ${eventDetails.eventName}" else "${eventDetails.eventName}"
 							viewModel.playbackURL.postValue(eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING }
 								?: DEFAULT.EMPTY_STRING)
-						}
-					}
+						} ?: onErrorPositive(Screens.EXIT_APP)
+					} ?: onErrorPositive(Screens.EXIT_APP)
 				}
 			}
 	}
@@ -608,6 +702,22 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					storyBoardResponse.response?.let { storyBoardImages ->
 						if (storyBoardImages.tiles.isNotEmpty()) {
 							viewModel.storyBoardURL.postValue(storyBoardImages.url)
+							Glide.with(binding.imagePreview.context).asBitmap()
+								.load(storyBoardImages.url)
+								.placeholder(R.drawable.card_background_black)
+								.error(R.drawable.card_background_black)
+								.into(object : CustomTarget<Bitmap>() {
+									override fun onResourceReady(
+										resource: Bitmap, transition: Transition<in Bitmap>?
+									) {
+										viewModel.storyBoard = resource
+									}
+
+									override fun onLoadCleared(placeholder: Drawable?) {
+
+									}
+
+								})
 							viewModel.tileWidth.postValue(storyBoardImages.tileWidth)
 							viewModel.tileHeight.postValue(storyBoardImages.tileHeight)
 							viewModel.tiles.postValue(storyBoardImages.tiles)
@@ -617,10 +727,52 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			}
 	}
 
+	private fun addStats(
+		addStatsAPIURL: String,
+		currentTime: String,
+		duration: String,
+		playerVersion: String,
+		deviceModel: String,
+		deviceVendor: String,
+		playbackStreamType: String,
+		platform: String,
+		userType: String,
+	) {
+		viewModel.addStats(
+			addStatsAPIURL,
+			currentTime,
+			duration,
+			playerVersion,
+			deviceModel,
+			deviceVendor,
+			playbackStreamType,
+			platform,
+			userType,
+		).observe(this@VideoPlayerScreen) { addStatsResponse ->
+			fetch(
+				addStatsResponse,
+				isLoaderEnabled = false,
+				canUserAccessScreen = true,
+				shouldBeInBackground = true
+			) {
+				addStatsResponse.response?.let {
+
+				}
+			}
+		}
+	}
+
 	override fun showError(tag: String, message: String, description: String) {
 		viewModel.contentHasLoaded.postValue(true)
 		viewModel.errorMessage.postValue(message)
 		when (tag) {
+			Screens.EXIT_APP -> {
+				viewModel.errorPositiveLabel.postValue(getString(R.string.yes_label))
+				viewModel.errorNegativeLabel.postValue(getString(R.string.cancel_label))
+				viewModel.isErrorPositiveApplicable.postValue(true)
+				viewModel.isErrorNegativeApplicable.postValue(true)
+			}
+
 			else -> {
 				viewModel.errorPositiveLabel.postValue(getString(R.string.ok_label))
 				viewModel.errorNegativeLabel.postValue(getString(R.string.cancel_label))
@@ -647,6 +799,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		binding.negative.nextFocusForwardId =
 			if (binding.positive.isEnabled) binding.positive.id else binding.negative.id
 
+		binding.videoPlayer.player?.pause()
 		binding.errorContainer.visibility = View.VISIBLE
 		binding.errorContainer.apply {
 			alpha = 0f
@@ -655,17 +808,39 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				.setDuration(resources.getInteger(android.R.integer.config_shortAnimTime).toLong())
 				.setListener(null)
 		}
-		binding.positive.postDelayed({
-			binding.positive.requestFocus()
+		binding.negative.postDelayed({
+			binding.negative.requestFocus()
 		}, AppConstants.keyPressShortDelayTime)
 	}
 
 	fun onErrorPositive(tag: Any?) {
-		backPressedCallback.handleOnBackPressed()
+		when (tag) {
+			Screens.EXIT_APP -> {
+				Logger.print(
+					"Back Pressed on ${
+						this@VideoPlayerScreen.localClassName.substringAfterLast(
+							"."
+						)
+					} Finishing Activity"
+				)
+				releaseVideoPlayer()
+				finish()
+			}
+
+			else -> {
+				binding.errorContainer.visibility = View.GONE
+			}
+		}
 	}
 
 	fun onErrorNegative(tag: Any?) {
-		backPressedCallback.handleOnBackPressed()
+		when (tag) {
+
+			else -> {
+				binding.videoPlayer.player?.play()
+				binding.errorContainer.visibility = View.GONE
+			}
+		}
 	}
 
 	override fun onDestroy() {
@@ -685,6 +860,10 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			getCurrentTimer.removeCallbacks(timerTask)
 			getCurrentTimer.removeCallbacksAndMessages(timerTask)
 		}
+		if (this::statsManagement.isInitialized && this::addStatsTask.isInitialized) {
+			statsManagement.removeCallbacks(addStatsTask)
+			statsManagement.removeCallbacksAndMessages(addStatsTask)
+		}
 	}
 
 	override fun onResume() {
@@ -694,6 +873,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		}
 		if (this::getCurrentTimer.isInitialized && this::timerTask.isInitialized) getCurrentTimer.post(
 			timerTask
+		)
+		if (this::statsManagement.isInitialized && this::addStatsTask.isInitialized) statsManagement.post(
+			addStatsTask
 		)
 	}
 
@@ -711,37 +893,118 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 	// region Private
 	private fun handleUserInput(keycode: Int): Boolean {
-		return when (keycode) {
-			KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
-				binding.playPause.performClick()
-				true
-			}
-
-			KeyEvent.KEYCODE_MEDIA_PLAY -> {
-				binding.videoPlayer.player?.play()
-				true
-			}
-
-			KeyEvent.KEYCODE_MEDIA_PAUSE -> {
-				binding.videoPlayer.player?.pause()
-				true
-			}
-
-			KeyEvent.KEYCODE_MEDIA_STOP -> {
-				binding.videoPlayer.player?.stop()
-				true
-			}
-
-			KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_SPACE -> {
-				// When a key is hit, cancel the timeout of hiding the trick bar and set it again
-				if (binding.progress.hasFocus()) {
-					Logger.printWithTag("saumil2", "scrubber has focus and key")
-					setImagePreview(false)
-					player.seekTo(scrubbedPosition * 1000)
-					player.playWhenReady = true
-					binding.playPause.requestFocus()
+		return if (binding.errorContainer.visibility == View.VISIBLE) {
+			false
+		} else {
+			when (keycode) {
+				KeyEvent.KEYCODE_BACK -> {
+					handleBack()
 					true
-				} else {
+				}
+
+				KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
+					binding.playPause.performClick()
+					true
+				}
+
+				KeyEvent.KEYCODE_MEDIA_PLAY -> {
+					binding.videoPlayer.player?.play()
+					true
+				}
+
+				KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+					binding.videoPlayer.player?.pause()
+					true
+				}
+
+				KeyEvent.KEYCODE_MEDIA_STOP -> {
+					binding.videoPlayer.player?.stop()
+					true
+				}
+
+				KeyEvent.KEYCODE_DPAD_LEFT -> {
+					timeout.removeCallbacks(trickPlayRunnable)
+					timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
+					if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
+						trickPlayVisible.value = true
+						binding.progress.requestFocus()
+						true
+					} else return false
+				}
+
+				KeyEvent.KEYCODE_MEDIA_REWIND, KeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD, KeyEvent.KEYCODE_MEDIA_STEP_BACKWARD -> {
+					timeout.removeCallbacks(trickPlayRunnable)
+					timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
+					if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
+						trickPlayVisible.value = true
+						binding.progress.requestFocus()
+						true
+					} else {
+						if (!binding.progress.isFocused) binding.progress.requestFocus() else {
+							if (this::player.isInitialized && player.isPlaying) {
+								player.pause()
+							}
+							isScrubVisible = true
+							scrubbedPosition -= 10
+							binding.progress.setPosition(scrubbedPosition)
+							setImagePreview()
+						}
+						return false
+					}
+				}
+
+				KeyEvent.KEYCODE_DPAD_RIGHT -> {
+					timeout.removeCallbacks(trickPlayRunnable)
+					timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
+					if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
+						trickPlayVisible.value = true
+						binding.progress.requestFocus()
+						true
+					} else return false
+				}
+
+				KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD, KeyEvent.KEYCODE_MEDIA_STEP_FORWARD -> {
+					timeout.removeCallbacks(trickPlayRunnable)
+					timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
+					if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
+						trickPlayVisible.value = true
+						binding.progress.requestFocus()
+						true
+					} else {
+						if (!binding.progress.isFocused) binding.progress.requestFocus() else {
+							if (this::player.isInitialized && player.isPlaying) {
+								player.pause()
+							}
+							isScrubVisible = true
+							scrubbedPosition += 10
+							binding.progress.setPosition(scrubbedPosition)
+							setImagePreview()
+						}
+						return false
+					}
+				}
+
+				KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_SPACE -> {
+					// When a key is hit, cancel the timeout of hiding the trick bar and set it again
+					if (binding.progress.hasFocus()) {
+						Logger.printWithTag("saumil2", "scrubber has focus and key")
+						isScrubVisible = false
+						setImagePreview()
+						player.seekTo(scrubbedPosition * 1000)
+						player.playWhenReady = true
+						binding.playPause.requestFocus()
+						true
+					} else {
+						timeout.removeCallbacks(trickPlayRunnable)
+						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
+						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
+							trickPlayVisible.value = true
+							true
+						} else return false
+					}
+				}
+
+				else -> {
 					timeout.removeCallbacks(trickPlayRunnable)
 					timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
 					if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
@@ -749,15 +1012,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 						true
 					} else return false
 				}
-			}
-
-			else -> {
-				timeout.removeCallbacks(trickPlayRunnable)
-				timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
-				if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
-					trickPlayVisible.value = true
-					true
-				} else return false
 			}
 		}
 	}

@@ -63,6 +63,7 @@
 	<!-- Entity -->
 	<string name="all_events_label">All Events</string>
     <string name="live_now">Live Now</string>
+    <string name="live_label">Live</string>
 
 	<!-- My Shows -->
 	<string name="my_shows_description">You don’t have any shows saved. When you do, you’ll see them here.</string>

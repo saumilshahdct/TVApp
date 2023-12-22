@@ -6,7 +6,6 @@ import android.text.TextWatcher
 import android.view.View
 import androidx.leanback.widget.BaseGridView
 import androidx.recyclerview.widget.PagerSnapHelper
-import androidx.recyclerview.widget.SimpleItemAnimator
 import com.veeps.app.R
 import com.veeps.app.core.BaseFragment
 import com.veeps.app.databinding.FragmentSearchScreenBinding
@@ -50,6 +49,7 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 			loader.visibility = View.GONE
 			noResultContainer.visibility = View.GONE
 			keyboardA.requestFocus()
+			viewModel.search.value = DEFAULT.EMPTY_STRING
 			viewModel.search.value?.let { searchString ->
 				searchInput.setText(searchString.ifBlank { DEFAULT.EMPTY_STRING })
 			}

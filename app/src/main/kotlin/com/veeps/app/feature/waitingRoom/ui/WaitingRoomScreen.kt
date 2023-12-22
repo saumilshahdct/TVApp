@@ -1,8 +1,5 @@
 package com.veeps.app.feature.waitingRoom.ui
 
-import android.graphics.text.LineBreaker.JUSTIFICATION_MODE_INTER_WORD
-import android.graphics.text.LineBreaker.JUSTIFICATION_MODE_NONE
-import android.os.Build
 import android.os.CountDownTimer
 import android.view.View
 import androidx.activity.OnBackPressedCallback
@@ -23,7 +20,6 @@ import org.joda.time.DateTimeZone
 import org.joda.time.Duration
 import org.joda.time.Period
 import org.joda.time.PeriodType
-import org.joda.time.format.PeriodFormatter
 import org.joda.time.format.PeriodFormatterBuilder
 import kotlin.math.abs
 

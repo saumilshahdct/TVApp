@@ -164,7 +164,7 @@ class CardAdapterGrid(private val action: AppAction) :
 				if (entitiesType == EntityTypes.ARTIST) holder.binding.artistVenueThumbnailContainer.setImageResource(
 					R.drawable.rounded_card_image_background_white_10
 				)
-				CoroutineScope(Dispatchers.Main).launch {
+
 					val newResource = image.replace(Image.DEFAULT, Image.CIRCLE)
 					Glide.with(holder.binding.artistVenueThumbnail.context).load(newResource)
 						.diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -175,7 +175,7 @@ class CardAdapterGrid(private val action: AppAction) :
 						.error(R.drawable.rounded_card_background_white_10)
 						.into(holder.binding.artistVenueThumbnail)
 					Logger.printMessage("Artist or Venue Image url with optimized ($newResource) is requested to load.")
-				}
+
 //				holder.binding.container.nextFocusDownId = R.id.artist_venue_follow
 				holder.binding.artistVenueFollow.visibility = View.GONE
 				holder.binding.artistVenueContainer.visibility = View.VISIBLE
@@ -186,7 +186,7 @@ class CardAdapterGrid(private val action: AppAction) :
 				holder.binding.eventTitle.visibility = View.GONE
 				holder.binding.eventLogoLabel.text = title
 				holder.binding.eventLogo.visibility = View.GONE
-				CoroutineScope(Dispatchers.Main).launch {
+
 					val newResource = image.replace(Image.DEFAULT, Image.CARD)
 					Glide.with(holder.binding.eventThumbnail.context).load(newResource)
 						.diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -196,7 +196,7 @@ class CardAdapterGrid(private val action: AppAction) :
 						.error(R.drawable.rounded_card_background_black)
 						.into(holder.binding.eventThumbnail)
 					Logger.printMessage("Card Image url with optimized ($newResource) is requested to load.")
-				}
+
 				holder.binding.eventDateContainer.visibility = View.GONE
 				holder.binding.artistVenueFollow.visibility = View.GONE
 				holder.binding.artistVenueContainer.visibility = View.GONE
@@ -267,7 +267,7 @@ class CardAdapterGrid(private val action: AppAction) :
 			holder.binding.eventTitle.text = title
 			holder.binding.eventLogoLabel.text = artistTitle
 			holder.binding.eventLogo.visibility = View.GONE
-			CoroutineScope(Dispatchers.Main).launch {
+
 				val newResource = image.replace(Image.DEFAULT, Image.CARD)
 				Glide.with(holder.binding.eventThumbnail.context).load(newResource)
 					.diskCacheStrategy(DiskCacheStrategy.ALL)
@@ -277,7 +277,7 @@ class CardAdapterGrid(private val action: AppAction) :
 					.error(R.drawable.rounded_card_background_black)
 					.into(holder.binding.eventThumbnail)
 				Logger.printMessage("Card Image url with optimized ($newResource) is requested to load.")
-			}
+
 			holder.binding.eventDateContainer.setupWith(holder.binding.container)
 				.setBlurRadius(12.5f)
 			holder.binding.eventDateContainer.outlineProvider = ViewOutlineProvider.BACKGROUND

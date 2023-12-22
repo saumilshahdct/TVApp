@@ -5,6 +5,7 @@ import com.veeps.app.data.network.APIUtil
 import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppConstants
 import com.veeps.app.util.Logger
+import retrofit2.http.Query
 
 class APIRepository : BaseDataSource() {
 	fun authenticationDetails(clientId: String) = performOperation(APIConstants.fetchAuthenticationDetails) {
@@ -155,6 +156,12 @@ class APIRepository : BaseDataSource() {
 	fun fetchStoryBoard(storyBoardURL: String) = performOperation(APIConstants.fetchStoryBoard) {
 		getResult(APIConstants.fetchStoryBoard) {
 			APIUtil.service.fetchStoryBoard(storyBoardURL)
+		}
+	}
+
+	fun addStats(addStatsAPIURL:String, currentTime: String, duration: String, playerVersion: String, deviceModel: String, deviceVendor: String, playbackStreamType: String, platform: String, userType: String) = performOperation(APIConstants.addStats) {
+		getResult(APIConstants.addStats) {
+			APIUtil.service.addStats(addStatsAPIURL, currentTime, duration, playerVersion, deviceModel, deviceVendor, playbackStreamType, platform, userType)
 		}
 	}
 

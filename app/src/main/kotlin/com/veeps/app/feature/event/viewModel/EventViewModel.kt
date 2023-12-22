@@ -9,16 +9,13 @@ import com.veeps.app.feature.contentRail.model.RailData
 import com.veeps.app.util.DEFAULT
 
 class EventViewModel : ViewModel(), DefaultLifecycleObserver {
-	var contentHasLoaded = MutableLiveData(false)
 	var isVisible = MutableLiveData(false)
-	var trailer = MutableLiveData(DEFAULT.EMPTY_STRING)
 	var eventId: String = ""
-	var isEventPurchased: Boolean = false
-	var rail = MutableLiveData(ArrayList<RailData>())
 
 	override fun onCleared() {
 		super.onCleared()
 	}
+
 	override fun onResume(owner: LifecycleOwner) {
 		super.onResume(owner)
 		isVisible.postValue(true)

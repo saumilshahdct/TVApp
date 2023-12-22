@@ -11,7 +11,6 @@ import com.veeps.app.util.DEFAULT
 class BrowseViewModel : ViewModel(), DefaultLifecycleObserver {
 	var isVisible = MutableLiveData(false)
 	var railData = MutableLiveData(ArrayList<RailData>())
-	var carouselData = MutableLiveData(RailData())
 	var eventId: String = ""
 
 	override fun onResume(owner: LifecycleOwner) {
