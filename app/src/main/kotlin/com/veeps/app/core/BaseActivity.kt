@@ -57,10 +57,6 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 
 	abstract fun getViewBinding(): VB
 
-	open fun callback() {
-
-	}
-
 	open fun onRendered(viewModel: VM, binding: VB) {}
 
 	open fun showError(tag: String, message: String, description: String = "") {}

@@ -5,13 +5,13 @@
 			<certificates src="system" />
 		</trust-anchors>
 	</base-config>
-	<domain-config>
-		<domain includeSubdomains="true">afn-now.myafn.mil</domain>
+	<!--<domain-config>
+		<domain includeSubdomains="true"></domain>
 		<trust-anchors>
 			<certificates src="system" />
 			<certificates src="user" />
 		</trust-anchors>
-	</domain-config>
+	</domain-config>-->
 	<!--<debug-overrides>
 		<trust-anchors>
 			<certificates src="@raw/my_ca" />

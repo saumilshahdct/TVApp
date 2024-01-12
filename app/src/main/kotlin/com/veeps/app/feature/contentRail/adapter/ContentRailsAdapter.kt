@@ -114,7 +114,4 @@ class ContentRailsAdapter(
 	inner class ViewHolder(val binding: RowContentRailBinding) :
 		RecyclerView.ViewHolder(binding.root)
 
-	init {
-//		if (screen == Screens.BROWSE) this.rails.removeAt(0)
-	}
 }

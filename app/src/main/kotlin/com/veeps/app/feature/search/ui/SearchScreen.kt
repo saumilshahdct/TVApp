@@ -56,11 +56,6 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 			keyboardContainer.visibility = View.VISIBLE
 		}
 		notifyAppEvents()
-		loadAppContent()
-	}
-
-	private fun loadAppContent() {
-
 	}
 
 	fun onKeyboardClick(tag: Any) {
@@ -109,7 +104,7 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 							cardType = CardTypes.PORTRAIT,
 							entitiesType = EntityTypes.EVENT
 						)
-						var rails = ArrayList<RailData>()
+						val rails = ArrayList<RailData>()
 						rails.add(upcomingEventsRail)
 						if (!didResultNotFound) viewModel.noResult.postValue(false)
 						viewModel.upcomingRail.postValue(rails)
@@ -130,7 +125,7 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 				searchedEvents.response?.let { searchResponse ->
 					if (searchResponse.data != null) {
 						searchResponse.data.let {
-							var rails = ArrayList<RailData>()
+							val rails = ArrayList<RailData>()
 							var eventsRail = RailData()
 							var artistRail = RailData()
 							if (searchResponse.data!!.events.isNotEmpty()) {

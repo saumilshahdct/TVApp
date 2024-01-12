@@ -1,7 +1,6 @@
 package com.veeps.app.feature.browse.ui
 
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.View
 import android.view.ViewOutlineProvider
 import androidx.core.content.ContextCompat
@@ -203,38 +202,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 				)
 			}
 		}
-		binding.primary.setOnKeyListener { _, keyCode, keyEvent ->
-			if (keyEvent.action == KeyEvent.ACTION_DOWN) {
-				if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-//					if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && player.isPlaying) {
-//						player.pause()
-//					}
-//					binding.darkBackground.visibility = View.VISIBLE
-//					binding.carousel.visibility = View.GONE
-//					binding.browseLabel.visibility = View.GONE
-//					binding.onDemandLabel.visibility = View.GONE
-//					binding.logo.visibility = View.GONE
-//					binding.watermark.visibility = View.VISIBLE
-				}
-			}
-			return@setOnKeyListener false
-		}
-		binding.myShows.setOnKeyListener { _, keyCode, keyEvent ->
-			if (keyEvent.action == KeyEvent.ACTION_DOWN) {
-				if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-//					if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && player.isPlaying) {
-//						player.pause()
-//					}
-//					binding.darkBackground.visibility = View.VISIBLE
-//					binding.carousel.visibility = View.GONE
-//					binding.browseLabel.visibility = View.GONE
-//					binding.onDemandLabel.visibility = View.GONE
-//					binding.logo.visibility = View.GONE
-//					binding.watermark.visibility = View.VISIBLE
-				}
-			}
-			return@setOnKeyListener false
-		}
+
 		binding.primary.setOnFocusChangeListener { _, hasFocus ->
 			context?.let { context ->
 				binding.primaryLabel.setTextColor(
@@ -341,8 +309,8 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		}
 
 		viewModel.isVisible.observeForever { isVisible ->
-			Logger.printWithTag("MenuFocus",
-				"Visibility Changed to $isVisible On ${
+			Logger.printWithTag(
+				"MenuFocus", "Visibility Changed to $isVisible On ${
 					this@BrowseScreen.javaClass.name.substringAfterLast(".")
 				}"
 			)
@@ -531,9 +499,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 				shouldBeInBackground = false
 			) {
 				browseRail.response?.let { railResponse ->
-
-					viewModel.railData.postValue(railResponse.railData)
-					fetchContinueWatchingRail()
+					fetchContinueWatchingRail(railResponse.railData)
 				} ?: helper.showErrorOnScreen(browseRail.tag, getString(R.string.unknown_error))
 			}
 		}
@@ -554,7 +520,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		}
 	}
 
-	private fun fetchContinueWatchingRail() {
+	private fun fetchContinueWatchingRail(rails: ArrayList<RailData>) {
 		viewModel.fetchContinueWatchingRail().observe(viewLifecycleOwner) { continueWatching ->
 			fetch(
 				continueWatching,
@@ -564,9 +530,11 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			) {
 				continueWatching.response?.let { railData ->
 					if (railData.data.isNotEmpty()) {
-						fetchUserStats(railData.data)
+						fetchUserStats(railData.data, rails)
+					} else {
+						viewModel.railData.postValue(rails)
 					}
-				}
+				} ?: viewModel.railData.postValue(rails)
 			}
 		}
 	}
@@ -599,7 +567,9 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		)
 	}
 
-	private fun fetchUserStats(continueWatchingEntities: ArrayList<Entities>) {
+	private fun fetchUserStats(
+		continueWatchingEntities: ArrayList<Entities>, rails: ArrayList<RailData>
+	) {
 		var eventIds = ""
 		continueWatchingEntities.forEachIndexed { index, entities ->
 			eventIds += "${entities.eventId}${(if (index == continueWatchingEntities.size - 1) "" else ",")}"
@@ -628,12 +598,9 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 						isContinueWatching = true,
 						userStats = userStats
 					)
-					val rails = viewModel.railData.value.orEmpty()
 
-					viewModel.railData.value = ArrayList(rails).apply {
-						add(0, continueWatchingRail)
-						requireCarouselRemoval = false
-					}
+					rails.add(1, continueWatchingRail)
+					viewModel.railData.postValue(rails)
 				}
 			}
 	}

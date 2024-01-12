@@ -1,17 +1,10 @@
 package com.veeps.app.feature.card.adapter
 
 import android.content.Context
-import android.graphics.Color
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewOutlineProvider
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.BlendModeColorFilterCompat
-import androidx.core.graphics.BlendModeCompat
-import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -20,34 +13,20 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.rubensousa.dpadrecyclerview.DpadViewHolder
 import com.veeps.app.R
-import com.veeps.app.databinding.RowCardBinding
 import com.veeps.app.databinding.RowCardCirclularBinding
 import com.veeps.app.extension.dpToPx
-import com.veeps.app.extension.isOfType
-import com.veeps.app.feature.artist.ui.ArtistScreen
 import com.veeps.app.feature.contentRail.model.Entities
 import com.veeps.app.feature.contentRail.model.UserStats
-import com.veeps.app.feature.event.ui.EventScreen
-import com.veeps.app.feature.venue.ui.VenueScreen
 import com.veeps.app.util.AppAction
-import com.veeps.app.util.AppConstants
 import com.veeps.app.util.AppHelper
 import com.veeps.app.util.AppUtil
-import com.veeps.app.util.BadgeStatus
 import com.veeps.app.util.CardTypes
 import com.veeps.app.util.DEFAULT
 import com.veeps.app.util.DateTimeCompareDifference
 import com.veeps.app.util.EntityTypes
-import com.veeps.app.util.EventTypes
 import com.veeps.app.util.Image
-import com.veeps.app.util.IntValue
 import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.util.Locale
-import kotlin.math.roundToInt
 
 class CircularCardAdapter(private val action: AppAction) :
 	RecyclerView.Adapter<CircularCardAdapter.ViewHolder>() {
@@ -133,14 +112,14 @@ class CircularCardAdapter(private val action: AppAction) :
 			R.drawable.rounded_card_image_background_white_10
 		)
 
-			Logger.printWithTag("BrowseNew", "width -- ${holder.binding.thumbnail.measuredWidth}")
-			val newResource = image.replace(Image.DEFAULT, Image.CIRCLE)
-			Glide.with(holder.binding.thumbnail.context).load(newResource)
-				.diskCacheStrategy(DiskCacheStrategy.ALL)
-				.transition(DrawableTransitionOptions.withCrossFade()).transform(
-					CenterCrop(), RoundedCorners(holder.binding.thumbnail.dpToPx(72.dp))
-				).error(R.drawable.rounded_card_background_white_10).into(holder.binding.thumbnail)
-			Logger.printMessage("Artist or Venue Image url with optimized ($newResource) is requested to load.")
+		Logger.printWithTag("BrowseNew", "width -- ${holder.binding.thumbnail.measuredWidth}")
+		val newResource = image.replace(Image.DEFAULT, Image.CIRCLE)
+		Glide.with(holder.binding.thumbnail.context).load(newResource)
+			.diskCacheStrategy(DiskCacheStrategy.ALL)
+			.transition(DrawableTransitionOptions.withCrossFade()).transform(
+				CenterCrop(), RoundedCorners(holder.binding.thumbnail.dpToPx(72.dp))
+			).error(R.drawable.rounded_card_background_white_10).into(holder.binding.thumbnail)
+		Logger.printMessage("Artist or Venue Image url with optimized ($newResource) is requested to load.")
 
 //				holder.binding.container.nextFocusDownId = R.id.artist_venue_follow
 		holder.binding.follow.visibility = View.GONE

@@ -6,7 +6,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.veeps.app.data.common.APIRepository
 import com.veeps.app.feature.contentRail.model.RailData
-import com.veeps.app.util.DEFAULT
 
 class BrowseViewModel : ViewModel(), DefaultLifecycleObserver {
 	var isVisible = MutableLiveData(false)

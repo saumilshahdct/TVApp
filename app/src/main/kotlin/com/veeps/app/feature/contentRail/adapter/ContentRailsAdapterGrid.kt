@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.leanback.widget.BaseGridView
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.SimpleItemAnimator
 import com.veeps.app.R
 import com.veeps.app.databinding.RowContentRailGridBinding
 import com.veeps.app.feature.card.adapter.CardAdapterGrid
@@ -72,7 +71,4 @@ class ContentRailsAdapterGrid(
 	inner class ViewHolder(val binding: RowContentRailGridBinding) :
 		RecyclerView.ViewHolder(binding.root)
 
-	init {
-
-	}
 }

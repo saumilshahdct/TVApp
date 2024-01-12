@@ -1,8 +1,6 @@
 package com.veeps.app.util
 
-import android.app.Activity
 import android.os.Bundle
-import android.os.Message
 import androidx.fragment.app.Fragment
 
 interface AppHelper {
@@ -26,7 +24,13 @@ interface AppHelper {
 
 	fun goToVideoPlayer(eventId: String)
 
-	fun goToWaitingRoom(eventId: String, eventLogo: String, eventTitle: String, eventDoorOpensAt: String, eventStreamStartsAt: String)
+	fun goToWaitingRoom(
+		eventId: String,
+		eventLogo: String,
+		eventTitle: String,
+		eventDoorOpensAt: String,
+		eventStreamStartsAt: String
+	)
 
 	fun select(selectedItem: Int)
 	fun goBack()

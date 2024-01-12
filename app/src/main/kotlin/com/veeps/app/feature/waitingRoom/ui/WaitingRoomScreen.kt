@@ -117,7 +117,7 @@ class WaitingRoomScreen : BaseActivity<WaitingRoomViewModel, ActivityWaitingRoom
 				}
 
 				override fun onFinish() {
-					Logger.printWithTag("saumil", "Moving to player from waiting room $eventStreamStartsAt -- $eventDoorOpensAt -- ${currentDate.toString()} -- ${eventDate.toString()} -- ${viewModel.eventId.value} -- ${viewModel.eventTimerDescription.value}")
+					Logger.printWithTag("saumil", "Moving to player from waiting room $eventStreamStartsAt -- $eventDoorOpensAt -- $currentDate -- $eventDate -- ${viewModel.eventId.value} -- ${viewModel.eventTimerDescription.value}")
 					goToScreen<VideoPlayerScreen>(
 						false, AppConstants.TAG to Screens.VIDEO, "eventId" to (viewModel.eventId.value ?: DEFAULT.EMPTY_STRING)
 					)

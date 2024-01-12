@@ -31,8 +31,7 @@
         <include layout="@layout/guidelines" />
 
         <LinearLayout
-            android:layout_width="wrap_content"
-            app:layout_constraintWidth_max="555dp"
+            android:layout_width="545dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -54,7 +53,7 @@
             <TextView
                 android:id="@+id/title"
                 fontPath="fonts/RuderPlakatRegular.ttf"
-                android:layout_width="wrap_content"
+                android:layout_width="450dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
@@ -67,10 +66,6 @@
                 android:textColor="@color/white"
                 android:textIsSelectable="false"
                 android:textSize="24sp"
-                app:layout_constraintBottom_toTopOf="@+id/cta_container"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/venue"
                 tools:ignore="MissingPrefix" />
 
             <TextView
@@ -87,8 +82,7 @@
                 android:textColor="@color/gray_300"
                 android:textIsSelectable="false"
                 android:textSize="11sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/auth_login_url" />
+                tools:ignore="MissingPrefix" />
 
             <TextView
                 android:id="@+id/timer"
@@ -99,7 +93,6 @@
                 android:gravity="center"
                 android:layout_gravity="center"
                 android:includeFontPadding="false"
-                android:justificationMode="inter_word"
                 android:letterSpacing="0.05"
                 android:lines="1"
                 android:text="@{waitingRoom.eventTimer}"
@@ -108,12 +101,7 @@
                 android:textColor="@color/white"
                 android:textIsSelectable="false"
                 android:textSize="110sp"
-                app:layout_constraintBottom_toTopOf="@+id/cta_container"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/venue"
-                tools:ignore="MissingPrefix"
-                tools:targetApi="o" />
+                tools:ignore="MissingPrefix" />
 
         </LinearLayout>
 

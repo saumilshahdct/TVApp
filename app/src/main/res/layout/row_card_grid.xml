@@ -175,7 +175,7 @@
                     android:gravity="center"
                     android:includeFontPadding="false"
                     android:paddingBottom="2dp"
-                    android:text="Live"
+                    android:text="@string/live_label"
                     android:textAlignment="gravity"
                     android:textAllCaps="false"
                     android:textColor="@color/white"

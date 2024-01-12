@@ -8,7 +8,6 @@ import android.view.KeyEvent
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
-import androidx.core.os.postDelayed
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.amazon.device.iap.PurchasingListener
@@ -93,7 +92,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 					Handler(Looper.getMainLooper()).postDelayed({
 						Logger.printWithTag("MenuFocus", "setting up focus after 1000")
 						setupFocusOnNavigationMenu()
-					},1000)
+					}, 1000)
 					true
 				}
 			}
@@ -372,7 +371,10 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	private fun setupFocusOnNavigationMenu() {
-		Logger.printWithTag("MenuFocus", "here in set up focus on navigation menu - focus listener is set")
+		Logger.printWithTag(
+			"MenuFocus",
+			"here in set up focus on navigation menu - focus listener is set"
+		)
 		binding.navigationMenu.setOnFocusChangeListener { view, hasFocus ->
 			if (hasFocus) {
 				Logger.printWithTag(
@@ -499,7 +501,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	private fun knowFocusedView() {
-		Thread(Runnable {
+		Thread {
 			var oldId = -1
 			while (true) {
 				val newView: View? = this@HomeScreen.currentFocus
@@ -518,11 +520,14 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 					e.printStackTrace()
 				}
 			}
-		}).start()
+		}.start()
 	}
 
 	private fun clearNavigationMenuUI(): Boolean {
-		Logger.printWithTag("MenuFocus", "here in clear navigation menu - hiding navigation menu - and - setting up focus")
+		Logger.printWithTag(
+			"MenuFocus",
+			"here in clear navigation menu - hiding navigation menu - and - setting up focus"
+		)
 		hideNavigationMenu(binding.navigationMenu)
 		setupFocusOnNavigationMenu()
 		return true
@@ -626,7 +631,10 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	override fun completelyHideNavigationMenu() {
-		Logger.printWithTag("MenuFocus", "here in completely hide navigation menu - hiding navigation menu - and - setting up focus if required")
+		Logger.printWithTag(
+			"MenuFocus",
+			"here in completely hide navigation menu - hiding navigation menu - and - setting up focus if required"
+		)
 		hideNavigationMenu(binding.navigationMenu)
 	}
 

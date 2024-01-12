@@ -15,7 +15,6 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.veeps.app.R
 import com.veeps.app.extension.fadeInNow
-import com.veeps.app.extension.fadeOutNow
 import com.veeps.app.extension.fadeOutNowWith
 import com.veeps.app.extension.inflate
 import com.veeps.app.extension.loadImage
@@ -249,7 +248,7 @@ class NavigationMenu : LinearLayout {
 		return getChildAt(selectedItem).tag.toString()
 	}
 
-	private fun clearNavigationMenuLabel(doesCompletelyHiddenRequired: Boolean) {
+	private fun clearNavigationMenuLabel() {
 		for (i in 0 until childCount) {
 			/*if (doesCompletelyHiddenRequired) {
 				getChildAt(i).findViewById<View>(R.id.image).fadeOutNow(IntValue.NUMBER_100)
@@ -294,7 +293,7 @@ class NavigationMenu : LinearLayout {
 	}
 
 	fun setupNavigationMenuExpandedUI(context: Context) {
-		Handler(Looper.getMainLooper()).postDelayed(Runnable {
+		Handler(Looper.getMainLooper()).postDelayed({
 			setNavigationMenuText(context)
 			changeNavigationMenuFocusStatus(true)
 			focusCurrentSelectedNavigationMenu()
@@ -302,8 +301,8 @@ class NavigationMenu : LinearLayout {
 		}, IntValue.NUMBER_200.toLong())
 	}
 
-	fun setupNavigationMenuCollapsedUI(doesCompletelyHiddenRequired: Boolean) {
-		clearNavigationMenuLabel(doesCompletelyHiddenRequired)
+	fun setupNavigationMenuCollapsedUI() {
+		clearNavigationMenuLabel()
 		changeNavigationMenuFocusStatus(false)
 		isNavigationMenuVisible = false
 	}
@@ -362,7 +361,7 @@ class NavigationMenu : LinearLayout {
 	}
 
 	override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-		Logger.printWithTag("saumil","On key down in menu")
+		Logger.printWithTag("saumil", "On key down in menu")
 		val currentTime = System.currentTimeMillis()
 		return if (currentTime - AppConstants.lastKeyPressTime < AppConstants.keyPressShortDelayTime) {
 			true

@@ -163,7 +163,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					(player.currentPosition / IntValue.NUMBER_1000).toDouble().toString()
 				val duration: String =
 					(player.duration / IntValue.NUMBER_1000).toDouble().toString()
-				val playerVersion: String =
+				val playerVersion =
 					"ntv"//"${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})"
 				val deviceModel: String = Build.MODEL
 				val deviceVendor: String = Build.MANUFACTURER

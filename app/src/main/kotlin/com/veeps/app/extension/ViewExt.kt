@@ -7,12 +7,10 @@ import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.AlphaAnimation
 import android.view.animation.Animation
 import android.view.animation.LinearInterpolator
-import android.view.animation.OvershootInterpolator
 import android.view.animation.Transformation
 import android.widget.EditText
 import android.widget.ImageView
@@ -23,8 +21,6 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.animation.addListener
 import androidx.leanback.widget.VerticalGridView
-import androidx.transition.AutoTransition
-import androidx.transition.ChangeBounds
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
@@ -43,9 +39,6 @@ import com.veeps.app.util.ImageTags
 import com.veeps.app.util.IntValue
 import com.veeps.app.util.Logger
 import com.veeps.app.widget.navigationMenu.NavigationMenu
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 
@@ -100,24 +93,30 @@ fun View.fadeOutNowWith(duration: Int, listener: Animation.AnimationListener) {
 }
 
 fun View.transformWidth(width: Int, doesCompletelyHiddenRequired: Boolean) {
-	val valueAnimator = ValueAnimator.ofInt(
-		this.measuredWidth,
-		if (doesCompletelyHiddenRequired) 1 else resources.getDimensionPixelSize(width)
-	)
-	valueAnimator.addUpdateListener { animation ->
-		this.layoutParams.width = animation.animatedValue as Int
+	if (doesCompletelyHiddenRequired) {
+		(this as NavigationMenu).setupNavigationMenuCollapsedUI()
+		this.layoutParams.width = 1
 		this.requestLayout()
-	}
+	} else {
+		val valueAnimator = ValueAnimator.ofInt(
+			this.measuredWidth,
+			resources.getDimensionPixelSize(width)
+		)
+		valueAnimator.addUpdateListener { animation ->
+			this.layoutParams.width = animation.animatedValue as Int
+			this.requestLayout()
+		}
 
-	valueAnimator.interpolator = AccelerateInterpolator()
-	if (width == R.dimen.collapsed_navigation_menu_width) {
-		valueAnimator.duration = IntValue.NUMBER_200.toLong()
-		(this as NavigationMenu).setupNavigationMenuCollapsedUI(doesCompletelyHiddenRequired)
-	} else if (width == R.dimen.expanded_navigation_menu_width) {
-		valueAnimator.duration = IntValue.NUMBER_333.toLong()
-		(this as NavigationMenu).setupNavigationMenuExpandedUI(this.context)
+		valueAnimator.interpolator = AccelerateInterpolator()
+		if (width == R.dimen.collapsed_navigation_menu_width) {
+			valueAnimator.duration = IntValue.NUMBER_200.toLong()
+			(this as NavigationMenu).setupNavigationMenuCollapsedUI()
+		} else if (width == R.dimen.expanded_navigation_menu_width) {
+			valueAnimator.duration = IntValue.NUMBER_333.toLong()
+			(this as NavigationMenu).setupNavigationMenuExpandedUI(this.context)
+		}
+		valueAnimator.start()
 	}
-	valueAnimator.start()
 }
 
 fun View.transformHeight(height: Int, shouldHide: Boolean) {
@@ -184,98 +183,98 @@ fun EditText.clear() {
 
 fun ImageView.loadImage(resource: Any, tag: Any) {
 
-		when (resource) {
-			is Drawable -> {
-				if (resource.toString().isNotBlank()) this@loadImage.setImageDrawable(resource)
-				Logger.printMessage("Image drawable ($resource) is requested to load.")
-			}
+	when (resource) {
+		is Drawable -> {
+			if (resource.toString().isNotBlank()) this@loadImage.setImageDrawable(resource)
+			Logger.printMessage("Image drawable ($resource) is requested to load.")
+		}
 
-			is String -> {
-				when (tag) {
-					ImageTags.CARD -> {
-						val newResource = resource.replace(Image.DEFAULT, Image.CARD)
-						Glide.with(this@loadImage.context).load(newResource)
-							.diskCacheStrategy(DiskCacheStrategy.ALL)
-							.transition(withCrossFade())
-							.transform(CenterCrop(), RoundedCorners(IntValue.NUMBER_10))
-							.placeholder(R.drawable.rounded_card_background_black)
-							.error(R.drawable.rounded_card_background_black).into(this@loadImage)
-						Logger.printMessage("Card Image url with optimized ($newResource) is requested to load.")
-					}
+		is String -> {
+			when (tag) {
+				ImageTags.CARD -> {
+					val newResource = resource.replace(Image.DEFAULT, Image.CARD)
+					Glide.with(this@loadImage.context).load(newResource)
+						.diskCacheStrategy(DiskCacheStrategy.ALL)
+						.transition(withCrossFade())
+						.transform(CenterCrop(), RoundedCorners(IntValue.NUMBER_10))
+						.placeholder(R.drawable.rounded_card_background_black)
+						.error(R.drawable.rounded_card_background_black).into(this@loadImage)
+					Logger.printMessage("Card Image url with optimized ($newResource) is requested to load.")
+				}
 
-					ImageTags.ARTIST_VENUE -> {
-						val newResource = resource.replace(Image.DEFAULT, Image.CIRCLE)
-						Glide.with(this@loadImage.context).load(newResource)
-							.diskCacheStrategy(DiskCacheStrategy.ALL)
-							.transition(withCrossFade())
-							.transform(CenterCrop(), RoundedCorners(IntValue.NUMBER_2000))
-							.placeholder(R.drawable.rounded_card_background_white_10)
-							.error(R.drawable.rounded_card_background_white_10).into(this@loadImage)
-						Logger.printMessage("Artist or Venue Image url with optimized ($newResource) is requested to load.")
-					}
+				ImageTags.ARTIST_VENUE -> {
+					val newResource = resource.replace(Image.DEFAULT, Image.CIRCLE)
+					Glide.with(this@loadImage.context).load(newResource)
+						.diskCacheStrategy(DiskCacheStrategy.ALL)
+						.transition(withCrossFade())
+						.transform(CenterCrop(), RoundedCorners(IntValue.NUMBER_2000))
+						.placeholder(R.drawable.rounded_card_background_white_10)
+						.error(R.drawable.rounded_card_background_white_10).into(this@loadImage)
+					Logger.printMessage("Artist or Venue Image url with optimized ($newResource) is requested to load.")
+				}
 
-					ImageTags.HERO -> {
-						val newResource = resource.replace(Image.DEFAULT, Image.HERO)
-						Glide.with(this@loadImage.context).load(newResource)
-							.diskCacheStrategy(DiskCacheStrategy.ALL)
-							.transition(withCrossFade()).error(R.drawable.background_dark_black)
-							.into(this@loadImage)
-						Logger.printMessage("Hero Image url with optimized ($newResource) is requested to load.")
-					}
+				ImageTags.HERO -> {
+					val newResource = resource.replace(Image.DEFAULT, Image.HERO)
+					Glide.with(this@loadImage.context).load(newResource)
+						.diskCacheStrategy(DiskCacheStrategy.ALL)
+						.transition(withCrossFade()).error(R.drawable.background_dark_black)
+						.into(this@loadImage)
+					Logger.printMessage("Hero Image url with optimized ($newResource) is requested to load.")
+				}
 
-					ImageTags.LOGO -> {
-						val newResource = resource.replace(Image.DEFAULT, Image.LOGO)
-						Glide.with(this@loadImage.context).load(newResource)
-							.diskCacheStrategy(DiskCacheStrategy.ALL)
-							.transition(withCrossFade()).error(R.drawable.background_transparent)
-							.into(this@loadImage)
-						Logger.printMessage("Logo Image url with optimized ($newResource) is requested to load.")
-					}
+				ImageTags.LOGO -> {
+					val newResource = resource.replace(Image.DEFAULT, Image.LOGO)
+					Glide.with(this@loadImage.context).load(newResource)
+						.diskCacheStrategy(DiskCacheStrategy.ALL)
+						.transition(withCrossFade()).error(R.drawable.background_transparent)
+						.into(this@loadImage)
+					Logger.printMessage("Logo Image url with optimized ($newResource) is requested to load.")
+				}
 
-					ImageTags.DEFAULT -> {
-						Glide.with(this@loadImage.context).load(resource)
-							.diskCacheStrategy(DiskCacheStrategy.ALL)
-							.transition(withCrossFade()).error(R.drawable.background_black)
-							.into(this@loadImage)
-						Logger.printMessage("Image url with optimized ($resource) is requested to load.")
-					}
+				ImageTags.DEFAULT -> {
+					Glide.with(this@loadImage.context).load(resource)
+						.diskCacheStrategy(DiskCacheStrategy.ALL)
+						.transition(withCrossFade()).error(R.drawable.background_black)
+						.into(this@loadImage)
+					Logger.printMessage("Image url with optimized ($resource) is requested to load.")
+				}
 
-					ImageTags.QR -> {
-						this@loadImage.clipToOutline = true
-						Glide.with(this@loadImage.context).load(resource)
-							.diskCacheStrategy(DiskCacheStrategy.ALL)
-							.transition(withCrossFade())
-							.transform(CenterInside(), RoundedCorners(IntValue.NUMBER_5))
-							.placeholder(this@loadImage.drawable)
-							.error(R.drawable.qr_code_background_transparent).into(this@loadImage)
-						Logger.printMessage("QR image url ($resource) is requested to load.")
-					}
+				ImageTags.QR -> {
+					this@loadImage.clipToOutline = true
+					Glide.with(this@loadImage.context).load(resource)
+						.diskCacheStrategy(DiskCacheStrategy.ALL)
+						.transition(withCrossFade())
+						.transform(CenterInside(), RoundedCorners(IntValue.NUMBER_5))
+						.placeholder(this@loadImage.drawable)
+						.error(R.drawable.qr_code_background_transparent).into(this@loadImage)
+					Logger.printMessage("QR image url ($resource) is requested to load.")
+				}
 
-					ImageTags.AVATAR -> {
-						this@loadImage.clipToOutline = true
-						Glide.with(this@loadImage.context).load(resource)
-							.diskCacheStrategy(DiskCacheStrategy.ALL)
-							.transition(withCrossFade()).transform(CircleCrop())
-							.placeholder(this@loadImage.drawable)
-							.error(R.drawable.qr_code_background_transparent).into(this@loadImage)
-						Logger.printMessage("Profile avatar image url ($resource) is requested to load.")
-					}
+				ImageTags.AVATAR -> {
+					this@loadImage.clipToOutline = true
+					Glide.with(this@loadImage.context).load(resource)
+						.diskCacheStrategy(DiskCacheStrategy.ALL)
+						.transition(withCrossFade()).transform(CircleCrop())
+						.placeholder(this@loadImage.drawable)
+						.error(R.drawable.qr_code_background_transparent).into(this@loadImage)
+					Logger.printMessage("Profile avatar image url ($resource) is requested to load.")
 				}
 			}
-
-			is Int -> {
-				if (resource.toString().isNotBlank()) this@loadImage.setImageResource(resource)
-				Logger.printMessage("Image app resource ($resource) is requested to load.")
-			}
-
-			is Bitmap -> {
-				if (resource.toString().isNotBlank()) this@loadImage.setImageBitmap(resource)
-				Logger.printMessage("Image bitmap ($resource) is requested to load.")
-			}
-
-			else -> {
-				Logger.printMessage("Unknown image resource is requested to load. Check resource type and add equivalent case.")
-			}
 		}
+
+		is Int -> {
+			if (resource.toString().isNotBlank()) this@loadImage.setImageResource(resource)
+			Logger.printMessage("Image app resource ($resource) is requested to load.")
+		}
+
+		is Bitmap -> {
+			if (resource.toString().isNotBlank()) this@loadImage.setImageBitmap(resource)
+			Logger.printMessage("Image bitmap ($resource) is requested to load.")
+		}
+
+		else -> {
+			Logger.printMessage("Unknown image resource is requested to load. Check resource type and add equivalent case.")
+		}
+	}
 
 }

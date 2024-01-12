@@ -175,8 +175,8 @@ class ShowsScreen : BaseFragment<ShowsViewModel, FragmentShowsScreenBinding>() {
 				fetch(
 					eventResponse,
 					isLoaderEnabled = true,
-					canUserAccessScreen = false,
-					shouldBeInBackground = false
+					canUserAccessScreen = true,
+					shouldBeInBackground = true
 				) {
 					eventResponse.response?.let { eventStreamData ->
 						eventStreamData.data?.let {

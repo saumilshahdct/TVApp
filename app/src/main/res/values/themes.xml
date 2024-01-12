@@ -14,17 +14,7 @@
 		<item name="postSplashScreenTheme">@style/Theme.Veeps</item>
 	</style>-->
 
-	<style name="dialog" parent="Base.Theme.MaterialComponents.Dialog.Alert">
-		<item name="android:windowMinWidthMajor">50%</item>
-		<item name="android:windowMinWidthMinor">50%</item>
-	</style>
-
-	<style name="dialog_full" parent="Base.Theme.MaterialComponents.Dialog.Alert">
-		<item name="android:windowMinWidthMajor">100%</item>
-		<item name="android:windowMinWidthMinor">100%</item>
-	</style>
-
-	<style name="CornerSize50Percent" parent="">
+    <style name="CornerSize50Percent" parent="">
 		<item name="cornerSize">50%</item>
 	</style>
 

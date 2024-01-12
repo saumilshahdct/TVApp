@@ -1,25 +1,13 @@
 package com.veeps.app.feature.contentRail.adapter
 
 import android.content.Context
-import android.graphics.Rect
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.leanback.widget.BaseGridView
-import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.rubensousa.dpadrecyclerview.ChildAlignment
-import com.rubensousa.dpadrecyclerview.DpadLoopDirection
 import com.rubensousa.dpadrecyclerview.DpadViewHolder
-import com.rubensousa.dpadrecyclerview.OnViewHolderSelectedListener
-import com.rubensousa.dpadrecyclerview.ParentAlignment
 import com.veeps.app.R
 import com.veeps.app.databinding.RowContentNewRailBinding
-import com.veeps.app.databinding.RowContentRailBinding
-import com.veeps.app.extension.dpToPx
-import com.veeps.app.feature.card.adapter.CardAdapter
 import com.veeps.app.feature.card.adapter.CircularCardAdapter
 import com.veeps.app.feature.card.adapter.PortraitCardAdapter
 import com.veeps.app.feature.contentRail.model.RailData

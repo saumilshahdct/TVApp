@@ -72,8 +72,8 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 			listing.visibility = View.GONE
 			description.visibility = View.GONE
 			loader.requestFocus()
-			entities.toMutableList().clear()
-			allEventsRail.toMutableList().clear()
+			entities = arrayListOf()
+			allEventsRail = arrayListOf()
 		}
 		notifyAppEvents()
 		loadAppContent()
@@ -87,6 +87,7 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 			entityScope = "$entity.$entityId"
 			entity = entity.plus("s")
 		}
+		entities = arrayListOf()
 		fetchEntityUpcomingEvents()
 		fetchEntityDetails()
 	}
@@ -150,6 +151,7 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 						cardType = CardTypes.PORTRAIT,
 						entitiesType = EntityTypes.EVENT
 					)
+					allEventsRail = arrayListOf()
 					allEventsRail.add(rail)
 				}
 				if (allEventsRail.none { it.entities.isNotEmpty() }) {

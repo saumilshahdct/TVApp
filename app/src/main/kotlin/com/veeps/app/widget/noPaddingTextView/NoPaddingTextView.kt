@@ -6,7 +6,6 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
-import com.veeps.app.util.Logger
 
 
 class NoPaddingTextView : AppCompatTextView {

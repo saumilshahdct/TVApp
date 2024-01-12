@@ -2,14 +2,12 @@ package com.veeps.app.feature.card.adapter
 
 import android.content.Context
 import android.graphics.Color
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
 import androidx.core.graphics.BlendModeColorFilterCompat
 import androidx.core.graphics.BlendModeCompat
-import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
@@ -18,16 +16,11 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.rubensousa.dpadrecyclerview.DpadViewHolder
 import com.veeps.app.R
-import com.veeps.app.databinding.RowCardBinding
 import com.veeps.app.databinding.RowCardPortraitBinding
 import com.veeps.app.extension.isOfType
-import com.veeps.app.feature.artist.ui.ArtistScreen
 import com.veeps.app.feature.contentRail.model.Entities
 import com.veeps.app.feature.contentRail.model.UserStats
-import com.veeps.app.feature.event.ui.EventScreen
-import com.veeps.app.feature.venue.ui.VenueScreen
 import com.veeps.app.util.AppAction
-import com.veeps.app.util.AppConstants
 import com.veeps.app.util.AppHelper
 import com.veeps.app.util.AppUtil
 import com.veeps.app.util.BadgeStatus
@@ -40,9 +33,6 @@ import com.veeps.app.util.Image
 import com.veeps.app.util.IntValue
 import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.math.roundToInt
 

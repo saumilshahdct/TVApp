@@ -5,16 +5,10 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.veeps.app.data.common.APIRepository
-import com.veeps.app.feature.contentRail.model.RailData
-import com.veeps.app.util.DEFAULT
 
 class EventViewModel : ViewModel(), DefaultLifecycleObserver {
 	var isVisible = MutableLiveData(false)
 	var eventId: String = ""
-
-	override fun onCleared() {
-		super.onCleared()
-	}
 
 	override fun onResume(owner: LifecycleOwner) {
 		super.onResume(owner)
@@ -26,7 +20,9 @@ class EventViewModel : ViewModel(), DefaultLifecycleObserver {
 		super.onPause(owner)
 	}
 
-	fun addRemoveWatchListEvent(eventId: HashMap<String, Any>, isRemoveFromWatchList: Boolean) = APIRepository().addRemoveWatchListEvent(eventId, isRemoveFromWatchList)
+	fun addRemoveWatchListEvent(eventId: HashMap<String, Any>, isRemoveFromWatchList: Boolean) =
+		APIRepository().addRemoveWatchListEvent(eventId, isRemoveFromWatchList)
+
 	fun fetchEventStreamDetails() = APIRepository().fetchEventStreamDetails(eventId)
 	fun fetchEventDetails() = APIRepository().fetchEventDetails(eventId)
 	fun fetchEventProductDetails() = APIRepository().fetchEventProductDetails(eventId)

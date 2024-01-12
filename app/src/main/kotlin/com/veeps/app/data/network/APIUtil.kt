@@ -1,6 +1,5 @@
 package com.veeps.app.data.network
 
-import android.util.Base64
 import com.google.gson.GsonBuilder
 import com.veeps.app.BuildConfig
 import com.veeps.app.data.common.BaseResponseGeneric
@@ -22,12 +21,10 @@ import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppConstants
 import com.veeps.app.util.AppPreferences
 import com.veeps.app.util.Logger
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okhttp3.logging.HttpLoggingInterceptor
-import org.json.JSONObject
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -41,7 +38,6 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Url
-import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 
 object APIUtil {
@@ -60,43 +56,29 @@ object APIUtil {
 				val originalHttpUrl = request.url
 				val builder: Request.Builder = request.newBuilder().header(
 					"Authorization", "Bearer " + AppPreferences.get(
-						if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppConstants.generatedJWT else AppConstants.authenticatedUserToken, "AuthenticatedUserToken"
+						if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppConstants.generatedJWT else AppConstants.authenticatedUserToken,
+						"AuthenticatedUserToken"
 					)
 				)
 				request = builder.build()
-				if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppPreferences.remove(AppConstants.generatedJWT)
+				if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppPreferences.remove(
+					AppConstants.generatedJWT
+				)
 				chain.proceed(request)
 			} else {
 				throw NoConnectivityException()
 			}
 		}.addInterceptor { chain ->
 			val response = chain.proceed(chain.request())
-			var isBodyEncoded: Boolean
 			var bodyString: String
 			response.body.let {
 				bodyString = response.body.string()
-				isBodyEncoded = false
-//					bodyString.split("\\.".toRegex()).size > 2 && !bodyString.startsWith("{") && !bodyString.endsWith(
-//						"}"
-//					)
-				if (isBodyEncoded) {
-					val jsonObject = JSONObject(
-						String(
-							Base64.decode(
-								bodyString.split("\\.".toRegex())[1], Base64.URL_SAFE
-							), StandardCharsets.UTF_8
-						)
-					)
-					bodyString = jsonObject.toString()
-				}
+				val tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs)
+				val tookS = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - startNs)
+				Logger.printAPILogs(chain, response, bodyString, tookMs, tookS)
 			}
-
 			val newResponse: okhttp3.Response.Builder = response.newBuilder()
-			newResponse.body(bodyString.toResponseBody(if (isBodyEncoded) "application/json".toMediaTypeOrNull() else response.body.contentType()))
-
-			val tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs)
-			val tookS = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - startNs)
-			Logger.printAPILogs(chain, response, bodyString, tookMs, tookS)
+			newResponse.body(bodyString.toResponseBody(response.body.contentType()))
 			newResponse.build()
 		}.addInterceptor(logging).connectTimeout(1, TimeUnit.MINUTES)
 			.readTimeout(1, TimeUnit.MINUTES).writeTimeout(1, TimeUnit.MINUTES).build()
@@ -133,7 +115,10 @@ object APIUtil {
 		suspend fun fetchContinueWatchingRail(): Response<RailData>
 
 		@GET
-		suspend fun fetchUserStats(@Url userStatsAPIURL: String, @Query("e") eventIds: String): Response<UserStatsResponse>
+		suspend fun fetchUserStats(
+			@Url userStatsAPIURL: String,
+			@Query("e") eventIds: String
+		): Response<UserStatsResponse>
 
 		@GET(APIConstants.fetchUpcomingEvents)
 		suspend fun fetchUpcomingEvents(): Response<RailData>
@@ -163,10 +148,10 @@ object APIUtil {
 		suspend fun fetchAllWatchListEvents(): Response<RailData>
 
 		@POST(APIConstants.watchListEvents)
-		suspend fun addWatchListEvent(@Body hashMap: HashMap<String, Any>):  Response<BaseResponseGeneric<Any>>
+		suspend fun addWatchListEvent(@Body hashMap: HashMap<String, Any>): Response<BaseResponseGeneric<Any>>
 
 		@HTTP(method = "DELETE", path = APIConstants.removeWatchListEvents, hasBody = true)
-		suspend fun removeWatchListEvent(@Body hashMap: HashMap<String, Any>):  Response<BaseResponseGeneric<Any>>
+		suspend fun removeWatchListEvent(@Body hashMap: HashMap<String, Any>): Response<BaseResponseGeneric<Any>>
 
 		@GET(APIConstants.fetchEventStreamDetails)
 		suspend fun fetchEventStreamDetails(@Path("EVENT_ID") entity: String): Response<BaseResponseGeneric<Entities>>
@@ -196,7 +181,17 @@ object APIUtil {
 		suspend fun fetchStoryBoard(@Url storyBoardURL: String): Response<StoryBoardImages>
 
 		@GET
-		suspend fun addStats(@Url addStatsAPIURL: String, @Query("cur") currentTime: String, @Query("pld") duration: String, @Query("plv") playerVersion: String, @Query("dvm") deviceModel: String, @Query("dvv") deviceVendor: String, @Query("pls") playbackStreamType: String, @Query("p") platform: String, @Query("s") userType: String): Response<BaseResponseGeneric<Any>>
+		suspend fun addStats(
+			@Url addStatsAPIURL: String,
+			@Query("cur") currentTime: String,
+			@Query("pld") duration: String,
+			@Query("plv") playerVersion: String,
+			@Query("dvm") deviceModel: String,
+			@Query("dvv") deviceVendor: String,
+			@Query("pls") playbackStreamType: String,
+			@Query("p") platform: String,
+			@Query("s") userType: String
+		): Response<BaseResponseGeneric<Any>>
 
 	}
 }

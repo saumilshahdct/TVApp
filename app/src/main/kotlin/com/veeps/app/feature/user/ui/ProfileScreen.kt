@@ -23,11 +23,6 @@ class ProfileScreen : BaseFragment<ProfileViewModel, FragmentProfileScreenBindin
 			label.requestFocus()
 		}
 		notifyAppEvents()
-		loadAppContent()
-	}
-
-	private fun loadAppContent() {
-
 	}
 
 	private fun notifyAppEvents() {

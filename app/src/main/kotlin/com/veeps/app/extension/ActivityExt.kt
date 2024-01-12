@@ -8,7 +8,6 @@ import android.os.Parcelable
 import android.widget.Button
 import android.widget.Toast
 import com.veeps.app.R
-import com.veeps.app.application.Veeps
 import java.io.Serializable
 
 fun Activity.showToast(message: CharSequence) =
@@ -72,14 +71,6 @@ fun Intent.putExtras(vararg params: Pair<String, Any>): Intent {
 		}
 	}
 	return this
-}
-
-fun Button.makeEnabled(enable: Boolean = true) {
-	if (enable) {/*background = ContextCompat.getDrawable(context, R.drawable.button_gradient)*/
-		isEnabled = true
-	} else {
-		makeDisabled()
-	}
 }
 
 fun Button.makeDisabled() {/*background = ContextCompat.getDrawable(context, R.drawable.disabled_button)*/

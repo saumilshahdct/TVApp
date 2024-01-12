@@ -45,7 +45,6 @@
 
     <!-- 33 HORIZONTALLY -->
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/pre_third_width"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -53,7 +52,6 @@
 
     <!-- 50 HORIZONTALLY -->
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/half_width"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -61,7 +59,6 @@
 
     <!-- 66 HORIZONTALLY -->
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/post_third_width"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -77,7 +74,6 @@
 
     <!-- 25 VERTICALLY -->
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/pre_quarter_height"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -85,7 +81,6 @@
 
     <!-- 33 VERTICALLY -->
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/pre_third_height"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -93,7 +88,6 @@
 
     <!-- 50 VERTICALLY -->
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/half_height"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -101,7 +95,6 @@
 
     <!-- 66 VERTICALLY -->
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/post_third_height"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -109,7 +102,6 @@
 
     <!-- 75 VERTICALLY -->
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/post_quarter_height"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"

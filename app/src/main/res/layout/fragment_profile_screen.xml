@@ -50,7 +50,7 @@
                 android:focusableInTouchMode="true"
                 android:includeFontPadding="false"
                 android:padding="10dp"
-                android:text="Profile"
+                android:text="@string/profile_label"
                 android:textColor="@color/white"
                 android:textIsSelectable="false"
                 android:textSize="26sp"

@@ -95,6 +95,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			lifecycle.addObserver(viewModel)
 			loader.visibility = View.VISIBLE
 			logo.requestFocus()
+			rail = arrayListOf()
 			carousel.visibility = View.INVISIBLE
 			darkBackground.visibility = View.VISIBLE
 			paymentLoader.visibility = View.GONE
@@ -204,17 +205,24 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			}
 		}
 		binding.myShows.setOnFocusChangeListener { _, hasFocus ->
+			binding.myShows.tag = hasFocus
 			context?.let { context ->
 				binding.myShowsLabel.compoundDrawables.forEach { drawable ->
 					drawable?.setTint(
 						ContextCompat.getColor(
-							context, if (hasFocus) R.color.dark_black else R.color.white
+							context,
+							if (hasFocus.or(binding.myShows.isFocused)
+									.or(binding.myShows.hasFocus())
+							) R.color.dark_black else R.color.white
 						)
 					)
 				}
 				binding.myShowsLabel.setTextColor(
 					ContextCompat.getColor(
-						context, if (hasFocus) R.color.dark_black else R.color.white
+						context,
+						if (hasFocus.or(binding.myShows.isFocused)
+								.or(binding.myShows.hasFocus())
+						) R.color.dark_black else R.color.white
 					)
 				)
 			}
@@ -256,13 +264,16 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			return@setOnKeyListener false
 		}
 
+		binding.scrollView.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+			Logger.printWithTag("myshows", "scroll change - ${binding.scrollView.scrollY} -- ${binding.scrollView.scrollX} - $scrollY -- $scrollX - $oldScrollX -- $oldScrollY ")
+				binding.optionsContainer.visibility = if (scrollY > 0) View.GONE else View.VISIBLE
+		}
+
 		binding.description.setOnKeyListener { _, keyCode, keyEvent ->
 			if (keyEvent.action == KeyEvent.ACTION_DOWN) {
-				if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-					binding.scrollView.pageScroll(View.FOCUS_DOWN)
-				}
 				if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
 					if (binding.scrollView.scrollY == 0) {
+						Logger.printWithTag("myshows", "00 scroll - ${binding.scrollView.scrollY} -- ${binding.scrollView.scrollX}")
 						if (!rail.none { it.entities.isNotEmpty() }) {
 							binding.listing.visibility = View.VISIBLE
 							binding.listing.requestFocus()
@@ -277,8 +288,6 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 								player.play()
 							}
 						}
-					} else {
-						binding.scrollView.pageScroll(View.FOCUS_UP)
 					}
 				}
 			}
@@ -524,8 +533,9 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		}
 		val title = eventDetails.eventName ?: DEFAULT.EMPTY_STRING
 		binding.title.text = title
-		val description =
+		var description =
 			eventDetails.eventDescription?.ifBlank { DEFAULT.EMPTY_STRING } ?: DEFAULT.EMPTY_STRING
+		description += "\n\n\n\n\n"
 		context?.let {
 			Markwon.create(it).setMarkdown(binding.description, description)
 		} ?: run {
@@ -541,11 +551,11 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 
 		val status = eventDetails.status?.lowercase() ?: DEFAULT.EMPTY_STRING
 		if (eventDetails.eventReWatchDuration.isNullOrBlank()) {
-			binding.reWatch.text = "Rewatch is not available for this event."
+			binding.reWatch.text = getString(R.string.re_watch_not_available)
 		} else {
 			val reWatchDuration = eventDetails.eventReWatchDuration!!.ifBlank { "0" }.toInt()
 			if (reWatchDuration == 0) {
-				binding.reWatch.text = "This event is live only. There will be no rewatch period."
+				binding.reWatch.text = getString(R.string.no_re_watch_period)
 			} else {
 				val reWatchDurationString = AppUtil.calculateReWatchTime(reWatchDuration)
 				when (status) {
@@ -566,8 +576,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 					}
 
 					else -> {
-						binding.reWatch.text =
-							"Rewatch available for $reWatchDuration after the start of the event."
+						binding.reWatch.text = getString(R.string.re_watch_available_for_time, reWatchDuration.toString())
 					}
 				}
 			}
@@ -609,6 +618,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			entitiesType = EntityTypes.VENUE
 		)
 
+		rail = arrayListOf()
 		rail.add(artistRail)
 		rail.add(venueRail)
 		if (rail.none { it.entities.isNotEmpty() }) {
@@ -692,11 +702,39 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		binding.myShows.isSelected = isAdded
 		binding.myShowsLabel.setCompoundDrawablesRelativeWithIntrinsicBounds(
 			if (binding.myShows.isSelected) {
-				if (binding.myShows.hasFocus() || binding.myShows.isFocused) R.drawable.check_black else R.drawable.check_white
+				Logger.printWithTag(
+					"myshows",
+					"has focus ${binding.myShows.hasFocus()} + is focused ${binding.myShows.isFocused} + tag is ${binding.myShows.tag}"
+				)
+				if (binding.myShows.hasFocus()) R.drawable.check_black else R.drawable.check_white
 			} else {
-				if (binding.myShows.hasFocus() || binding.myShows.isFocused) R.drawable.add_black else R.drawable.add_white
+				Logger.printWithTag(
+					"myshows",
+					"has focus ${binding.myShows.hasFocus()} + is focused ${binding.myShows.isFocused} + tag is ${binding.myShows.tag}"
+				)
+				if (binding.myShows.hasFocus()) R.drawable.add_black else R.drawable.add_white
 			}, 0, 0, 0
 		)
+		context?.let { context ->
+			binding.myShowsLabel.compoundDrawables.forEach { drawable ->
+				drawable?.setTint(
+					ContextCompat.getColor(
+						context,
+						if (binding.myShows.isFocused.or(binding.myShows.hasFocus())) R.color.dark_black else R.color.white
+					)
+				)
+			}
+			binding.myShowsLabel.setTextColor(
+				ContextCompat.getColor(
+					context,
+					if (binding.myShows.isFocused.or(binding.myShows.hasFocus())) R.color.dark_black else R.color.white
+				)
+			)
+			Logger.printWithTag(
+				"myshows",
+				"has focus ${binding.myShows.hasFocus()} + is focused ${binding.myShows.isFocused} + tag is ${binding.myShows.tag}"
+			)
+		}
 	}
 
 	private fun clearAllReservations() {
