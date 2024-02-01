@@ -150,6 +150,8 @@ object Screens {
 	const val EVENT = "EVENT"
 	const val SHOWS = "SHOWS"
 	const val EXIT_APP = "EXIT_APP"
+	const val PLAYER_ERROR = "PLAYER_ERROR"
+	const val STREAM_END = "STREAM_END"
 }
 
 object EntityTypes {
@@ -165,6 +167,21 @@ object EventTypes {
 	const val EXPIRED = "EXPIRED"
 	const val ENDED = "ENDED"
 	const val ALLExpired = "All expired"
+}
+
+object LastSignalTypes {
+	const val NO_SIGNAL = "no_signal"
+	const val DISCONNECTED = "disconnected"
+	const val CONNECTED = "connected"
+	const val CONNECTING = "connecting"
+	const val IDLE = "idle"
+	const val ACTIVE = "active"
+	const val RECORDING = "recording"
+	const val STREAM_ENDED = "stream_ended"
+	const val STREAM_RESTARTED = "stream_restarted"
+	const val ON_DEMAND_READY = "on_demand_ready"
+	const val VOD_READY = "VOD_ready"
+	const val CHAT_MESSAGE_DELETED = "chat_message_deleted"
 }
 
 object BadgeStatus {

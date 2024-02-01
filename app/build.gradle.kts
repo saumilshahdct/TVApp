@@ -1,3 +1,5 @@
+import io.sentry.android.gradle.extensions.InstrumentationFeature
+import io.sentry.android.gradle.instrumentation.logcat.LogcatLevel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -5,7 +7,7 @@ plugins {
 	id("com.android.application")
 	id("org.jetbrains.kotlin.android")
 	id("kotlin-kapt")
-	id("io.sentry.android.gradle") version "3.11.1"
+	id("io.sentry.android.gradle") version "4.1.1"
 	id("com.google.devtools.ksp")
 }
 
@@ -31,7 +33,7 @@ android {
 		applicationId = "com.veeps.app"
 		minSdk = 24
 		targetSdk = 34
-		versionCode = 1
+		versionCode = 3
 		versionName = "1.0"
 		signingConfig = signingConfigs.getByName("release")
 		testFunctionalTest = true
@@ -41,7 +43,7 @@ android {
 	buildTypes {
 		getByName("release") {
 			isMinifyEnabled = false
-			versionNameSuffix = ".0"
+			versionNameSuffix = ".2"
 			proguardFiles(
 				getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
 			)
@@ -74,13 +76,13 @@ android {
 	productFlavors {
 		create("stage") {
 			dimension = "environment"
-			versionCode = 1
+			versionCode = 3
 			signingConfig = signingConfigs.getByName("debug")
 			buildConfigField("Boolean", "isProduction", "false")
 		}
 		create("production") {
 			dimension = "environment"
-			versionCode = 1
+			versionCode = 3
 			signingConfig = signingConfigs.getByName("release")
 			buildConfigField("Boolean", "isProduction", "true")
 		}
@@ -139,7 +141,9 @@ dependencies {
 	implementation("io.jsonwebtoken:jjwt-api:0.12.3")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.3")
 	runtimeOnly("io.jsonwebtoken:jjwt-orgjson:0.12.3") {
-		exclude(group = "org.json", module = "json") // Excludes the support library because it's already included by Android natively.
+		exclude(
+			group = "org.json", module = "json"
+		) // Excludes the support library because it's already included by Android natively.
 	}
 
 	/* Joda Time */
@@ -159,11 +163,35 @@ dependencies {
 	implementation("com.github.Dimezis:BlurView:version-2.0.3")
 
 	/* PubNub */
-	implementation("com.pubnub:pubnub-kotlin:7.7.4")
+	implementation("com.pubnub:pubnub-kotlin:7.8.0")
 
 	/* Lottie Animation */
 	implementation("com.airbnb.android:lottie:6.3.0")
 
 	/* Markdown Parser */
-	implementation ("io.noties.markwon:core:4.6.2")
+	implementation("io.noties.markwon:core:4.6.2")
+}
+
+sentry {
+	org.set("veeps")
+	projectName.set("firetv")
+	includeProguardMapping.set(true)
+	autoUploadProguardMapping.set(true)
+	authToken.set("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")
+	includeSourceContext.set(true)
+	tracingInstrumentation {
+		enabled.set(true)
+		features.set(
+			setOf(
+				InstrumentationFeature.DATABASE,
+				InstrumentationFeature.FILE_IO,
+				InstrumentationFeature.OKHTTP,
+				InstrumentationFeature.COMPOSE
+			)
+		)
+		logcat {
+			enabled.set(true)
+			minLevel.set(LogcatLevel.VERBOSE)
+		}
+	}
 }

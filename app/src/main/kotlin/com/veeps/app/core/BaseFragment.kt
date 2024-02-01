@@ -106,7 +106,7 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 						block.invoke()
 					}
 
-					APIConstants.fetchEventStreamDetails, APIConstants.fetchEventDetails, APIConstants.fetchEventProductDetails, APIConstants.clearAllReservations, APIConstants.fetchStoryBoard -> {
+					APIConstants.fetchCompanions, APIConstants.fetchUserStats, APIConstants.fetchEventStreamDetails, APIConstants.fetchEventDetails, APIConstants.fetchEventProductDetails, APIConstants.clearAllReservations, APIConstants.fetchStoryBoard -> {
 						block.invoke()
 					}
 
@@ -116,6 +116,9 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 						} ?: helper.showErrorOnScreen(
 							dataResource.tag, getString(R.string.unknown_error)
 						)
+						if (dataResource.tag == APIConstants.setNewReservation) {
+							block.invoke()
+						}
 					}
 				}
 				Logger.print("Error While Calling API for ${dataResource.tag} - " + dataResource.message)

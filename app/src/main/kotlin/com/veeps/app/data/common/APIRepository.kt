@@ -175,6 +175,12 @@ class APIRepository : BaseDataSource() {
 		}
 	}
 
+	fun fetchCompanions(eventDetails: HashMap<String, Any>) = performOperation(APIConstants.fetchCompanions) {
+		getResult(APIConstants.fetchCompanions) {
+			APIUtil.service.fetchCompanions(eventDetails)
+		}
+	}
+
 	fun addStats(
 		addStatsAPIURL: String,
 		currentTime: String,

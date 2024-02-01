@@ -8,6 +8,8 @@ import com.veeps.app.util.Logger
 import io.github.inflationx.calligraphy3.CalligraphyConfig
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor
 import io.github.inflationx.viewpump.ViewPump
+import io.sentry.SentryOptions
+import io.sentry.android.core.SentryAndroid
 
 class Veeps : Application() {
 
@@ -18,6 +20,14 @@ class Veeps : Application() {
 	override fun onCreate() {
 		super.onCreate()
 		appContext = applicationContext
+		SentryAndroid.init(appContext) { options ->
+			options.isReportHistoricalAnrs = true
+			options.isAttachAnrThreadDump = true
+			options.tracesSampleRate = 1.0
+			options.tracesSampler = SentryOptions.TracesSamplerCallback {
+				null
+			}
+		}
 		Thread.setDefaultUncaughtExceptionHandler(CrashHandler())
 		ViewPump.init(
 			ViewPump.builder().addInterceptor(

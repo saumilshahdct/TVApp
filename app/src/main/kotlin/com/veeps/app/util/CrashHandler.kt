@@ -2,12 +2,14 @@ package com.veeps.app.util
 
 import android.os.Build
 import android.os.Process
+import io.sentry.Sentry
 import java.io.PrintWriter
 import java.io.StringWriter
 import kotlin.system.exitProcess
 
 class CrashHandler : Thread.UncaughtExceptionHandler {
 	override fun uncaughtException(thread: Thread, exception: Throwable) {
+		Sentry.captureException(exception)
 		val stackTrace = StringWriter()
 		exception.printStackTrace(PrintWriter(stackTrace))
 		val errorReport = """App Got Crashed

@@ -16,3 +16,6 @@ local.properties
 /keystore/
 /keystore/key certificate/
 /.idea/
+
+# Sentry Config File
+sentry.properties

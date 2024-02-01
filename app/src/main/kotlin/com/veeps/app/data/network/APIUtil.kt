@@ -16,11 +16,15 @@ import com.veeps.app.feature.search.model.SearchResponse
 import com.veeps.app.feature.signIn.model.PollingData
 import com.veeps.app.feature.signIn.model.SignInData
 import com.veeps.app.feature.user.model.UserData
+import com.veeps.app.feature.video.model.Companion
 import com.veeps.app.feature.video.model.StoryBoardImages
 import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppConstants
 import com.veeps.app.util.AppPreferences
 import com.veeps.app.util.Logger
+import io.sentry.HttpStatusCodeRange
+import io.sentry.okhttp.SentryOkHttpEventListener
+import io.sentry.okhttp.SentryOkHttpInterceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -30,6 +34,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
@@ -49,38 +54,44 @@ object APIUtil {
 		logging.level =
 			if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
 
-		val httpClient = OkHttpClient.Builder().addInterceptor { chain ->
-			if (isAppConnected()) {
-				startNs = System.nanoTime()
-				var request = chain.request()
-				val originalHttpUrl = request.url
-				val builder: Request.Builder = request.newBuilder().header(
-					"Authorization", "Bearer " + AppPreferences.get(
-						if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppConstants.generatedJWT else AppConstants.authenticatedUserToken,
-						"AuthenticatedUserToken"
+		val httpClient = OkHttpClient.Builder().addInterceptor(
+				SentryOkHttpInterceptor(
+					captureFailedRequests = true, failedRequestStatusCodes = listOf(
+						HttpStatusCodeRange(400, 599)
 					)
 				)
-				request = builder.build()
-				if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppPreferences.remove(
-					AppConstants.generatedJWT
-				)
-				chain.proceed(request)
-			} else {
-				throw NoConnectivityException()
-			}
-		}.addInterceptor { chain ->
-			val response = chain.proceed(chain.request())
-			var bodyString: String
-			response.body.let {
-				bodyString = response.body.string()
-				val tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs)
-				val tookS = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - startNs)
-				Logger.printAPILogs(chain, response, bodyString, tookMs, tookS)
-			}
-			val newResponse: okhttp3.Response.Builder = response.newBuilder()
-			newResponse.body(bodyString.toResponseBody(response.body.contentType()))
-			newResponse.build()
-		}.addInterceptor(logging).connectTimeout(1, TimeUnit.MINUTES)
+			).eventListener(SentryOkHttpEventListener()).addInterceptor { chain ->
+				if (isAppConnected()) {
+					startNs = System.nanoTime()
+					var request = chain.request()
+					val originalHttpUrl = request.url
+					val builder: Request.Builder = request.newBuilder().header(
+						"Authorization", "Bearer " + AppPreferences.get(
+							if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppConstants.generatedJWT else AppConstants.authenticatedUserToken,
+							"AuthenticatedUserToken"
+						)
+					)
+					request = builder.build()
+					if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppPreferences.remove(
+						AppConstants.generatedJWT
+					)
+					chain.proceed(request)
+				} else {
+					throw NoConnectivityException()
+				}
+			}.addInterceptor { chain ->
+				val response = chain.proceed(chain.request())
+				var bodyString: String
+				response.body.let {
+					bodyString = response.body.string()
+					val tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs)
+					val tookS = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - startNs)
+					Logger.printAPILogs(chain, response, bodyString, tookMs, tookS)
+				}
+				val newResponse: okhttp3.Response.Builder = response.newBuilder()
+				newResponse.body(bodyString.toResponseBody(response.body.contentType()))
+				newResponse.build()
+			}.addInterceptor(logging).connectTimeout(1, TimeUnit.MINUTES)
 			.readTimeout(1, TimeUnit.MINUTES).writeTimeout(1, TimeUnit.MINUTES).build()
 
 		Retrofit.Builder().baseUrl(APIConstants.BASE_URL)
@@ -116,8 +127,7 @@ object APIUtil {
 
 		@GET
 		suspend fun fetchUserStats(
-			@Url userStatsAPIURL: String,
-			@Query("e") eventIds: String
+			@Url userStatsAPIURL: String, @Query("e") eventIds: String
 		): Response<UserStatsResponse>
 
 		@GET(APIConstants.fetchUpcomingEvents)
@@ -165,7 +175,7 @@ object APIUtil {
 		@POST(APIConstants.claimFreeTicketForEvent)
 		suspend fun claimFreeTicketForEvent(@Path("EVENT_ID") entity: String): Response<BaseResponseGeneric<Any>>
 
-		@GET(APIConstants.clearAllReservations)
+		@DELETE(APIConstants.clearAllReservations)
 		suspend fun clearAllReservations(): Response<BaseResponseGeneric<Any>>
 
 		@POST(APIConstants.setNewReservation)
@@ -176,6 +186,9 @@ object APIUtil {
 
 		@POST(APIConstants.createOrder)
 		suspend fun createOrder(@Body hashMap: HashMap<String, Any>): Response<BaseResponseGeneric<Any>>
+
+		@POST(APIConstants.fetchCompanions)
+		suspend fun fetchCompanions(@Body hashMap: HashMap<String, Any>): Response<BaseResponseGeneric<Companion>>
 
 		@GET
 		suspend fun fetchStoryBoard(@Url storyBoardURL: String): Response<StoryBoardImages>

@@ -178,6 +178,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			viewModel.eventId = entityId
 			entityScope = "$entity.$entityId"
 			entity = entity.plus("s")
+			Logger.printWithTag("IAP", " Event id -- $entityId")
 		}
 		binding.primaryLabel.isSelected = false
 		setupBlur()
@@ -265,15 +266,21 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		}
 
 		binding.scrollView.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
-			Logger.printWithTag("myshows", "scroll change - ${binding.scrollView.scrollY} -- ${binding.scrollView.scrollX} - $scrollY -- $scrollX - $oldScrollX -- $oldScrollY ")
-				binding.optionsContainer.visibility = if (scrollY > 0) View.GONE else View.VISIBLE
+			Logger.printWithTag(
+				"myshows",
+				"scroll change - ${binding.scrollView.scrollY} -- ${binding.scrollView.scrollX} - $scrollY -- $scrollX - $oldScrollX -- $oldScrollY "
+			)
+			binding.optionsContainer.visibility = if (scrollY > 0) View.GONE else View.VISIBLE
 		}
 
 		binding.description.setOnKeyListener { _, keyCode, keyEvent ->
 			if (keyEvent.action == KeyEvent.ACTION_DOWN) {
 				if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
 					if (binding.scrollView.scrollY == 0) {
-						Logger.printWithTag("myshows", "00 scroll - ${binding.scrollView.scrollY} -- ${binding.scrollView.scrollX}")
+						Logger.printWithTag(
+							"myshows",
+							"00 scroll - ${binding.scrollView.scrollY} -- ${binding.scrollView.scrollX}"
+						)
 						if (!rail.none { it.entities.isNotEmpty() }) {
 							binding.listing.visibility = View.VISIBLE
 							binding.listing.requestFocus()
@@ -374,6 +381,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 					}
 
 					"FAILED" -> {
+						homeViewModel.purchaseAction.postValue(null)
 						helper.showErrorOnScreen(
 							APIConstants.generateNewOrder, "Payment Failed. Please Try Again."
 						)
@@ -421,10 +429,12 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 							binding.primaryLabel.text =
 								ButtonLabels.BUY_TICKET.plus(product.displayPrice)
 							if (context?.isFireTV == true) {
+								Logger.printWithTag("IAP", " Event id -- ${viewModel.eventId} --- Product code -- ${product.productCode}")
 								PurchasingService.getProductData(hashSetOf(product.productCode))
 							}
 						}
 					} else {
+						product = Products()
 						binding.primaryLabel.text =
 							ButtonLabels.UNAVAILABLE.also { binding.primaryLabel.isSelected }
 					}
@@ -576,12 +586,14 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 					}
 
 					else -> {
-						binding.reWatch.text = getString(R.string.re_watch_available_for_time, reWatchDuration.toString())
+						binding.reWatch.text = getString(
+							R.string.re_watch_available_for_time_after_start, reWatchDurationString
+						)
 					}
 				}
 			}
 		}
-
+		rail = arrayListOf()
 		val artistEntities: ArrayList<Entities> = arrayListOf()
 		eventDetails.lineup.forEach { lineup ->
 			artistEntities.add(Entities(id = lineup.id?.ifBlank { DEFAULT.EMPTY_STRING }
@@ -601,30 +613,35 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			cardType = CardTypes.CIRCLE,
 			entitiesType = EntityTypes.ARTIST
 		)
-		val venueEntities: ArrayList<Entities> = arrayListOf()
-		venueEntities.add(Entities(id = eventDetails.venueId,
-			name = eventDetails.venueName,
-			landscapeUrl = eventDetails.venueLandscapeUrl,
-			portraitUrl = eventDetails.venuePortraitUrl?.ifBlank { DEFAULT.EMPTY_STRING }
-				?: DEFAULT.EMPTY_STRING,
-			logoUrl = eventDetails.venueLogoUrl?.ifBlank { DEFAULT.EMPTY_STRING }
-				?: DEFAULT.EMPTY_STRING))
-		val venueRail = RailData(
-			name = getString(
-				R.string.featuring_venue
-			),
-			entities = venueEntities,
-			cardType = CardTypes.CIRCLE,
-			entitiesType = EntityTypes.VENUE
-		)
-
-		rail = arrayListOf()
 		rail.add(artistRail)
-		rail.add(venueRail)
+
+		val venueEntities: ArrayList<Entities> = arrayListOf()
+		if (eventDetails.venueId != null) {
+			venueEntities.add(Entities(id = eventDetails.venueId,
+				name = eventDetails.venueName,
+				landscapeUrl = eventDetails.venueLandscapeUrl,
+				portraitUrl = eventDetails.venuePortraitUrl?.ifBlank { DEFAULT.EMPTY_STRING }
+					?: DEFAULT.EMPTY_STRING,
+				logoUrl = eventDetails.venueLogoUrl?.ifBlank { DEFAULT.EMPTY_STRING }
+					?: DEFAULT.EMPTY_STRING))
+			val venueRail = RailData(
+				name = getString(
+					R.string.featuring_venue
+				),
+				entities = venueEntities,
+				cardType = CardTypes.CIRCLE,
+				entitiesType = EntityTypes.VENUE
+			)
+			rail.add(venueRail)
+		}
 		if (rail.none { it.entities.isNotEmpty() }) {
 			binding.listing.visibility = View.GONE
 		} else {
 			binding.listing.apply {
+				layoutParams.height =
+					if (rail.size == 2) context.resources.getDimensionPixelSize(R.dimen.row_height_rail_circle_without_follow) else context.resources.getDimensionPixelSize(
+						R.dimen.row_height_default
+					)
 				itemAnimator = null
 				setNumColumns(1)
 				setHasFixedSize(true)
@@ -639,7 +656,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		}
 
 		val videoPreviewTreeMap = eventDetails.videoPreviews ?: false
-		var trailer = DEFAULT.EMPTY_STRING
+		trailerUrl = DEFAULT.EMPTY_STRING
 		if (videoPreviewTreeMap is LinkedTreeMap<*, *>) {
 			if (videoPreviewTreeMap.isNotEmpty()) {
 				val jsonObject = Gson().toJsonTree(videoPreviewTreeMap).asJsonObject
@@ -647,14 +664,14 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 					val videoPreviewString: String = Gson().toJson(jsonObject)
 					val videoPreview = JSONObject(videoPreviewString)
 					if (videoPreview.has("high")) {
-						trailer = videoPreview.getString("high")
+						trailerUrl = videoPreview.getString("high")
 					}
 				}
 			}
 		}
 		binding.carouselLogo.loadImage(logoImage, ImageTags.LOGO)
 		binding.heroImage.loadImage(posterImage, ImageTags.HERO)
-		if (trailer.isBlank()) {
+		if (trailerUrl.isBlank()) {
 			releaseVideoPlayer()
 		} else {
 			setupVideoPlayer()
@@ -751,6 +768,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 	}
 
 	private fun setNewReservation() {
+		Logger.printWithTag("IAP", " Setting new reservation -- Product id -- ${product.id}")
 		viewModel.setNewReservation(hashMapOf("item_id" to (product.id ?: "")))
 			.observe(viewLifecycleOwner) { setNewReservation ->
 				fetch(
@@ -761,9 +779,13 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				) {
 					setNewReservation.response?.let {
 						it.data?.let { reservation ->
+							Logger.printWithTag("IAP", " Setting new reservation -- Reservation id -- ${reservation.id}")
 							homeViewModel.reservedId = reservation.id
 							generateNewOrder()
 						}
+					} ?: run {
+						binding.paymentLoader.visibility = View.GONE
+
 					}
 				}
 			}

@@ -71,7 +71,7 @@ class ArtistScreen : BaseFragment<ArtistViewModel, FragmentArtistDetailsScreenBi
 			carousel.visibility = View.GONE
 			listing.visibility = View.GONE
 			description.visibility = View.GONE
-			loader.requestFocus()
+			branding.requestFocus()
 			entities = arrayListOf()
 			allEventsRail = arrayListOf()
 		}
@@ -93,6 +93,7 @@ class ArtistScreen : BaseFragment<ArtistViewModel, FragmentArtistDetailsScreenBi
 	}
 
 	private fun fetchEntityUpcomingEvents() {
+		binding.branding.requestFocus()
 		viewModel.fetchEntityUpcomingEvents(entityScope)
 			.observe(viewLifecycleOwner) { entityDetails ->
 				fetch(
@@ -175,6 +176,7 @@ class ArtistScreen : BaseFragment<ArtistViewModel, FragmentArtistDetailsScreenBi
 	}
 
 	private fun fetchEntityDetails() {
+		binding.branding.requestFocus()
 		viewModel.fetchEntityDetails(entity, entityId)
 			.observe(viewLifecycleOwner) { entityDetails ->
 				fetch(
@@ -212,6 +214,8 @@ class ArtistScreen : BaseFragment<ArtistViewModel, FragmentArtistDetailsScreenBi
 								binding.darkBackground.visibility = View.GONE
 								binding.carousel.visibility = View.VISIBLE
 								binding.title.requestFocus()
+								binding.branding.isFocusable = false
+								binding.branding.isFocusableInTouchMode = false
 							}
 						}
 					}

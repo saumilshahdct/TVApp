@@ -14,7 +14,9 @@ object APIConstants {
 	private const val AUTH_VERSION: String = AUTH_PROD + "oauth/"
 
 	const val QR_CODE_BASE_URL: String =
-		"https://veeps.com/qr-code?i=https://veeps.com/activate?code="
+		"https://veeps.com/qr-code?i="
+	const val QR_CODE_ACTIVATE_URL: String =
+		"${QR_CODE_BASE_URL}https://veeps.com/activate?code="
 
 	const val fetchAuthenticationDetails: String = AUTH_VERSION + "authorize_device"
 	const val authenticationPolling: String = AUTH_VERSION + "token"
@@ -36,7 +38,8 @@ object APIConstants {
 	const val removeWatchListEvents: String = API_VERSION + "watchlist_entries"
 	const val fetchEventStreamDetails: String = API_VERSION + "events/{EVENT_ID}/stream"
 	const val fetchEventDetails: String = API_VERSION + "events/{EVENT_ID}"
-	const val fetchEventProductDetails: String = API_VERSION + "events/{EVENT_ID}/products?vendor=fire_tv"
+	const val fetchEventProductDetails: String =
+		API_VERSION + "events/{EVENT_ID}/products?vendor=fire_tv"
 	const val claimFreeTicketForEvent: String = API_VERSION + "events/{EVENT_ID}/redeem"
 	const val clearAllReservations: String = API_VERSION + "reservations/all"
 	const val setNewReservation: String = API_VERSION + "reservations"
@@ -44,4 +47,5 @@ object APIConstants {
 	const val createOrder: String = API_VERSION + "orders"
 	const val fetchStoryBoard: String = "fetchStoryBoard"
 	const val addStats: String = "/addstat"
+	const val fetchCompanions: String = API_VERSION + "me/companion"
 }

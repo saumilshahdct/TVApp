@@ -132,7 +132,7 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 			) {
 				/* TODO: Handle 401 Unauthorized 422 Unprocessable Entity */
 				authenticationDetails.response?.let { signInData ->
-					viewModel.authenticationQRCode.postValue(APIConstants.QR_CODE_BASE_URL + signInData.authenticationCode)
+					viewModel.authenticationQRCode.postValue(APIConstants.QR_CODE_ACTIVATE_URL + signInData.authenticationCode)
 					viewModel.authenticationCode.postValue(signInData.authenticationCode)
 					viewModel.authenticationLoginURL.postValue(signInData.authenticationLoginURL)
 					viewModel.pollingInterval.postValue(signInData.pollingInterval.convertToMilli())

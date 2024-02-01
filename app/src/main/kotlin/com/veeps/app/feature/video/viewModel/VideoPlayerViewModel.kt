@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.veeps.app.data.common.APIRepository
+import com.veeps.app.feature.contentRail.model.ChatMessageItem
 import com.veeps.app.feature.video.model.StoryBoardImagePosition
 import com.veeps.app.util.DEFAULT
 
@@ -21,9 +22,11 @@ class VideoPlayerViewModel : ViewModel() {
 	var tileWidth = MutableLiveData(0)
 	var tileHeight = MutableLiveData(0)
 	var tiles = MutableLiveData(ArrayList<StoryBoardImagePosition>())
+	var chatMessages = MutableLiveData(ArrayList<ChatMessageItem>())
 
 	fun fetchEventStreamDetails(eventId: String) = APIRepository().fetchEventStreamDetails(eventId)
 	fun fetchStoryBoard(storyBoardURL: String) = APIRepository().fetchStoryBoard(storyBoardURL)
+	fun fetchCompanions(eventDetails: HashMap<String, Any>) = APIRepository().fetchCompanions(eventDetails)
 	fun addStats(
 		addStatsAPIURL: String,
 		currentTime: String,

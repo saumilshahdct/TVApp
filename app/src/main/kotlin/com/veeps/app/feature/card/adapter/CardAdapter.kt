@@ -51,6 +51,7 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 	private var screen: String = Screens.BROWSE
 	private var isContinueWatching: Boolean = false
 	private var isWatchList: Boolean = false
+	private var railCount: Int = 0
 	private var isExpired: Boolean = false
 	private var userStats: ArrayList<UserStats> = arrayListOf()
 	override fun onCreateViewHolder(
@@ -71,7 +72,10 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 				if (holder.bindingAdapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
 					when (screen) {
 						Screens.BROWSE, Screens.SHOWS, Screens.ARTIST, Screens.VENUE, Screens.EVENT -> {
-							Logger.printWithTag("saumil", "here in card key listener - requested show")
+							Logger.printWithTag(
+								"saumil",
+								"here in card key listener - requested show"
+							)
 							helper.showNavigationMenu()
 							true
 						}
@@ -87,15 +91,16 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 					helper.translateCarouselToBottom(true)
 					true
 				} else if (adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-					if (screen == Screens.ARTIST || screen == Screens.VENUE) {
+					if (screen == Screens.EVENT && railCount == 1) {
+						helper.focusItem()
+						true
+					} else if (screen == Screens.ARTIST || screen == Screens.VENUE) {
 						action.focusDown()
 						true
 					} else false
-				} else if (adapterPosition == 1 && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-					if (screen == Screens.EVENT) {
-						helper.focusItem()
-						true
-					} else false
+				} else if (screen == Screens.EVENT && railCount == 2 && adapterPosition == 1 && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+					helper.focusItem()
+					true
 				} else {
 					false
 				}
@@ -369,6 +374,10 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 
 	fun setWatchList(isWatchList: Boolean) {
 		this.isWatchList = isWatchList
+	}
+
+	fun setRailCount(railCount: Int) {
+		this.railCount = railCount
 	}
 
 	fun setExpired(isExpired: Boolean) {

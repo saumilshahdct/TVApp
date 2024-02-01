@@ -64,6 +64,50 @@
                 app:use_artwork="true"
                 app:use_controller="false" />
 
+            <ImageView
+                android:id="@+id/stand_by"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:contentDescription="@string/app_description"
+                android:src="@drawable/stand_by"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Chat -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/chat"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:visibility="visible"
+                app:layout_constraintDimensionRatio="1:0.35"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.leanback.widget.VerticalGridView
+                    android:id="@+id/listing"
+                    android:layout_width="160dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="30dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:contentDescription="@string/app_description"
+                    android:src="@drawable/chat_header_gradient"
+                    app:layout_constraintDimensionRatio="1:0.05"
+                    app:layout_constraintEnd_toEndOf="@+id/listing"
+                    app:layout_constraintStart_toStartOf="@+id/listing"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Controls -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/controls"
                 android:layout_width="0dp"
@@ -191,6 +235,96 @@
 
                     </eightbitlab.com.blurview.BlurView>
 
+                    <eightbitlab.com.blurview.BlurView
+                        android:id="@+id/chat_from_phone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="30dp"
+                        android:layout_marginEnd="15dp"
+                        android:layout_marginBottom="30dp"
+                        android:background="@drawable/selector_browse_button_background"
+                        android:elevation="2dp"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:nextFocusLeft="@id/chat_from_phone"
+                        android:nextFocusRight="@id/chat_toggle"
+                        android:nextFocusUp="@id/chat_from_phone"
+                        android:nextFocusDown="@id/chat_from_phone"
+                        android:nextFocusForward="@id/chat_from_phone"
+                        android:onClick="@{(v)-> videoPlayerScreen.onChatFromPhoneClicked()}"
+                        app:blurOverlayColor="@color/white_10"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/chat_toggle"
+                        app:layout_constraintHorizontal_chainStyle="packed"
+                        app:layout_constraintStart_toStartOf="parent">
+
+                        <TextView
+                            android:id="@+id/chat_from_phone_label"
+                            fontPath="fonts/SaansMedium.ttf"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center"
+                            android:drawablePadding="4dp"
+                            android:gravity="center_vertical"
+                            android:includeFontPadding="false"
+                            android:letterSpacing="0.03"
+                            android:lines="1"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:text="@string/chat_from_phone"
+                            android:textAlignment="gravity"
+                            android:textAllCaps="false"
+                            android:textColor="@color/selector_home_label"
+                            android:textIsSelectable="false"
+                            android:textSize="10sp"
+                            tools:ignore="MissingPrefix" />
+
+                    </eightbitlab.com.blurview.BlurView>
+
+                    <eightbitlab.com.blurview.BlurView
+                        android:id="@+id/chat_toggle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="30dp"
+                        android:layout_marginStart="15dp"
+                        android:layout_marginBottom="30dp"
+                        android:background="@drawable/selector_browse_button_background"
+                        android:elevation="2dp"
+                        android:focusable="true"
+                        android:focusableInTouchMode="true"
+                        android:nextFocusLeft="@id/chat_from_phone"
+                        android:nextFocusRight="@id/chat_toggle"
+                        android:nextFocusUp="@id/chat_toggle"
+                        android:nextFocusDown="@id/chat_toggle"
+                        android:nextFocusForward="@id/chat_toggle"
+                        android:onClick="@{(v)-> videoPlayerScreen.onChatToggleClicked()}"
+                        app:blurOverlayColor="@color/white_10"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/chat_from_phone">
+
+                        <TextView
+                            android:id="@+id/chat_toggle_label"
+                            fontPath="fonts/SaansMedium.ttf"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center"
+                            android:drawablePadding="4dp"
+                            android:gravity="center_vertical"
+                            android:includeFontPadding="false"
+                            android:letterSpacing="0.03"
+                            android:lines="1"
+                            android:paddingStart="12dp"
+                            android:paddingEnd="12dp"
+                            android:text="@string/turn_chat_off"
+                            android:textAlignment="gravity"
+                            android:textAllCaps="false"
+                            android:textColor="@color/selector_home_label"
+                            android:textIsSelectable="false"
+                            android:textSize="10sp"
+                            tools:ignore="MissingPrefix" />
+
+                    </eightbitlab.com.blurview.BlurView>
+
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -216,9 +350,9 @@
                         android:id="@+id/image_preview"
                         android:layout_width="160dp"
                         android:layout_height="0dp"
-                        android:src="@drawable/background_transparent"
                         android:layout_margin="10dp"
                         android:contentDescription="@string/app_name"
+                        android:src="@drawable/background_transparent"
                         app:layout_constraintBottom_toTopOf="@+id/seek_duration"
                         app:layout_constraintDimensionRatio="16:9"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -338,16 +472,192 @@
             app:layout_constraintTop_toBottomOf="@id/top" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/error_container"
+            android:id="@+id/chat_from_phone_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:keepScreenOn="true">
+
+            <ImageView
+                android:id="@+id/chat_from_phone_background"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/app_description"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Error Container Background Blur -->
+            <eightbitlab.com.blurview.BlurView
+                android:id="@+id/chat_from_phone_layout_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:blurOverlayColor="@color/black_33"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <!-- Error Container -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <!-- Guidelines -->
+                    <include layout="@layout/guidelines" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/qr_code_container"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <!-- QR Code Text -->
+                        <TextView
+                            android:id="@+id/qr_code_label"
+                            fontPath="fonts/SaansMedium.ttf"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:includeFontPadding="false"
+                            android:letterSpacing="0.03"
+                            android:text="@string/chat_from_phone_layout_label"
+                            android:textAlignment="center"
+                            android:textColor="@color/gray_300"
+                            android:textIsSelectable="false"
+                            android:textSize="15sp"
+                            app:layout_constraintBottom_toTopOf="@+id/qr_code"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <!-- QR Code -->
+                        <ImageView
+                            android:id="@+id/qr_code"
+                            android:layout_width="0dp"
+                            android:layout_height="140dp"
+                            android:layout_marginTop="12dp"
+                            android:background="@drawable/background_transparent"
+                            android:contentDescription="@string/app_description"
+                            android:cropToPadding="true"
+                            android:padding="12dp"
+                            android:scaleType="centerCrop"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintBottom_toTopOf="@+id/chat_from_phone_action_container"
+                            app:layout_constraintDimensionRatio="1:1"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/qr_code_label" />
+
+                        <!-- Error CTA Container -->
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/chat_from_phone_action_container"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="10dp"
+                            android:padding="10dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/qr_code">
+
+                            <!-- Error Positive CTA -->
+                            <Button
+                                android:id="@+id/cancel_action"
+                                fontPath="fonts/SaansMedium.ttf"
+                                android:layout_width="wrap_content"
+                                android:layout_height="25dp"
+                                android:layout_marginStart="20dp"
+                                android:layout_marginEnd="10dp"
+                                android:layout_marginBottom="10dp"
+                                android:background="@drawable/selector_button_white"
+                                android:contentDescription="@string/app_description"
+                                android:focusable="true"
+                                android:focusableInTouchMode="true"
+                                android:lines="1"
+                                android:nextFocusLeft="@id/cancel_action"
+                                android:nextFocusRight="@id/all_done_action"
+                                android:nextFocusUp="@id/cancel_action"
+                                android:nextFocusDown="@id/cancel_action"
+                                android:nextFocusForward="@id/cancel_action"
+                                android:onClick="@{(v)-> videoPlayerScreen.onCancelClicked()}"
+                                android:text="@string/cancel_label"
+                                android:textAllCaps="false"
+                                android:textColor="@color/selector_button_label_white"
+                                android:textIsSelectable="false"
+                                android:textSize="12sp"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toStartOf="@+id/all_done_action"
+                                app:layout_constraintHorizontal_chainStyle="packed"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <!-- Error Negative CTA -->
+                            <Button
+                                android:id="@+id/all_done_action"
+                                fontPath="fonts/SaansMedium.ttf"
+                                android:layout_width="wrap_content"
+                                android:layout_height="25dp"
+                                android:layout_marginStart="20dp"
+                                android:layout_marginEnd="10dp"
+                                android:layout_marginBottom="10dp"
+                                android:background="@drawable/selector_button_white"
+                                android:contentDescription="@string/app_description"
+                                android:focusable="true"
+                                android:focusableInTouchMode="true"
+                                android:lines="1"
+                                android:nextFocusLeft="@id/cancel_action"
+                                android:nextFocusRight="@id/all_done_action"
+                                android:nextFocusUp="@id/all_done_action"
+                                android:nextFocusDown="@id/all_done_action"
+                                android:nextFocusForward="@id/all_done_action"
+                                android:onClick="@{(v)-> videoPlayerScreen.onAllDoneClicked()}"
+                                android:text="@string/all_done_label"
+                                android:textAllCaps="false"
+                                android:textColor="@color/selector_button_label_white"
+                                android:textIsSelectable="false"
+                                android:textSize="12sp"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toEndOf="@+id/cancel_action"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </eightbitlab.com.blurview.BlurView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/error_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:keepScreenOn="true"
+            android:visibility="visible">
 
             <ImageView
                 android:id="@+id/heroImage"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:contentDescription="@string/app_description"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/blackImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/app_description"
+                android:src="@drawable/card_background_black"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -372,40 +682,166 @@
                     <!-- Guidelines -->
                     <include layout="@layout/guidelines" />
 
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/error_top_controls"
+                        android:layout_width="0dp"
+                        android:layout_height="160dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <ImageView
+                            android:layout_width="0dp"
+                            android:layout_height="160dp"
+                            android:contentDescription="@string/app_description"
+                            android:src="@drawable/video_player_header_gradient"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <!-- Logo -->
+                        <ImageView
+                            android:id="@+id/error_logo"
+                            android:layout_width="45dp"
+                            android:layout_height="9dp"
+                            android:layout_marginStart="48dp"
+                            android:layout_marginTop="32dp"
+                            android:layout_marginEnd="3dp"
+                            android:contentDescription="@string/app_description"
+                            android:src="@drawable/logo"
+                            app:layout_constraintEnd_toStartOf="@id/error_divider"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <!-- Divider -->
+                        <ImageView
+                            android:id="@+id/error_divider"
+                            android:layout_width="2dp"
+                            android:layout_height="9dp"
+                            android:layout_marginStart="3dp"
+                            android:layout_marginEnd="3dp"
+                            android:contentDescription="@string/app_description"
+                            android:src="@color/white"
+                            app:layout_constraintBottom_toBottomOf="@id/error_logo"
+                            app:layout_constraintEnd_toStartOf="@id/error_title"
+                            app:layout_constraintStart_toEndOf="@id/error_logo"
+                            app:layout_constraintTop_toTopOf="@id/error_logo" />
+
+                        <TextView
+                            android:id="@+id/error_title"
+                            fontPath="fonts/SaansMedium.ttf"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="3dp"
+                            android:layout_marginEnd="45dp"
+                            android:gravity="center_vertical"
+                            android:includeFontPadding="false"
+                            android:textAlignment="gravity"
+                            android:textColor="@color/white"
+                            android:textIsSelectable="false"
+                            android:textSize="12sp"
+                            app:layout_constraintBottom_toBottomOf="@id/error_divider"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@+id/error_divider"
+                            app:layout_constraintTop_toTopOf="@id/error_divider"
+                            tools:ignore="MissingPrefix" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
                     <!-- Error Text -->
                     <TextView
                         android:id="@+id/error"
                         fontPath="fonts/SaansMedium.ttf"
-                        android:layout_width="wrap_content"
+                        android:layout_width="350dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginBottom="10dp"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="2dp"
                         android:elevation="5dp"
+                        android:gravity="center"
                         android:includeFontPadding="false"
-                        android:padding="10dp"
+                        android:padding="5dp"
                         android:text="@{video.errorMessage}"
                         android:textColor="@color/white"
                         android:textIsSelectable="false"
                         android:textSize="16sp"
                         app:layout_constrainedWidth="true"
-                        app:layout_constraintBottom_toTopOf="@+id/error_action_container"
+                        app:layout_constraintBottom_toTopOf="@+id/error_description"
                         app:layout_constraintEnd_toEndOf="@+id/post_quarter_width"
                         app:layout_constraintStart_toStartOf="@+id/pre_quarter_width"
                         app:layout_constraintTop_toTopOf="@+id/top"
                         app:layout_constraintVertical_chainStyle="packed" />
+
+                    <TextView
+                        android:id="@+id/error_description"
+                        fontPath="fonts/SaansMedium.ttf"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginBottom="5dp"
+                        android:elevation="5dp"
+                        android:gravity="center"
+                        android:includeFontPadding="false"
+                        android:padding="5dp"
+                        android:text=""
+                        android:textColor="@color/white_50"
+                        android:textIsSelectable="false"
+                        android:textSize="11sp"
+                        app:layout_constrainedWidth="true"
+                        app:layout_constraintBottom_toTopOf="@+id/re_watch_container"
+                        app:layout_constraintEnd_toEndOf="@+id/error"
+                        app:layout_constraintStart_toStartOf="@+id/error"
+                        app:layout_constraintTop_toBottomOf="@+id/error" />
+
+                    <LinearLayout
+                        android:id="@+id/re_watch_container"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toTopOf="@+id/error_action_container"
+                        app:layout_constraintEnd_toEndOf="@+id/error"
+                        app:layout_constraintStart_toStartOf="@+id/error"
+                        app:layout_constraintTop_toBottomOf="@+id/error_description">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginStart="4dp"
+                            android:layout_marginEnd="2dp"
+                            android:contentDescription="@string/app_name"
+                            android:src="@drawable/re_watch" />
+
+                        <TextView
+                            android:id="@+id/re_watch"
+                            fontPath="fonts/SaansMedium.ttf"
+                            android:layout_width="153dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="2dp"
+                            android:layout_marginEnd="2dp"
+                            android:layout_marginBottom="1dp"
+                            android:gravity="center_vertical"
+                            android:includeFontPadding="false"
+                            android:textAlignment="gravity"
+                            android:textColor="@color/white"
+                            android:textIsSelectable="false"
+                            android:textSize="10sp"
+                            tools:ignore="MissingPrefix" />
+
+                    </LinearLayout>
 
                     <!-- Error CTA Container -->
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:id="@+id/error_action_container"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginBottom="10dp"
+                        android:layout_marginTop="5dp"
                         android:padding="10dp"
-                        app:layout_constraintBottom_toBottomOf="@+id/bottom"
-                        app:layout_constraintEnd_toEndOf="@id/error"
-                        app:layout_constraintStart_toStartOf="@id/error"
-                        app:layout_constraintTop_toBottomOf="@+id/error">
+                        app:layout_constraintBottom_toTopOf="@+id/error_code"
+                        app:layout_constraintEnd_toEndOf="@+id/error"
+                        app:layout_constraintStart_toStartOf="@+id/error"
+                        app:layout_constraintTop_toBottomOf="@+id/re_watch_container">
 
                         <!-- Error Positive CTA -->
                         <Button
@@ -415,13 +851,14 @@
                             android:layout_height="25dp"
                             android:layout_marginStart="20dp"
                             android:layout_marginEnd="10dp"
-                            android:layout_marginBottom="10dp"
+                            android:layout_marginBottom="5dp"
                             android:background="@drawable/selector_button_white"
                             android:contentDescription="@string/app_description"
                             android:focusable="true"
                             android:focusableInTouchMode="true"
                             android:lines="1"
                             android:onClick="@{(v)-> videoPlayerScreen.onErrorPositive(v.tag)}"
+                            android:paddingBottom="1dp"
                             android:text="@{video.errorPositiveLabel}"
                             android:textAllCaps="false"
                             android:textColor="@color/selector_button_label_white"
@@ -442,13 +879,14 @@
                             android:layout_height="25dp"
                             android:layout_marginStart="20dp"
                             android:layout_marginEnd="10dp"
-                            android:layout_marginBottom="10dp"
+                            android:layout_marginBottom="5dp"
                             android:background="@drawable/selector_button_white"
                             android:contentDescription="@string/app_description"
                             android:focusable="true"
                             android:focusableInTouchMode="true"
                             android:lines="1"
                             android:onClick="@{(v)-> videoPlayerScreen.onErrorNegative(v.tag)}"
+                            android:paddingBottom="1dp"
                             android:text="@{video.errorNegativeLabel}"
                             android:textAllCaps="false"
                             android:textColor="@color/selector_button_label_white"
@@ -461,6 +899,27 @@
                             app:layout_constraintTop_toTopOf="parent" />
 
                     </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <TextView
+                        android:id="@+id/error_code"
+                        fontPath="fonts/SaansMedium.ttf"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:layout_marginBottom="5dp"
+                        android:elevation="5dp"
+                        android:gravity="center"
+                        android:includeFontPadding="false"
+                        android:padding="5dp"
+                        android:text=""
+                        android:textColor="@color/white"
+                        android:textIsSelectable="false"
+                        android:textSize="11sp"
+                        app:layout_constrainedWidth="true"
+                        app:layout_constraintBottom_toBottomOf="@+id/bottom"
+                        app:layout_constraintEnd_toEndOf="@+id/error"
+                        app:layout_constraintStart_toStartOf="@+id/error"
+                        app:layout_constraintTop_toBottomOf="@+id/error_action_container" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -71,7 +71,7 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 			carousel.visibility = View.GONE
 			listing.visibility = View.GONE
 			description.visibility = View.GONE
-			loader.requestFocus()
+			logo.requestFocus()
 			entities = arrayListOf()
 			allEventsRail = arrayListOf()
 		}
@@ -93,6 +93,7 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 	}
 
 	private fun fetchEntityUpcomingEvents() {
+		binding.logo.requestFocus()
 		viewModel.fetchEntityUpcomingEvents(entityScope)
 			.observe(viewLifecycleOwner) { entityDetails ->
 				fetch(
@@ -112,6 +113,7 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 	}
 
 	private fun fetchEntityOnDemandEvents() {
+		binding.logo.requestFocus()
 		viewModel.fetchEntityOnDemandEvents(entityScope)
 			.observe(viewLifecycleOwner) { entityDetails ->
 				fetch(
@@ -131,6 +133,7 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 	}
 
 	private fun fetchEntityPastEvents() {
+		binding.logo.requestFocus()
 		viewModel.fetchEntityPastEvents(entityScope).observe(viewLifecycleOwner) { entityDetails ->
 			fetch(
 				entityDetails,
@@ -175,6 +178,7 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 	}
 
 	private fun fetchEntityDetails() {
+		binding.logo.requestFocus()
 		viewModel.fetchEntityDetails(entity, entityId)
 			.observe(viewLifecycleOwner) { entityDetails ->
 				fetch(
@@ -212,6 +216,8 @@ class VenueScreen : BaseFragment<VenueViewModel, FragmentVenueDetailsScreenBindi
 								binding.darkBackground.visibility = View.GONE
 								binding.carousel.visibility = View.VISIBLE
 								binding.title.requestFocus()
+								binding.logo.isFocusable = false
+								binding.logo.isFocusableInTouchMode = false
 							}
 						}
 					}

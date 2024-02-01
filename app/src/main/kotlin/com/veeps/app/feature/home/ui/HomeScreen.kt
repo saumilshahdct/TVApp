@@ -75,6 +75,8 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 			)
 			if (viewModel.isNavigationMenuVisible.value!!) {
 				return clearNavigationMenuUI()
+			} else if (binding.errorContainer.isVisible) {
+				return true
 			} else {
 				return if (supportFragmentManager.backStackEntryCount == 1) {
 					if (!binding.errorContainer.isVisible) {
@@ -84,8 +86,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 				} else {
 					binding.navigationMenu.onFocusChangeListener = null
 					Logger.printWithTag(
-						"MenuFocus",
-						"here in setup page cange - listener is null"
+						"MenuFocus", "here in setup page cange - listener is null"
 					)
 					supportFragmentManager.popBackStack()
 					Logger.printWithTag("MenuFocus", "requested to set focus after 1000")
@@ -297,8 +298,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	) {
 		binding.navigationMenu.onFocusChangeListener = null
 		Logger.printWithTag(
-			"MenuFocus",
-			"here in setup page cange - listener is null"
+			"MenuFocus", "here in setup page cange - listener is null"
 		)
 		if (fragment != null) {
 			goToPage(
@@ -372,14 +372,12 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 
 	private fun setupFocusOnNavigationMenu() {
 		Logger.printWithTag(
-			"MenuFocus",
-			"here in set up focus on navigation menu - focus listener is set"
+			"MenuFocus", "here in set up focus on navigation menu - focus listener is set"
 		)
 		binding.navigationMenu.setOnFocusChangeListener { view, hasFocus ->
 			if (hasFocus) {
 				Logger.printWithTag(
-					"MenuFocus",
-					"here in set up focus on navigation menu - has focus - showing now"
+					"MenuFocus", "here in set up focus on navigation menu - has focus - showing now"
 				)
 				showNavigationMenu(view)
 			} else {
@@ -399,8 +397,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 		navigationMenu.transformWidth(R.dimen.expanded_navigation_menu_width, false)
 		viewModel.isNavigationMenuVisible.postValue(true)
 		Logger.printWithTag(
-			"MenuFocus",
-			"here in show navigation menu- showing menu - listener is null"
+			"MenuFocus", "here in show navigation menu- showing menu - listener is null"
 		)
 	}
 
@@ -445,13 +442,11 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 		val arguments = bundleOf(AppConstants.TAG to tag)
 		val shouldReplace = true
 		val shouldAddToBackStack = true
-		val isNotCurrentlySelected = binding.navigationMenu.getCurrentSelected() != selectedItem
+		var isNotCurrentlySelected = binding.navigationMenu.getCurrentSelected() != selectedItem
 		var fragment: Class<out Fragment>? = null
-
 		val screen = supportFragmentManager.findFragmentById(R.id.fragment_container)
-//		if (screen is BrowseScreen) {
-//			viewModel.translateCarouselToBottom.postValue(true)
-//		}
+		if (selectedItem == NavigationItems.NO_MENU && screen !is BrowseScreen) isNotCurrentlySelected = true
+
 		if (isNotCurrentlySelected) {
 			when (tag) {
 				NavigationItems.PROFILE -> {
@@ -608,8 +603,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 		Logger.printWithTag("MenuFocus", "here in override show navigation menu")
 		if (binding.navigationMenu.onFocusChangeListener != null) {
 			Logger.printWithTag(
-				"MenuFocus",
-				"here in override show navigation menu - focus is not null"
+				"MenuFocus", "here in override show navigation menu - focus is not null"
 			)
 			if (!viewModel.isNavigationMenuVisible.value!!) {
 				Logger.printWithTag(

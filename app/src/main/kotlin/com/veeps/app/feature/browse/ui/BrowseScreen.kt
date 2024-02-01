@@ -47,6 +47,7 @@ import com.veeps.app.widget.navigationMenu.NavigationItems
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.json.JSONObject
+import kotlin.random.Random
 
 
 class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>() {
@@ -361,7 +362,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 	}
 
 	private fun setCarousel() {
-		val random = 0//Random.nextInt(carouselData.entities.size)
+		val random = Random.nextInt(carouselData.entities.size)
 		val entity =
 			if (carouselData.entities.isNotEmpty()) carouselData.entities[random] else Entities()
 		binding.ctaContainer.visibility = View.INVISIBLE
@@ -390,9 +391,8 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 				if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
 			binding.liveNow.visibility = View.GONE
 		} else {
-			binding.date.visibility =
-				if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
-			binding.liveNow.visibility = View.GONE
+			binding.date.visibility = View.GONE
+			binding.liveNow.visibility = if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
 		}
 		val title = entity.eventName?.ifBlank { DEFAULT.EMPTY_STRING } ?: DEFAULT.EMPTY_STRING
 		posterImage =
@@ -560,11 +560,31 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		binding.myShows.isSelected = isAdded
 		binding.myShowsLabel.setCompoundDrawablesRelativeWithIntrinsicBounds(
 			if (binding.myShows.isSelected) {
+				Logger.printWithTag(
+					"myshows",
+					"has focus ${binding.myShows.hasFocus()} + is focused ${binding.myShows.isFocused} + tag is ${binding.myShows.tag}"
+				)
 				if (binding.myShows.hasFocus()) R.drawable.check_black else R.drawable.check_white
 			} else {
+				Logger.printWithTag(
+					"myshows",
+					"has focus ${binding.myShows.hasFocus()} + is focused ${binding.myShows.isFocused} + tag is ${binding.myShows.tag}"
+				)
 				if (binding.myShows.hasFocus()) R.drawable.add_black else R.drawable.add_white
 			}, 0, 0, 0
 		)
+		context?.let { context ->
+			binding.myShowsLabel.compoundDrawables.forEach { drawable ->
+				drawable?.setTint(
+					ContextCompat.getColor(
+						context,
+						if ((binding.myShows.isFocused)
+								.or(binding.myShows.hasFocus())
+						) R.color.dark_black else R.color.white
+					)
+				)
+			}
+		}
 	}
 
 	private fun fetchUserStats(

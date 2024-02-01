@@ -9,6 +9,9 @@
 	<string name="no_connectivity_error">You are not connected to the internet.</string>
 
 	<string name="ok_label">OK</string>
+	<string name="try_again_label">Try Again</string>
+	<string name="exit_player_label">Exit Player</string>
+	<string name="re_watch_now_label">Rewatch Now</string>
 	<string name="cancel_label">Cancel</string>
 	<string name="yes_label">Yes</string>
 	<string name="no_label">No</string>
@@ -22,6 +25,7 @@
 	<string name="auth_login_label">To create an account or log in, go to</string>
 	<string name="auth_code_label">And enter this code:</string>
 	<string name="qr_code_label">Or scan QR code:</string>
+	<string name="chat_from_phone_layout_label">Scan QR code to chat from phone</string>
 
 	<!-- Navigation Menu -->
 	<string name="profile_label">Profile</string>
@@ -67,6 +71,12 @@
 	<string name="time_label">00:00:00</string>
 	<string name="re_watch_not_available">Rewatch is not available for this event.</string>
 	<string name="no_re_watch_period">This event is live only. There will be no rewatch period.</string>
-	<string name="re_watch_available_for_time">Rewatch available for %1$s after the start of the event.</string>
+	<string name="re_watch_available_for_time_after_start">Rewatch available for %1$s after the start of the event.</string>
+	<string name="re_watch_available_for_time">You can rewatch the event for %1$s</string>
+
+	<string name="chat_from_phone">Chat from Phone</string>
+	<string name="turn_chat_on">Turn Chat On</string>
+	<string name="turn_chat_off">Turn Chat Off</string>
+	<string name="all_done_label">All Done</string>
 
 </resources>

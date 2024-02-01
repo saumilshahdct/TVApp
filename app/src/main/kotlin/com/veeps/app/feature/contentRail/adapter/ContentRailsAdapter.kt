@@ -71,6 +71,7 @@ class ContentRailsAdapter(
 			cardAdapter.setScreen(screen)
 			cardAdapter.setContinueWatching(rails[position].isContinueWatching)
 			cardAdapter.setWatchList(rails[position].isWatchList)
+			cardAdapter.setRailCount(rails.size)
 			cardAdapter.setExpired(rails[position].isExpired)
 			cardAdapter.setUserStats(rails[position].userStats)
 

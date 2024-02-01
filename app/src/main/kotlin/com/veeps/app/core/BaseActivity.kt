@@ -105,7 +105,7 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 						block.invoke()
 					}
 
-					APIConstants.addStats -> {
+					APIConstants.fetchCompanions, APIConstants.addStats -> {
 						block.invoke()
 					}
 
