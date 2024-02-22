@@ -20,7 +20,6 @@ import androidx.annotation.LayoutRes
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.animation.addListener
-import androidx.leanback.widget.VerticalGridView
 import androidx.transition.Slide
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
@@ -31,9 +30,7 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade
 import com.veeps.app.R
-import com.veeps.app.feature.card.adapter.CardAdapter
 import com.veeps.app.util.DEFAULT
-import com.veeps.app.util.EntityTypes
 import com.veeps.app.util.Image
 import com.veeps.app.util.ImageTags
 import com.veeps.app.util.IntValue
@@ -50,10 +47,6 @@ fun View.fadeInNow(duration: Int) {
 	fadeInAnimation.duration = duration.toLong()
 	fadeInAnimation.fillAfter = true
 	this.startAnimation(fadeInAnimation)
-}
-
-fun VerticalGridView.setUpView(entity: EntityTypes, adapter: CardAdapter) {
-	this.setNumColumns(4)
 }
 
 fun ConstraintLayout.setHorizontalBias(

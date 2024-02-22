@@ -3,6 +3,11 @@ import io.sentry.android.gradle.instrumentation.logcat.LogcatLevel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+val mainVersionCode = 4
+val mainVersionName = ".3"
+val releaseLabel = "release"
+val debugLabel = "debug"
+
 plugins {
 	id("com.android.application")
 	id("org.jetbrains.kotlin.android")
@@ -13,13 +18,13 @@ plugins {
 
 android {
 	signingConfigs {
-		getByName("debug") {
+		getByName(debugLabel) {
 			storeFile = file("/Users/saumilshah/Projects/dcafe/Veeps/keystore/veeps")
 			storePassword = "b8d01c2c1db72d2ab195c06694daa8a7"
 			keyPassword = "b8d01c2c1db72d2ab195c06694daa8a7"
 			keyAlias = "Veeps"
 		}
-		create("release") {
+		create(releaseLabel) {
 			storeFile = file("/Users/saumilshah/Projects/dcafe/Veeps/keystore/veeps")
 			storePassword = "b8d01c2c1db72d2ab195c06694daa8a7"
 			keyPassword = "b8d01c2c1db72d2ab195c06694daa8a7"
@@ -33,27 +38,27 @@ android {
 		applicationId = "com.veeps.app"
 		minSdk = 24
 		targetSdk = 34
-		versionCode = 3
-		versionName = "1.0"
-		signingConfig = signingConfigs.getByName("release")
+		versionCode = mainVersionCode
+		versionName = "1"
+		signingConfig = signingConfigs.getByName(releaseLabel)
 		testFunctionalTest = true
 		testHandleProfiling = true
 	}
 
 	buildTypes {
-		getByName("release") {
+		getByName(releaseLabel) {
 			isMinifyEnabled = false
-			versionNameSuffix = ".2"
+			versionNameSuffix = mainVersionName
 			proguardFiles(
 				getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
 			)
-			signingConfig = signingConfigs.getByName("release")
+			signingConfig = signingConfigs.getByName(releaseLabel)
 		}
-		getByName("debug") {
-			applicationIdSuffix = ".debug"
-			versionNameSuffix =
-				".debug" + LocalDateTime.now().format(DateTimeFormatter.ofPattern(".MMdd"))
-			signingConfig = signingConfigs.getByName("debug")
+		getByName(debugLabel) {
+			applicationIdSuffix = ".$debugLabel"
+			versionNameSuffix = ".$mainVersionName.$debugLabel" + LocalDateTime.now()
+				.format(DateTimeFormatter.ofPattern(".MMdd"))
+			signingConfig = signingConfigs.getByName(debugLabel)
 		}
 	}
 	compileOptions {
@@ -76,14 +81,14 @@ android {
 	productFlavors {
 		create("stage") {
 			dimension = "environment"
-			versionCode = 3
-			signingConfig = signingConfigs.getByName("debug")
+			versionCode = mainVersionCode
+			signingConfig = signingConfigs.getByName(debugLabel)
 			buildConfigField("Boolean", "isProduction", "false")
 		}
 		create("production") {
 			dimension = "environment"
-			versionCode = 3
-			signingConfig = signingConfigs.getByName("release")
+			versionCode = mainVersionCode
+			signingConfig = signingConfigs.getByName(releaseLabel)
 			buildConfigField("Boolean", "isProduction", "true")
 		}
 	}
@@ -129,7 +134,7 @@ dependencies {
 
 	/* Glide */
 	implementation("com.github.bumptech.glide:glide:4.16.0")
-	implementation("androidx.compose.ui:ui-unit-android:1.5.4")
+	implementation("androidx.compose.ui:ui-unit-android:1.6.2")
 	ksp("com.github.bumptech.glide:ksp:4.16.0")
 	implementation("com.github.bumptech.glide:recyclerview-integration:4.16.0") {
 		// Excludes the support library because it's already included by Glide.
@@ -147,17 +152,17 @@ dependencies {
 	}
 
 	/* Joda Time */
-	implementation("net.danlew:android.joda:2.12.6")
+	implementation("net.danlew:android.joda:2.12.7")
 
-	/* ExoPlayer */
-	implementation("androidx.media3:media3-exoplayer:1.2.0")
-	implementation("androidx.media3:media3-exoplayer-dash:1.2.0")
-	implementation("androidx.media3:media3-exoplayer-hls:1.2.0")
-	implementation("androidx.media3:media3-datasource-okhttp:1.2.0")
-	implementation("androidx.media3:media3-ui-leanback:1.2.0")
-	implementation("androidx.media3:media3-ui:1.2.0")
-	implementation("androidx.media3:media3-extractor:1.2.0")
-	implementation("androidx.media3:media3-transformer:1.2.0")
+	val exoVersion = "1.2.1"	/* ExoPlayer */
+	implementation("androidx.media3:media3-exoplayer:$exoVersion")
+	implementation("androidx.media3:media3-exoplayer-dash:$exoVersion")
+	implementation("androidx.media3:media3-exoplayer-hls:$exoVersion")
+	implementation("androidx.media3:media3-datasource-okhttp:$exoVersion")
+	implementation("androidx.media3:media3-ui-leanback:$exoVersion")
+	implementation("androidx.media3:media3-ui:$exoVersion")
+	implementation("androidx.media3:media3-extractor:$exoVersion")
+	implementation("androidx.media3:media3-transformer:$exoVersion")
 
 	/* Blur */
 	implementation("com.github.Dimezis:BlurView:version-2.0.3")

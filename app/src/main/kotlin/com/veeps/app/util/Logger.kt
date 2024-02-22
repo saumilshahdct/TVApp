@@ -9,6 +9,8 @@ import kotlin.math.min
 
 object Logger {
 
+	fun doNothing() {}
+
 	fun print(message: Any) {
 		Log.wtf(AppConstants.TAG, message.toString())
 	}

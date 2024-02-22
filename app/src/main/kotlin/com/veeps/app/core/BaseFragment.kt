@@ -40,7 +40,6 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 		binding.lifecycleOwner = viewLifecycleOwner
 		layoutContainer = binding.root.findViewById(R.id.layout_container)
 		screenLoader = binding.root.findViewById(R.id.loader)
-		Logger.print("View is Created")
 		return binding.root
 	}
 

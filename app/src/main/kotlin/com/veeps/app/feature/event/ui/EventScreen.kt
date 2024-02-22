@@ -51,6 +51,7 @@ import io.noties.markwon.Markwon
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.json.JSONObject
+import kotlin.math.roundToInt
 
 class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBinding>() {
 
@@ -80,7 +81,6 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		FragmentEventDetailsScreenBinding.inflate(layoutInflater)
 
 	override fun onDestroyView() {
-		Logger.print("event view is destroyed")
 		viewModelStore.clear()
 		releaseVideoPlayer()
 		super.onDestroyView()
@@ -97,6 +97,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			logo.requestFocus()
 			rail = arrayListOf()
 			carousel.visibility = View.INVISIBLE
+			resumeProgress.visibility = View.INVISIBLE
 			darkBackground.visibility = View.VISIBLE
 			paymentLoader.visibility = View.GONE
 		}
@@ -178,7 +179,6 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			viewModel.eventId = entityId
 			entityScope = "$entity.$entityId"
 			entity = entity.plus("s")
-			Logger.printWithTag("IAP", " Event id -- $entityId")
 		}
 		binding.primaryLabel.isSelected = false
 		setupBlur()
@@ -188,7 +188,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 	private fun notifyAppEvents() {
 		binding.primary.setOnFocusChangeListener { _, hasFocus ->
 			context?.let { context ->
-				if (binding.primary.tag == ButtonLabels.PLAY) {
+				if (binding.primary.tag == ButtonLabels.PLAY || binding.primary.tag == ButtonLabels.RESUME) {
 					binding.primaryLabel.compoundDrawables.forEach { drawable ->
 						drawable?.setTint(
 							ContextCompat.getColor(
@@ -266,10 +266,6 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		}
 
 		binding.scrollView.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
-			Logger.printWithTag(
-				"myshows",
-				"scroll change - ${binding.scrollView.scrollY} -- ${binding.scrollView.scrollX} - $scrollY -- $scrollX - $oldScrollX -- $oldScrollY "
-			)
 			binding.optionsContainer.visibility = if (scrollY > 0) View.GONE else View.VISIBLE
 		}
 
@@ -277,10 +273,6 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			if (keyEvent.action == KeyEvent.ACTION_DOWN) {
 				if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
 					if (binding.scrollView.scrollY == 0) {
-						Logger.printWithTag(
-							"myshows",
-							"00 scroll - ${binding.scrollView.scrollY} -- ${binding.scrollView.scrollX}"
-						)
 						if (!rail.none { it.entities.isNotEmpty() }) {
 							binding.listing.visibility = View.VISIBLE
 							binding.listing.requestFocus()
@@ -390,6 +382,12 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				}
 			}
 		}
+		homeViewModel.updateUserStat.observe(viewLifecycleOwner) { doesUpdateRequired ->
+			if (doesUpdateRequired && binding.primary.tag == ButtonLabels.PLAY) {
+				fetchUserStats()
+				homeViewModel.updateUserStat.postValue(false)
+			}
+		}
 
 		viewModel.isVisible.observeForever { isVisible ->
 			Logger.print(
@@ -429,7 +427,6 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 							binding.primaryLabel.text =
 								ButtonLabels.BUY_TICKET.plus(product.displayPrice)
 							if (context?.isFireTV == true) {
-								Logger.printWithTag("IAP", " Event id -- ${viewModel.eventId} --- Product code -- ${product.productCode}")
 								PurchasingService.getProductData(hashSetOf(product.productCode))
 							}
 						}
@@ -491,14 +488,8 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			binding.primary.tag = primaryLabelText
 		}) {
 			ButtonLabels.PLAY -> {
-				binding.primaryLabel.compoundDrawablePadding =
-					resources.getDimensionPixelSize(R.dimen.dp4)
-				binding.primaryLabel.setCompoundDrawablesRelativeWithIntrinsicBounds(
-					if (binding.primary.hasFocus() || binding.primary.isFocused) R.drawable.play_black else R.drawable.play_white,
-					0,
-					0,
-					0
-				)
+				primaryLabelText = DEFAULT.EMPTY_STRING
+				fetchUserStats()
 			}
 
 			ButtonLabels.JOIN_LIVE -> {
@@ -683,6 +674,82 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		binding.logo.isFocusableInTouchMode = false
 	}
 
+	private fun fetchUserStats() {
+		val userStatsAPIURL = AppPreferences.get(
+			AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
+		) + APIConstants.fetchUserStats
+		AppPreferences.set(
+			AppConstants.generatedJWT, AppUtil.generateJWT(eventIds = viewModel.eventId)
+		)
+		viewModel.fetchUserStats(userStatsAPIURL, eventIds = viewModel.eventId)
+			.observe(viewLifecycleOwner) { userStatsDetails ->
+				fetch(
+					userStatsDetails,
+					isLoaderEnabled = false,
+					canUserAccessScreen = true,
+					shouldBeInBackground = true,
+				) {
+					userStatsDetails.response?.let { userStatsResponse ->
+						if (userStatsResponse.userStats.isNotEmpty()) {
+							val stats = userStatsResponse.userStats.filter { it.eventId == viewModel.eventId }
+							if (stats.size == 1) {
+								val currentStat = (stats[0].cursor / stats[0].duration) * 100
+								Logger.printWithTag(
+									"saumil",
+									"user stats, current stat $currentStat. cursor is ${stats[0].cursor}, duration is ${stats[0].duration}"
+								)
+								if (currentStat < 95 && currentStat > 0) {
+									binding.primaryLabel.text = ButtonLabels.RESUME
+									binding.resumeProgress.visibility = View.VISIBLE
+									binding.resumeProgress.max = stats[0].duration.roundToInt()
+									binding.resumeProgress.progress = stats[0].cursor.roundToInt()
+									Logger.printWithTag(
+										"saumil",
+										"Resume should be visible, progress is ${binding.resumeProgress.progress} out of ${binding.resumeProgress.max}"
+									)
+								} else {
+									binding.primaryLabel.text = ButtonLabels.PLAY
+									binding.resumeProgress.visibility = View.INVISIBLE
+									Logger.printWithTag("saumil", "Play should be visible")
+								}
+							} else {
+								binding.primaryLabel.text = ButtonLabels.PLAY
+								binding.resumeProgress.visibility = View.INVISIBLE
+								Logger.printWithTag("saumil", "Play should be visible")
+							}
+						} else {
+							binding.primaryLabel.text = ButtonLabels.PLAY
+							binding.resumeProgress.visibility = View.INVISIBLE
+							Logger.printWithTag("saumil", "Play should be visible")
+						}
+					} ?: run {
+						binding.primaryLabel.text = ButtonLabels.PLAY
+						binding.resumeProgress.visibility = View.INVISIBLE
+						Logger.printWithTag("saumil", "Play should be visible")
+					}
+
+					binding.primaryLabel.compoundDrawablePadding =
+						resources.getDimensionPixelSize(R.dimen.dp4)
+					binding.primaryLabel.setCompoundDrawablesRelativeWithIntrinsicBounds(
+						if (binding.primary.hasFocus() || binding.primary.isFocused) R.drawable.play_black else R.drawable.play_white,
+						0,
+						0,
+						0
+					)
+					context?.let { context ->
+						binding.primaryLabel.compoundDrawables.forEach { drawable ->
+							drawable?.setTint(
+								ContextCompat.getColor(
+									context,
+									if ((binding.primary.isFocused).or(binding.primary.hasFocus())) R.color.dark_black else R.color.white
+								)
+							)
+						}
+					}
+				}
+			}
+	}
+
 	fun addRemoveWatchListEvent(eventId: String) {
 		if (eventId.isNotBlank()) {
 			viewModel.addRemoveWatchListEvent(
@@ -719,16 +786,8 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		binding.myShows.isSelected = isAdded
 		binding.myShowsLabel.setCompoundDrawablesRelativeWithIntrinsicBounds(
 			if (binding.myShows.isSelected) {
-				Logger.printWithTag(
-					"myshows",
-					"has focus ${binding.myShows.hasFocus()} + is focused ${binding.myShows.isFocused} + tag is ${binding.myShows.tag}"
-				)
 				if (binding.myShows.hasFocus()) R.drawable.check_black else R.drawable.check_white
 			} else {
-				Logger.printWithTag(
-					"myshows",
-					"has focus ${binding.myShows.hasFocus()} + is focused ${binding.myShows.isFocused} + tag is ${binding.myShows.tag}"
-				)
 				if (binding.myShows.hasFocus()) R.drawable.add_black else R.drawable.add_white
 			}, 0, 0, 0
 		)
@@ -747,10 +806,6 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 					if (binding.myShows.isFocused.or(binding.myShows.hasFocus())) R.color.dark_black else R.color.white
 				)
 			)
-			Logger.printWithTag(
-				"myshows",
-				"has focus ${binding.myShows.hasFocus()} + is focused ${binding.myShows.isFocused} + tag is ${binding.myShows.tag}"
-			)
 		}
 	}
 
@@ -768,7 +823,6 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 	}
 
 	private fun setNewReservation() {
-		Logger.printWithTag("IAP", " Setting new reservation -- Product id -- ${product.id}")
 		viewModel.setNewReservation(hashMapOf("item_id" to (product.id ?: "")))
 			.observe(viewLifecycleOwner) { setNewReservation ->
 				fetch(
@@ -779,7 +833,6 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				) {
 					setNewReservation.response?.let {
 						it.data?.let { reservation ->
-							Logger.printWithTag("IAP", " Setting new reservation -- Reservation id -- ${reservation.id}")
 							homeViewModel.reservedId = reservation.id
 							generateNewOrder()
 						}

@@ -86,7 +86,7 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 
 	}
 
-	private fun fetchUpcomingEvents(didResultNotFound: Boolean) {
+	private fun fetchUpcomingEvents() {
 		viewModel.fetchUpcomingEvents().observe(viewLifecycleOwner) { upcomingEvents ->
 			fetch(
 				upcomingEvents,
@@ -97,7 +97,7 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 				upcomingEvents.response?.let { railData ->
 					if (railData.data.isNotEmpty()) {
 						val upcomingEventsRail = RailData(
-							name = if (didResultNotFound) getString(R.string.suggested_events_label) else getString(
+							name = getString(
 								R.string.upcoming_events_label
 							),
 							entities = railData.data,
@@ -106,9 +106,24 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 						)
 						val rails = ArrayList<RailData>()
 						rails.add(upcomingEventsRail)
-						if (!didResultNotFound) viewModel.noResult.postValue(false)
+						viewModel.noResult.postValue(false)
 						viewModel.upcomingRail.postValue(rails)
 					}
+				}
+			}
+		}
+	}
+
+	private fun fetchFeaturedContent() {
+		viewModel.fetchFeaturedContent().observe(viewLifecycleOwner) { featuredContent ->
+			fetch(
+				featuredContent,
+				isLoaderEnabled = false,
+				canUserAccessScreen = true,
+				shouldBeInBackground = true,
+			) {
+				featuredContent.response?.let { railResponse ->
+					viewModel.featuredContentRail.postValue(railResponse.railData)
 				}
 			}
 		}
@@ -151,7 +166,7 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 								viewModel.searchResult.postValue(rails)
 							} else {
 								viewModel.noResult.postValue(true)
-								fetchUpcomingEvents(true)
+								fetchFeaturedContent()
 							}
 						}
 					}
@@ -197,6 +212,27 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 			binding.listing.visibility = View.VISIBLE
 		}
 
+		viewModel.featuredContentRail.observe(viewLifecycleOwner) { featuredContentRails ->
+			if (featuredContentRails.isNotEmpty()) {
+				featuredContentRails.removeIf { rail ->
+					rail.cardType.equals(CardTypes.WIDE).or(rail.cardType.equals(CardTypes.HERO)).or(rail.cardType.equals(CardTypes.GENRE))
+				}
+				binding.listing.apply {
+					itemAnimator = null
+					setNumColumns(1)
+					windowAlignment = BaseGridView.WINDOW_ALIGN_LOW_EDGE
+					windowAlignmentOffsetPercent = 0f
+					isItemAlignmentOffsetWithPadding = true
+					itemAlignmentOffsetPercent = 0f
+					adapter =
+						ContentRailsAdapter(rails = featuredContentRails, helper, Screens.SEARCH, action)
+					onFlingListener = PagerSnapHelper()
+				}
+				binding.listing.visibility = View.VISIBLE
+				viewModel.featuredContentRail.postValue(arrayListOf())
+			}
+		}
+
 		viewModel.noResult.observe(viewLifecycleOwner) {
 			binding.noResultDescription.text =
 				getString(R.string.no_results_description_label, binding.searchInput.text)
@@ -206,7 +242,7 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 
 		viewModel.search.observe(viewLifecycleOwner) { searchedText ->
 			if (searchedText.isBlank()) {
-				fetchUpcomingEvents(false)
+				fetchUpcomingEvents()
 			} else {
 				fetchSearchedResult()
 			}
@@ -220,7 +256,7 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 			}
 		})
 
-		viewModel.isVisible.observeForever  { isVisible ->
+		viewModel.isVisible.observeForever { isVisible ->
 			if (isVisible) {
 				helper.selectNavigationMenu(NavigationItems.SEARCH_MENU)
 				helper.completelyHideNavigationMenu()

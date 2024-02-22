@@ -23,7 +23,6 @@ import com.veeps.app.util.AppPreferences
 import com.veeps.app.util.DEFAULT
 import com.veeps.app.util.ImageTags
 import com.veeps.app.util.IntValue
-import com.veeps.app.util.Logger
 
 class NavigationMenu : LinearLayout {
 
@@ -136,7 +135,6 @@ class NavigationMenu : LinearLayout {
 	}
 
 	private fun highlightCurrentSelectedNavigationMenu(isExpanded: Boolean) {
-		Logger.printWithTag("menufocus", "in high light - text color is compulsory white")
 		for (position in 0 until childCount) {
 			(getChildAt(position).findViewById<View>(R.id.label) as TextView).setTextColor(
 				ContextCompat.getColor(
@@ -178,7 +176,6 @@ class NavigationMenu : LinearLayout {
 	}
 
 	private fun removeHighlightCurrentSelectedNavigationMenu() {
-		Logger.printWithTag("menufocus", "in remove high light - text color is compulsory white")
 		(getChildAt(currentSelectedItem).findViewById<View>(R.id.label) as TextView).setTextColor(
 			ContextCompat.getColor(
 				context, R.color.white
@@ -209,7 +206,6 @@ class NavigationMenu : LinearLayout {
 	}
 
 	private fun updateHighlightCurrentSelectedNavigationMenu() {
-		Logger.printWithTag("menufocus", "in update high light - text color is compulsory white")
 		(getChildAt(currentSelectedItem).findViewById<View>(R.id.label) as TextView).setTextColor(
 			ContextCompat.getColor(
 				context, R.color.white
@@ -258,7 +254,7 @@ class NavigationMenu : LinearLayout {
 	}
 
 	private fun clearNavigationMenuLabel() {
-		for (i in 0 until childCount) {			/*if (doesCompletelyHiddenRequired) {
+		for (i in 0 until childCount) {            /*if (doesCompletelyHiddenRequired) {
 				getChildAt(i).findViewById<View>(R.id.image).fadeOutNow(IntValue.NUMBER_100)
 				if (i == 0) {
 					getChildAt(i).findViewById<View>(R.id.image_label).fadeOutNow(IntValue.NUMBER_100)
@@ -291,7 +287,7 @@ class NavigationMenu : LinearLayout {
 
 				NavigationItems.MY_SHOWS -> (getChildAt(i).findViewById<View>(R.id.label) as TextView).text =
 					context.resources.getString(R.string.my_shows_label)
-			}			/*getChildAt(i).findViewById<View>(R.id.image).fadeInNow(IntValue.NUMBER_333)
+			}            /*getChildAt(i).findViewById<View>(R.id.image).fadeInNow(IntValue.NUMBER_333)
 			if (i == 0) {
 				getChildAt(i).findViewById<View>(R.id.image_label).fadeInNow(IntValue.NUMBER_333)
 			}*/
@@ -300,7 +296,6 @@ class NavigationMenu : LinearLayout {
 	}
 
 	fun setupNavigationMenuExpandedUI(context: Context) {
-		Logger.printWithTag("menufocus", "UI is getting set for expand")
 		Handler(Looper.getMainLooper()).postDelayed({
 			setNavigationMenuText(context)
 			changeNavigationMenuFocusStatus(true)
@@ -326,10 +321,6 @@ class NavigationMenu : LinearLayout {
 				this.isFocusable = isExpanded
 				this.isFocusableInTouchMode = isExpanded
 				this.setOnFocusChangeListener { view, hasFocus ->
-					Logger.printWithTag(
-						"menufocus",
-						"on focus change -is expanded -- $isExpanded - text color is based on $hasFocus - if true black else white"
-					)
 					(view.findViewById<View>(R.id.label) as TextView).setTextColor(
 						ContextCompat.getColor(
 							context, if (hasFocus) R.color.black else R.color.white
@@ -373,7 +364,6 @@ class NavigationMenu : LinearLayout {
 	}
 
 	override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-		Logger.printWithTag("saumil", "On key down in menu")
 		val currentTime = System.currentTimeMillis()
 		return if (currentTime - AppConstants.lastKeyPressTime < AppConstants.keyPressShortDelayTime) {
 			true

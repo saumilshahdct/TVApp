@@ -47,6 +47,12 @@ class ChatMessagesAdapter(
 		notifyItemRangeChanged(0, count)
 	}
 
+	fun clearAllMessages() {
+		val count = messages.size
+		this.messages = arrayListOf()
+		notifyItemRangeRemoved(0, count)
+	}
+
 	inner class ViewHolder(val binding: RowChatMessageBinding) :
 		RecyclerView.ViewHolder(binding.root)
 }

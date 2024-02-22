@@ -19,6 +19,7 @@ class HomeViewModel : ViewModel() {
 	val translateCarouselToTop = MutableLiveData(false)
 	val translateCarouselToBottom = MutableLiveData(false)
 	val focusItem = MutableLiveData(false)
+	val updateUserStat = MutableLiveData(false)
 	val purchaseAction = MutableLiveData("")
 
 	var watchlistIds = listOf<String>()

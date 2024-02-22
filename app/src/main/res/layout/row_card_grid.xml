@@ -59,7 +59,7 @@
             android:textAlignment="gravity"
             android:textColor="@color/white_50"
             android:textIsSelectable="false"
-            android:textSize="10sp"
+            android:textSize="11sp"
             app:layout_constraintBottom_toBottomOf="@+id/event_thumbnail"
             app:layout_constraintEnd_toEndOf="@+id/event_thumbnail"
             app:layout_constraintStart_toStartOf="@+id/event_thumbnail"
@@ -142,7 +142,7 @@
                     android:textAlignment="gravity"
                     android:textColor="@color/white"
                     android:textIsSelectable="false"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     tools:ignore="MissingPrefix" />
 
             </eightbitlab.com.blurview.BlurView>
@@ -180,7 +180,7 @@
                     android:textAllCaps="false"
                     android:textColor="@color/white"
                     android:textIsSelectable="false"
-                    android:textSize="10sp"
+                    android:textSize="11sp"
                     tools:ignore="MissingPrefix" />
 
             </LinearLayout>
@@ -213,7 +213,7 @@
                 android:textAlignment="gravity"
                 android:textColor="@color/black"
                 android:textIsSelectable="false"
-                android:textSize="10sp"
+                android:textSize="11sp"
                 tools:ignore="MissingPrefix" />
 
         </LinearLayout>

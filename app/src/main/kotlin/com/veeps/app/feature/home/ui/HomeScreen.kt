@@ -73,25 +73,30 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 					this@HomeScreen.localClassName.substringAfterLast(".")
 				}"
 			)
-			if (viewModel.isNavigationMenuVisible.value!!) {
-				return clearNavigationMenuUI()
-			} else if (binding.errorContainer.isVisible) {
+			if (binding.errorContainer.isVisible) {
 				return true
+			} else if (viewModel.isNavigationMenuVisible.value!! && supportFragmentManager.findFragmentById(
+					R.id.fragment_container
+				) is BrowseScreen
+			) {
+				showError(Screens.EXIT_APP, resources.getString(R.string.exit_app_warning))
+				false
+			} else if (viewModel.isNavigationMenuVisible.value!!) {
+				return clearNavigationMenuUI()
 			} else {
-				return if (supportFragmentManager.backStackEntryCount == 1) {
-					if (!binding.errorContainer.isVisible) {
-						showError(Screens.EXIT_APP, resources.getString(R.string.exit_app_warning))
-					}
+				return if (supportFragmentManager.backStackEntryCount == 1 || supportFragmentManager.findFragmentById(
+						R.id.fragment_container
+					) is BrowseScreen
+				) {
+					showNavigationMenu()
+//					if (!binding.errorContainer.isVisible) {
+//						showError(Screens.EXIT_APP, resources.getString(R.string.exit_app_warning))
+//					}
 					false
 				} else {
 					binding.navigationMenu.onFocusChangeListener = null
-					Logger.printWithTag(
-						"MenuFocus", "here in setup page cange - listener is null"
-					)
 					supportFragmentManager.popBackStack()
-					Logger.printWithTag("MenuFocus", "requested to set focus after 1000")
 					Handler(Looper.getMainLooper()).postDelayed({
-						Logger.printWithTag("MenuFocus", "setting up focus after 1000")
 						setupFocusOnNavigationMenu()
 					}, 1000)
 					true
@@ -108,6 +113,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 		ActivityHomeScreenBinding.inflate(layoutInflater)
 
 	override fun showError(tag: String, message: String, description: String) {
+		if (tag == Screens.EXIT_APP || viewModel.isNavigationMenuVisible.value!!) clearNavigationMenuUI()
 		viewModel.isErrorVisible.postValue(true)
 		viewModel.playerShouldPause.postValue(true)
 		viewModel.contentHasLoaded.postValue(true)
@@ -297,9 +303,6 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 		shouldAddToBackStack: Boolean,
 	) {
 		binding.navigationMenu.onFocusChangeListener = null
-		Logger.printWithTag(
-			"MenuFocus", "here in setup page cange - listener is null"
-		)
 		if (fragment != null) {
 			goToPage(
 				supportFragmentManager,
@@ -310,15 +313,12 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 				shouldAddToBackStack
 			)
 		}
-		Logger.printWithTag("MenuFocus", "requested to set focus after 1000")
 		Handler(Looper.getMainLooper()).postDelayed({
-			Logger.printWithTag("MenuFocus", "setting up focus after 1000")
 			setupFocusOnNavigationMenu()
 		}, if (fragment != null) 1000 else 100)
 	}
 
 	override fun goToVideoPlayer(eventId: String) {
-		Logger.printWithTag("saumil", "Moving to player -- $eventId")
 		goToScreen<VideoPlayerScreen>(
 			false, AppConstants.TAG to Screens.VIDEO, "eventId" to eventId
 		)
@@ -371,20 +371,10 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	private fun setupFocusOnNavigationMenu() {
-		Logger.printWithTag(
-			"MenuFocus", "here in set up focus on navigation menu - focus listener is set"
-		)
 		binding.navigationMenu.setOnFocusChangeListener { view, hasFocus ->
 			if (hasFocus) {
-				Logger.printWithTag(
-					"MenuFocus", "here in set up focus on navigation menu - has focus - showing now"
-				)
 				showNavigationMenu(view)
 			} else {
-				Logger.printWithTag(
-					"MenuFocus",
-					"here in set up focus on navigation menu - lost focus - hiding now and setting up focus"
-				)
 				hideNavigationMenu(view)
 				setupFocusOnNavigationMenu()
 			}
@@ -392,17 +382,12 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	private fun showNavigationMenu(navigationMenu: View) {
-		Logger.printWithTag("MenuFocus", "here in show navigation menu")
 		binding.navigationMenu.onFocusChangeListener = null
 		navigationMenu.transformWidth(R.dimen.expanded_navigation_menu_width, false)
 		viewModel.isNavigationMenuVisible.postValue(true)
-		Logger.printWithTag(
-			"MenuFocus", "here in show navigation menu- showing menu - listener is null"
-		)
 	}
 
 	private fun hideNavigationMenu(navigationMenu: View) {
-		Logger.printWithTag("MenuFocus", "here in hide navigation menu")
 		val screen = supportFragmentManager.findFragmentById(R.id.fragment_container)
 		val doesCompletelyHiddenRequired: Boolean = when (screen?.tag) {
 			Screens.ARTIST -> {
@@ -421,15 +406,10 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 				false
 			}
 		}
-		Logger.printWithTag(
-			"MenuFocus",
-			"here in hide navigation menu - screen ${screen?.tag} and does completely hidden required - $doesCompletelyHiddenRequired"
-		)
 		navigationMenu.transformWidth(
 			R.dimen.collapsed_navigation_menu_width, doesCompletelyHiddenRequired
 		)
 		viewModel.isNavigationMenuVisible.postValue(false)
-		Logger.printWithTag("MenuFocus", "here in hide navigation menu - hidden")
 	}
 
 	private fun setupBlur() {
@@ -445,7 +425,8 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 		var isNotCurrentlySelected = binding.navigationMenu.getCurrentSelected() != selectedItem
 		var fragment: Class<out Fragment>? = null
 		val screen = supportFragmentManager.findFragmentById(R.id.fragment_container)
-		if (selectedItem == NavigationItems.NO_MENU && screen !is BrowseScreen) isNotCurrentlySelected = true
+		if (selectedItem == NavigationItems.NO_MENU && screen !is BrowseScreen) isNotCurrentlySelected =
+			true
 
 		if (isNotCurrentlySelected) {
 			when (tag) {
@@ -478,7 +459,6 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-		Logger.printWithTag("saumil", "On key down in home")
 		val currentTime = System.currentTimeMillis()
 		return if (currentTime - AppConstants.lastKeyPressTime < AppConstants.keyPressLongDelayTime) {
 			true
@@ -519,10 +499,6 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	private fun clearNavigationMenuUI(): Boolean {
-		Logger.printWithTag(
-			"MenuFocus",
-			"here in clear navigation menu - hiding navigation menu - and - setting up focus"
-		)
 		hideNavigationMenu(binding.navigationMenu)
 		setupFocusOnNavigationMenu()
 		return true
@@ -600,22 +576,10 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	override fun showNavigationMenu() {
-		Logger.printWithTag("MenuFocus", "here in override show navigation menu")
 		if (binding.navigationMenu.onFocusChangeListener != null) {
-			Logger.printWithTag(
-				"MenuFocus", "here in override show navigation menu - focus is not null"
-			)
 			if (!viewModel.isNavigationMenuVisible.value!!) {
-				Logger.printWithTag(
-					"MenuFocus",
-					"here in override show navigation menu - navigation menu is visible -- ${viewModel.isNavigationMenuVisible.value!!} - showing menu"
-				)
 				showNavigationMenu(binding.navigationMenu)
 			} else {
-				Logger.printWithTag(
-					"MenuFocus",
-					"here in override show navigation menu - navigation menu is visible -- ${viewModel.isNavigationMenuVisible.value!!} - closing menu"
-				)
 				clearNavigationMenuUI()
 			}
 		} else {
@@ -625,10 +589,6 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	override fun completelyHideNavigationMenu() {
-		Logger.printWithTag(
-			"MenuFocus",
-			"here in completely hide navigation menu - hiding navigation menu - and - setting up focus if required"
-		)
 		hideNavigationMenu(binding.navigationMenu)
 	}
 
@@ -653,51 +613,18 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 			UserDataResponse.RequestStatus.SUCCESSFUL -> {
 				currentUserId = response.userData.userId
 				currentMarketplace = response.userData.marketplace
-				Logger.printWithTag(
-					"IAP", "Got User Data  -- $currentUserId -- $currentMarketplace"
-				)
 			}
 
 			UserDataResponse.RequestStatus.FAILED, UserDataResponse.RequestStatus.NOT_SUPPORTED, null -> {
-				Logger.printWithTag("IAP", "User Data Request error")
 			}
 		}
 	}
 
-	override fun onProductDataResponse(productDataResponse: ProductDataResponse?) {
-		when (productDataResponse?.requestStatus) {
-			ProductDataResponse.RequestStatus.SUCCESSFUL -> {
-				Logger.printWithTag(
-					"IAP",
-					"Got Product Data - ${productDataResponse.productData} -- ${productDataResponse.unavailableSkus}"
-				)
-				val products = productDataResponse.productData
-				for (key in products.keys) {
-					val product = products[key]
-					Logger.printWithTag(
-						"IAP:",
-						"Product: ${product!!.title} \n Type: ${product.productType}\n SKU: ${product.sku}\n Price: ${product.price}\n Description: ${product.description}\n"
-					)
-				}
-				for (sku in productDataResponse.unavailableSkus) {
-					Logger.printWithTag("IAP", "Unavailable SKU:$sku")
-				}
-			}
-
-			ProductDataResponse.RequestStatus.FAILED -> Logger.printWithTag(
-				"IAP", "Product response - FAILED"
-			)
-
-			else -> {
-				Logger.printWithTag("IAP", "IAP Not supported")
-			}
-		}
-	}
+	override fun onProductDataResponse(productDataResponse: ProductDataResponse?) {}
 
 	override fun onPurchaseResponse(purchaseResponse: PurchaseResponse?) {
 		when (purchaseResponse?.requestStatus) {
 			PurchaseResponse.RequestStatus.SUCCESSFUL -> {
-				Logger.printWithTag("IAP", "Got Purchases ${purchaseResponse.toJSON()}")
 				viewModel.receiptId = purchaseResponse.receipt.receiptId
 				viewModel.purchaseAction.postValue("PURCHASED")
 				PurchasingService.notifyFulfillment(
@@ -707,12 +634,10 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 
 			PurchaseResponse.RequestStatus.FAILED -> {
 				viewModel.purchaseAction.postValue("FAILED")
-				Logger.printWithTag("IAP", "Fetch Purchase Failed")
 			}
 
 			else -> {
 				viewModel.purchaseAction.postValue("FAILED")
-				Logger.printWithTag("IAP", "IAP Not supported")
 			}
 		}
 	}
@@ -720,25 +645,24 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	override fun onPurchaseUpdatesResponse(response: PurchaseUpdatesResponse?) {
 		when (response?.requestStatus) {
 			PurchaseUpdatesResponse.RequestStatus.SUCCESSFUL -> {
-				Logger.printWithTag("IAP", "Product purchase update")
-				for (receipt in response.receipts) {
-					if (!receipt.isCanceled) {
-						Logger.printWithTag("IAP", "Product purchased -- $receipt")
-					}
-				}
 				if (response.hasMore()) {
-					Logger.printWithTag("IAP", "Product purchase has more data")
 					PurchasingService.getPurchaseUpdates(true)
 				}
 			}
 
 			PurchaseUpdatesResponse.RequestStatus.FAILED -> {
-				Logger.printWithTag("IAP", "Purchase Failed")
 			}
 
 			else -> {
-				Logger.printWithTag("IAP", "IAP Not supported")
 			}
+		}
+	}
+
+	override fun onResume() {
+		super.onResume()
+		val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+		if (fragment is EventScreen) {
+			viewModel.updateUserStat.postValue(true)
 		}
 	}
 }

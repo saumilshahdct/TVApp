@@ -24,6 +24,8 @@ class VideoPlayerViewModel : ViewModel() {
 	var tiles = MutableLiveData(ArrayList<StoryBoardImagePosition>())
 	var chatMessages = MutableLiveData(ArrayList<ChatMessageItem>())
 
+	fun fetchUserStats(userStatsAPIURL: String, eventIds: String) =
+		APIRepository().fetchUserStats(userStatsAPIURL, eventIds)
 	fun fetchEventStreamDetails(eventId: String) = APIRepository().fetchEventStreamDetails(eventId)
 	fun fetchStoryBoard(storyBoardURL: String) = APIRepository().fetchStoryBoard(storyBoardURL)
 	fun fetchCompanions(eventDetails: HashMap<String, Any>) = APIRepository().fetchCompanions(eventDetails)

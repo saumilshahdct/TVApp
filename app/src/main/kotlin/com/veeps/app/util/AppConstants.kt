@@ -68,6 +68,7 @@ object CardTypes {
 	const val STANDARD = "standard"
 	const val PORTRAIT = "portrait"
 	const val HERO = "hero"
+	const val GENRE = "genre"
 }
 
 object IntValue {
@@ -208,6 +209,7 @@ object ButtonLabels {
 	const val JOIN_LIVE = "Join Live"
 	const val JOIN = "Join"
 	const val PLAY = "Play"
+	const val RESUME = "Resume"
 	const val BUY_TICKET = "Buy Ticket${DEFAULT.SEPARATOR}"
 	const val CLAIM_FREE_TICKET = "Claim Free Ticket"
 }

@@ -3,9 +3,7 @@ package com.veeps.app.feature.shows.ui
 import android.os.Bundle
 import android.view.View
 import androidx.leanback.widget.BaseGridView
-import androidx.leanback.widget.OnChildViewHolderSelectedListener
 import androidx.recyclerview.widget.PagerSnapHelper
-import androidx.recyclerview.widget.RecyclerView
 import com.veeps.app.core.BaseFragment
 import com.veeps.app.databinding.FragmentShowsScreenBinding
 import com.veeps.app.extension.filterFor
@@ -75,34 +73,6 @@ class ShowsScreen : BaseFragment<ShowsViewModel, FragmentShowsScreenBinding>() {
 				isItemAlignmentOffsetWithPadding = true
 				itemAlignmentOffsetPercent = 0f
 				adapter = showsAdapter
-				setOnChildViewHolderSelectedListener(object : OnChildViewHolderSelectedListener() {
-					override fun onChildViewHolderSelected(
-						parent: RecyclerView,
-						child: RecyclerView.ViewHolder?,
-						position: Int,
-						subposition: Int
-					) {
-						Logger.printWithTag(
-							"saumil", "Selected child view holder -- $position -- $subposition"
-						)
-						super.onChildViewHolderSelected(parent, child, position, subposition)
-					}
-
-					override fun onChildViewHolderSelectedAndPositioned(
-						parent: RecyclerView,
-						child: RecyclerView.ViewHolder?,
-						position: Int,
-						subposition: Int
-					) {
-						Logger.printWithTag(
-							"saumil",
-							"Selected and positioned child view holder -- $position -- $subposition"
-						)
-						super.onChildViewHolderSelectedAndPositioned(
-							parent, child, position, subposition
-						)
-					}
-				})
 				onFlingListener = PagerSnapHelper()
 			}
 		}
@@ -191,28 +161,16 @@ class ShowsScreen : BaseFragment<ShowsViewModel, FragmentShowsScreenBinding>() {
 									val eventTitle =
 										entity.eventName?.ifBlank { DEFAULT.EMPTY_STRING }
 											?: DEFAULT.EMPTY_STRING
-									Logger.printWithTag(
-										"saumil",
-										"$streamStartsAt --- event id is --->> ${it.eventId}, ${it.id}, -- ${it.eventId ?: it.id ?: DEFAULT.EMPTY_STRING}"
-									)
 									helper.goToWaitingRoom(
 										eventId, eventLogo, eventTitle, doorOpensAt, streamStartsAt
 									)
 								} else {
-									Logger.printWithTag(
-										"saumil",
-										"$streamStartsAt --- event id is --->> ${it.eventId}, ${it.id}, -- ${it.eventId ?: it.id ?: DEFAULT.EMPTY_STRING}"
-									)
 									helper.goToVideoPlayer(
 										it.eventId ?: it.id ?: DEFAULT.EMPTY_STRING
 									)
 								}
 							} else {
 								if (AppUtil.compare(doorOpensAt) == DateTimeCompareDifference.LESS_THAN) {
-									Logger.printWithTag(
-										"saumil",
-										"$streamStartsAt --- event id is --->> ${it.eventId}, ${it.id}, -- ${it.eventId ?: it.id ?: DEFAULT.EMPTY_STRING}"
-									)
 									helper.goToVideoPlayer(
 										it.eventId ?: it.id ?: DEFAULT.EMPTY_STRING
 									)
@@ -227,18 +185,10 @@ class ShowsScreen : BaseFragment<ShowsViewModel, FragmentShowsScreenBinding>() {
 									val eventTitle =
 										entity.eventName?.ifBlank { DEFAULT.EMPTY_STRING }
 											?: DEFAULT.EMPTY_STRING
-									Logger.printWithTag(
-										"saumil",
-										"$streamStartsAt --- event id is --->> ${it.eventId}, ${it.id}, -- ${it.eventId ?: it.id ?: DEFAULT.EMPTY_STRING}"
-									)
 									helper.goToWaitingRoom(
 										eventId, eventLogo, eventTitle, doorOpensAt, streamStartsAt
 									)
 								} else {
-									Logger.printWithTag(
-										"saumil",
-										"$streamStartsAt --- event id is --->> ${it.eventId}, ${it.id}, -- ${it.eventId ?: it.id ?: DEFAULT.EMPTY_STRING}"
-									)
 									helper.goToVideoPlayer(
 										it.eventId ?: it.id ?: DEFAULT.EMPTY_STRING
 									)

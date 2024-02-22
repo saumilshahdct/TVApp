@@ -229,8 +229,8 @@ class CardAdapterGrid(private val action: AppAction) :
 				holder.binding.continueWatchingProgress.visibility = View.VISIBLE
 				val stats = userStats.filter { it.eventId == entities[position].eventId }
 				if (stats.size == 1 && ((stats[0].cursor / stats[0].duration) * 100) < 95) {
-					holder.binding.continueWatchingProgress.progress = stats[0].cursor.roundToInt()
 					holder.binding.continueWatchingProgress.max = stats[0].duration.roundToInt()
+					holder.binding.continueWatchingProgress.progress = stats[0].cursor.roundToInt()
 				}
 			} else {
 				holder.binding.continueWatchingProgress.visibility = View.GONE

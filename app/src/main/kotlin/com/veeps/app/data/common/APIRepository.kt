@@ -43,6 +43,12 @@ class APIRepository : BaseDataSource() {
 		}
 	}
 
+	fun fetchFeaturedContent() = performOperation(APIConstants.fetchFeaturedContent) {
+		getResult(APIConstants.fetchFeaturedContent) {
+			APIUtil.service.fetchFeaturedContent()
+		}
+	}
+
 	fun fetchContinueWatchingRail() = performOperation(APIConstants.fetchContinueWatchingRail) {
 		getResult(APIConstants.fetchContinueWatchingRail) {
 			APIUtil.service.fetchContinueWatchingRail()

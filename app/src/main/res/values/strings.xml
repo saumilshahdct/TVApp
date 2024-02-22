@@ -78,5 +78,6 @@
 	<string name="turn_chat_on">Turn Chat On</string>
 	<string name="turn_chat_off">Turn Chat Off</string>
 	<string name="all_done_label">All Done</string>
+    <string name="error_label">Error Code: 001</string>
 
 </resources>

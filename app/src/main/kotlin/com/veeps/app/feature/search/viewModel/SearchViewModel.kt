@@ -11,6 +11,7 @@ class SearchViewModel : ViewModel(), DefaultLifecycleObserver {
 	var contentHasLoaded = MutableLiveData(false)
 	var isVisible = MutableLiveData(false)
 	var upcomingRail = MutableLiveData(ArrayList<RailData>())
+	var featuredContentRail = MutableLiveData(ArrayList<RailData>())
 	var searchResult = MutableLiveData(ArrayList<RailData>())
 	var noResult = MutableLiveData(false)
 	var search = MutableLiveData("")
@@ -36,5 +37,6 @@ class SearchViewModel : ViewModel(), DefaultLifecycleObserver {
 	}
 
 	fun fetchUpcomingEvents() = APIRepository().fetchUpcomingEvents()
+	fun fetchFeaturedContent() = APIRepository().fetchFeaturedContent()
 	fun fetchSearchResult() = APIRepository().fetchSearchResult(search = search.value.orEmpty())
 }

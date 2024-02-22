@@ -35,7 +35,6 @@ import com.veeps.app.util.EntityTypes
 import com.veeps.app.util.EventTypes
 import com.veeps.app.util.Image
 import com.veeps.app.util.IntValue
-import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -54,6 +53,7 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 	private var railCount: Int = 0
 	private var isExpired: Boolean = false
 	private var userStats: ArrayList<UserStats> = arrayListOf()
+	private var loopingLimit = 7
 	override fun onCreateViewHolder(
 		parent: ViewGroup, viewType: Int,
 	): ViewHolder {
@@ -66,16 +66,14 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 	}
 
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+		var entityPosition = position
+		if (entities.size > loopingLimit) entityPosition %= entities.size
 		holder.binding.container.setOnKeyListener { _, keyCode, keyEvent ->
 			val currentTime = System.currentTimeMillis()
 			if (keyEvent.action == KeyEvent.ACTION_DOWN) {
 				if (holder.bindingAdapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
 					when (screen) {
 						Screens.BROWSE, Screens.SHOWS, Screens.ARTIST, Screens.VENUE, Screens.EVENT -> {
-							Logger.printWithTag(
-								"saumil",
-								"here in card key listener - requested show"
-							)
 							helper.showNavigationMenu()
 							true
 						}
@@ -87,7 +85,18 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 
 						else -> false
 					}
-				} else if (adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+				}
+//				else if (entityPosition % entities.size == 0 && keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+//						when (screen) {
+//							Screens.BROWSE, Screens.SHOWS -> {
+//								helper.showNavigationMenu()
+//								true
+//							}
+//
+//							else -> false
+//						}
+//				}
+				else if (adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_UP) {
 					helper.translateCarouselToBottom(true)
 					true
 				} else if (adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
@@ -114,7 +123,7 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 				helper.setupPageChange(
 					true, ArtistScreen::class.java, bundleOf(
 						AppConstants.TAG to Screens.ARTIST,
-						"entityId" to entities[position].id,
+						"entityId" to entities[entityPosition].id,
 						"entity" to entitiesType
 					), Screens.ARTIST, true
 				)
@@ -122,7 +131,7 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 				helper.setupPageChange(
 					true, VenueScreen::class.java, bundleOf(
 						AppConstants.TAG to Screens.VENUE,
-						"entityId" to entities[position].id,
+						"entityId" to entities[entityPosition].id,
 						"entity" to entitiesType
 					), Screens.VENUE, true
 				)
@@ -131,40 +140,41 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 					helper.setupPageChange(
 						true, EventScreen::class.java, bundleOf(
 							AppConstants.TAG to Screens.EVENT,
-							"entityId" to (entities[position].eventId ?: entities[position].id
-							?: DEFAULT.EMPTY_STRING),
+							"entityId" to (entities[entityPosition].eventId
+								?: entities[entityPosition].id ?: DEFAULT.EMPTY_STRING),
 							"entity" to entitiesType
 						), Screens.EVENT, true
 					)
 				} else {
-					if (!entities[position].eventStreamStartsAt.isNullOrBlank() && AppUtil.compare(
-							entities[position].eventStreamStartsAt
+					if (!entities[entityPosition].eventStreamStartsAt.isNullOrBlank() && AppUtil.compare(
+							entities[entityPosition].eventStreamStartsAt
 						) == DateTimeCompareDifference.GREATER_THAN
 					) {
-						action.onAction(entities[position])
+						action.onAction(entities[entityPosition])
 					} else {
 						helper.goToVideoPlayer(
-							entities[position].eventId ?: entities[position].id
+							entities[entityPosition].eventId ?: entities[entityPosition].id
 							?: DEFAULT.EMPTY_STRING
 						)
 					}
 				}
 			} else if (isContinueWatching) {
-				if (!entities[position].eventStreamStartsAt.isNullOrBlank() && AppUtil.compare(
-						entities[position].eventStreamStartsAt
+				if (!entities[entityPosition].eventStreamStartsAt.isNullOrBlank() && AppUtil.compare(
+						entities[entityPosition].eventStreamStartsAt
 					) == DateTimeCompareDifference.GREATER_THAN
 				) {
-					action.onAction(entities[position])
+					action.onAction(entities[entityPosition])
 				} else {
 					helper.goToVideoPlayer(
-						entities[position].eventId ?: entities[position].id ?: DEFAULT.EMPTY_STRING
+						entities[entityPosition].eventId ?: entities[entityPosition].id
+						?: DEFAULT.EMPTY_STRING
 					)
 				}
 			} else {
 				helper.setupPageChange(
 					true, EventScreen::class.java, bundleOf(
 						AppConstants.TAG to Screens.EVENT,
-						"entityId" to entities[position].id,
+						"entityId" to entities[entityPosition].id,
 						"entity" to entitiesType
 					), Screens.EVENT, true
 				)
@@ -172,7 +182,7 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 		}
 
 		if (isWatchList) holder.binding.container.setOnLongClickListener {
-			helper.removeEventFromWatchList(entities[position].id ?: DEFAULT.EMPTY_STRING)
+			helper.removeEventFromWatchList(entities[entityPosition].id ?: DEFAULT.EMPTY_STRING)
 			true
 		}
 
@@ -195,12 +205,12 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 		}
 
 		holder.binding.eventForeground.visibility =
-			if (entities[position].isOfType(EventTypes.EXPIRED)) View.VISIBLE else View.GONE
+			if (entities[entityPosition].isOfType(EventTypes.EXPIRED)) View.VISIBLE else View.GONE
 
 		if (entitiesType == EntityTypes.ARTIST || entitiesType == EntityTypes.VENUE) {
 			if (cardType == CardTypes.CIRCLE) {
-				val image = entities[position].landscapeUrl ?: DEFAULT.EMPTY_STRING
-				val title = entities[position].name ?: DEFAULT.EMPTY_STRING
+				val image = entities[entityPosition].landscapeUrl ?: DEFAULT.EMPTY_STRING
+				val title = entities[entityPosition].name ?: DEFAULT.EMPTY_STRING
 				holder.binding.artistVenueTitle.text = title
 				if (entitiesType == EntityTypes.ARTIST) holder.binding.artistVenueThumbnailContainer.setImageResource(
 					R.drawable.rounded_card_image_background_white_10
@@ -226,8 +236,8 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 				holder.binding.artistVenueContainer.visibility = View.VISIBLE
 				holder.binding.eventContainer.visibility = View.GONE
 			} else {
-				val image = entities[position].portraitUrl ?: DEFAULT.EMPTY_STRING
-				val title = entities[position].name ?: DEFAULT.EMPTY_STRING
+				val image = entities[entityPosition].portraitUrl ?: DEFAULT.EMPTY_STRING
+				val title = entities[entityPosition].name ?: DEFAULT.EMPTY_STRING
 				holder.binding.eventTitle.visibility = View.GONE
 				holder.binding.eventLogoLabel.text = title
 				holder.binding.eventLogo.visibility = View.GONE
@@ -253,7 +263,7 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 		} else {
 
 			when (val badgeStatus: String = AppUtil.getBadgeStatus(
-				entities[position], isContinueWatching, screen == Screens.SHOWS
+				entities[entityPosition], isContinueWatching, screen == Screens.SHOWS
 			)) {
 				BadgeStatus.LIVE -> {
 					holder.binding.eventLiveBadgeContainer.visibility = View.VISIBLE
@@ -276,22 +286,22 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 
 			if (isContinueWatching) {
 				holder.binding.continueWatchingProgress.visibility = View.VISIBLE
-				val stats = userStats.filter { it.eventId == entities[position].eventId }
+				val stats = userStats.filter { it.eventId == entities[entityPosition].eventId }
 				if (stats.size == 1 && ((stats[0].cursor / stats[0].duration) * 100) < 95) {
-					holder.binding.continueWatchingProgress.progress = stats[0].cursor.roundToInt()
 					holder.binding.continueWatchingProgress.max = stats[0].duration.roundToInt()
+					holder.binding.continueWatchingProgress.progress = stats[0].cursor.roundToInt()
 				}
 			} else {
 				holder.binding.continueWatchingProgress.visibility = View.GONE
 			}
 			var image: String
-			entities[position].presentation.let {
+			entities[entityPosition].presentation.let {
 				image = it.portraitUrl ?: DEFAULT.EMPTY_STRING
 			}
-			val title = entities[position].eventName
+			val title = entities[entityPosition].eventName
 			val artistTitle =
-				if (entities[position].lineup.isNotEmpty()) entities[position].lineup[0].name else ""
-			entities[position].presentation.let {
+				if (entities[entityPosition].lineup.isNotEmpty()) entities[entityPosition].lineup[0].name else ""
+			entities[entityPosition].presentation.let {
 				if (!it.badgeBgColor.isNullOrBlank()) holder.binding.eventBadgeContainer.background.colorFilter =
 					BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
 						Color.parseColor(it.badgeBgColor), BlendModeCompat.SRC_OVER
@@ -339,10 +349,14 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 	}
 
 	override fun getItemId(position: Int): Long {
-		return position.toLong()
+		var entityPosition = position
+		if (entities.size > loopingLimit) entityPosition %= entities.size
+		return entityPosition.toLong()
 	}
 
-	override fun getItemCount() = entities.size
+	override fun getItemCount() = if (screen == Screens.BROWSE || screen == Screens.SHOWS) {
+		if (entities.size <= loopingLimit) entities.size else Int.MAX_VALUE
+	} else entities.size
 
 	fun setEntities(entities: ArrayList<Entities>) {
 		this.entities = entities

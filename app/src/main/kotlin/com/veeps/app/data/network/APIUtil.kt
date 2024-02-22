@@ -65,12 +65,8 @@ object APIUtil {
 					startNs = System.nanoTime()
 					var request = chain.request()
 					val originalHttpUrl = request.url
-					val builder: Request.Builder = request.newBuilder().header(
-						"Authorization", "Bearer " + AppPreferences.get(
-							if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppConstants.generatedJWT else AppConstants.authenticatedUserToken,
-							"AuthenticatedUserToken"
-						)
-					)
+					val headerToken = if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppPreferences.get(AppConstants.generatedJWT, "GeneratedJWT") else AppPreferences.get(AppConstants.authenticatedUserToken, "AuthenticatedUserToken")
+					val builder: Request.Builder = request.newBuilder().header("Authorization", "Bearer $headerToken")
 					request = builder.build()
 					if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppPreferences.remove(
 						AppConstants.generatedJWT
@@ -121,6 +117,9 @@ object APIUtil {
 
 		@GET(APIConstants.fetchOnDemandRails)
 		suspend fun fetchOnDemandRails(): Response<RailResponse>
+
+		@GET(APIConstants.fetchFeaturedContent)
+		suspend fun fetchFeaturedContent(): Response<RailResponse>
 
 		@GET(APIConstants.fetchContinueWatchingRail)
 		suspend fun fetchContinueWatchingRail(): Response<RailData>

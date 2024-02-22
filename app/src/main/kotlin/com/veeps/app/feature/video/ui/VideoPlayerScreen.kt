@@ -80,6 +80,7 @@ import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
 import org.joda.time.Period
 import org.joda.time.format.PeriodFormatterBuilder
+import kotlin.math.roundToInt
 
 
 @OptIn(UnstableApi::class)
@@ -103,6 +104,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private var subscribeChannel = DEFAULT.EMPTY_STRING
 	private var publishChannel = DEFAULT.EMPTY_STRING
 	private var signalChannel = DEFAULT.EMPTY_STRING
+	private var playingPosition = 0L
+	private var isChatEnabled = false
 	lateinit var chatAdapter: ChatMessagesAdapter
 
 	private fun getBackCallback(): OnBackPressedCallback {
@@ -149,14 +152,32 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			liveControls.visibility = View.GONE
 			topControls.visibility = View.GONE
 			playPause.requestFocus()
-			listing.apply {
-				setNumColumns(1)
-				chatAdapter = ChatMessagesAdapter(arrayListOf())
-				adapter = chatAdapter
-				onFlingListener = PagerSnapHelper()
-				isFocusable = false
-				isFocusableInTouchMode = false
-				smoothScrollToPosition(chatAdapter.itemCount - 1)
+			if (isChatEnabled) {
+				listing.apply {
+					setNumColumns(1)
+					chatAdapter = ChatMessagesAdapter(arrayListOf())
+					adapter = chatAdapter
+					onFlingListener = PagerSnapHelper()
+					isFocusable = false
+					isFocusableInTouchMode = false
+					smoothScrollToPosition(chatAdapter.itemCount - 1)
+				}
+				chatToggle.visibility = View.VISIBLE
+				chatFromPhone.nextFocusUpId = chatFromPhone.id
+				chatFromPhone.nextFocusDownId = chatFromPhone.id
+				chatFromPhone.nextFocusLeftId = chatFromPhone.id
+				chatFromPhone.nextFocusRightId = chatToggle.id
+
+				chatToggle.nextFocusUpId = chatToggle.id
+				chatToggle.nextFocusDownId = chatToggle.id
+				chatToggle.nextFocusRightId = chatToggle.id
+				chatToggle.nextFocusLeftId = chatFromPhone.id
+			} else {
+				chatToggle.visibility = View.GONE
+				chatFromPhone.nextFocusUpId = chatFromPhone.id
+				chatFromPhone.nextFocusDownId = chatFromPhone.id
+				chatFromPhone.nextFocusLeftId = chatFromPhone.id
+				chatFromPhone.nextFocusRightId = chatFromPhone.id
 			}
 		}
 		var int = 0
@@ -173,13 +194,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	}
 
 	private fun loadAppContent() {
-		Logger.printWithTag(
-			"saumil", "Video Player -- ${intent.hasExtra("eventId")} -- ${viewModel.eventId.value}"
-		)
 		if (intent != null && intent.hasExtra("eventId")) {
 			setupVideoPlayer()
 			viewModel.eventId.postValue(intent.getStringExtra("eventId"))
-			Logger.printWithTag("saumil", "Video Player -- ${viewModel.eventId.value}")
 		}
 	}
 
@@ -270,7 +287,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		viewModel.chatMessages.observe(this@VideoPlayerScreen) { chatMessages ->
 			if (!chatMessages.isNullOrEmpty()) {
-
+				Logger.doNothing()
 			}
 		}
 
@@ -286,7 +303,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		viewModel.eventId.observe(this@VideoPlayerScreen) { eventId ->
 			if (!eventId.isNullOrBlank()) {
-				fetchEventPlaybackDetails(eventId)
+				fetchUserStats(eventId)
 			}
 		}
 
@@ -300,11 +317,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					//https://mtoczko.github.io/hls-test-streams/test-group/playlist.m3u8
 					//https://mtoczko.github.io/hls-test-streams/test-vtt-ts-segments/playlist.m3u8
 					//https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8
-					Logger.printWithTag("saumil", "playback Url -- $playbackURL")
 					val mediaSource = HlsMediaSource.Factory(DefaultHttpDataSource.Factory())
 						.setAllowChunklessPreparation(true)
 						.createMediaSource(MediaItem.fromUri(Uri.parse(playbackURL)))
-					player.setMediaSource(MergingMediaSource(mediaSource))
+					Logger.printWithTag("saumil", "setting up player with playing position - $playingPosition")
+					player.setMediaSource(MergingMediaSource(mediaSource), playingPosition)
 					player.prepare()
 					player.play()
 				}
@@ -351,15 +368,12 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				super.onCues(cueGroup)
 				if (cueGroup.cues.isNotEmpty() && cueGroup.cues.isNotEmpty()) {
 					for (i in 0 until cueGroup.cues.size) {
-						Logger.printWithTag(
-							"saumil", "Track Cue list content - " + cueGroup.cues[i].text
-						)
+
 					}
 				}
 			}
 
 			override fun onIsPlayingChanged(isPlaying: Boolean) {
-				Logger.printWithTag("saumil", "Playing Changed -- $isPlaying")
 				if (isPlaying) {
 					if (this@VideoPlayerScreen::statsManagement.isInitialized && this@VideoPlayerScreen::addStatsTask.isInitialized) {
 						statsManagement.removeCallbacks(addStatsTask)
@@ -378,7 +392,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 						binding.progress.isFocusable = false
 						binding.progress.isFocusableInTouchMode = false
 						binding.chatFromPhone.isFocusable = true
-						binding.chatToggle.isFocusable = true
+						if (isChatEnabled) binding.chatToggle.isFocusable = true
 						if (!binding.chatFromPhone.isFocused && !binding.chatToggle.isFocused) binding.chatFromPhone.requestFocus()
 					} else {
 						binding.chatToggle.isFocusable = false
@@ -400,9 +414,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			}
 
 			override fun onPlaybackStateChanged(playbackState: Int) {
-				Logger.printWithTag(
-					"saumil", "State Changed -- $playbackState -- ${player.isCurrentMediaItemLive}"
-				)
 				if (playbackState == Player.STATE_BUFFERING) {
 					binding.loader.visibility = View.VISIBLE
 				}
@@ -415,7 +426,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			override fun onPlayerError(error: PlaybackException) {
 				super.onPlayerError(error)
 				binding.playPause.isSelected = false
-				Logger.printWithTag("saumil", "Error Out")
 				showError(
 					Screens.PLAYER_ERROR,
 					"Sorry, Something went wrong.",
@@ -426,14 +436,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			override fun onTracksChanged(tracks: Tracks) {
 				super.onTracksChanged(tracks)
 				if (tracks.isEmpty) {
-					Logger.printWithTag("saumil", "tracks are empty, no subtitle button")
 				} else {
-					Logger.printWithTag("saumil", "tracks are not empty")
 					if (tracks.containsType(TRACK_TYPE_TEXT)) {
 						val subtitles: ArrayList<Subtitle> = arrayListOf()
-						Logger.printWithTag(
-							"saumil", "tracks have subtitles, can show subtitle button"
-						)
 						tracks.groups.forEach { group ->
 							when (group.type) {
 								TRACK_TYPE_TEXT -> {
@@ -448,27 +453,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 												trackPosition = position
 											)
 											subtitles.add(subtitle)
-											Logger.printWithTag("saumil", subtitle)
 										}
 									}
 								}
 							}
 						}
-
-						if (subtitles.isEmpty()) {
-							Logger.printWithTag(
-								"saumil", "subtitles are not supported, no subtitle button"
-							)
-						} else {
-							Logger.printWithTag(
-								"saumil",
-								"subtitles are supported, show subtitle button and listing"
-							)
-						}
-					} else {
-						Logger.printWithTag(
-							"saumil", "tracks does not have subtitles, no subtitle button"
-						)
 					}
 				}
 			}
@@ -476,13 +465,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		binding.progress.setOnFocusChangeListener { _, hasFocus ->
 			if (hasFocus) {
 				scrubbedPosition = player.currentPosition / IntValue.NUMBER_1000
-				Logger.printWithTag("saumil2", "scrubber has focus - $scrubbedPosition")
 				isScrubVisible = true
 				setImagePreview()
 				binding.progress.showScrubber(500)
 			} else {
 				scrubbedPosition = player.currentPosition / IntValue.NUMBER_1000
-				Logger.printWithTag("saumil2", "scrubber lost focus - $scrubbedPosition")
 				isScrubVisible = false
 				setImagePreview()
 				getCurrentPlayerPosition()
@@ -492,7 +479,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		}
 		binding.progress.addListener(object : TimeBar.OnScrubListener {
 			override fun onScrubStart(timeBar: TimeBar, position: Long) {
-				Logger.printWithTag("saumil2", "scrubber start - $position")
 				scrubbedPosition = position
 				isScrubVisible = true
 				setImagePreview()
@@ -500,14 +486,12 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			}
 
 			override fun onScrubMove(timeBar: TimeBar, position: Long) {
-				Logger.printWithTag("saumil2", "scrubber move $position")
 				scrubbedPosition = position
 				isScrubVisible = true
 				setImagePreview()
 			}
 
 			override fun onScrubStop(timeBar: TimeBar, position: Long, canceled: Boolean) {
-				Logger.printWithTag("saumil2", "scrubber stop - $position $canceled")
 				binding.progress.setPosition(position)
 				scrubbedPosition = position
 				isScrubVisible = true
@@ -534,48 +518,27 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		pubNubListener = object : SubscribeCallback() {
 			override fun status(pubnub: PubNub, pnStatus: PNStatus) {
 				if (pnStatus.category == PNStatusCategory.PNUnexpectedDisconnectCategory || pnStatus.category == PNStatusCategory.PNTimeoutCategory) {
-					Logger.printWithTag(
-						"saumilchat",
-						"Pubnub is either unexpectedly disconnected or got timeout, trying to reconnect"
-					)
 					pubnub.reconnect()
 				} else if (pnStatus.category === PNStatusCategory.PNConnectedCategory) {
-					Logger.printWithTag("saumilchat", "Pubnub is connected")
 				}
 			}
 
 			override fun message(pubnub: PubNub, pnMessageResult: PNMessageResult) {
-				if (pnMessageResult.channel == artistChannel) {
-					Logger.printWithTag(
-						"saumilchat",
-						"Artist Message is Received - ${pnMessageResult.message.asJsonObject} -- ${
-							pnMessageResult.message.asJsonObject.get("body").asString
-						}"
-					)
-				}
-
-				if (pnMessageResult.channel == subscribeChannel) {
-					Logger.printWithTag(
-						"saumilchat",
-						"Subscriber Message is Received - ${pnMessageResult.message.asJsonObject} -- ${
-							pnMessageResult.message.asJsonObject.get("body").asString
-						}"
-					)
-					chatAdapter.addMessage(
-						ChatMessageItem(
-							name = pnMessageResult.message.asJsonObject.get("author").asString,
-							message = pnMessageResult.message.asJsonObject.get("body").asString,
-							isArtist = pnMessageResult.message.asJsonObject.get("type").asString != "fan"
+				if (isChatEnabled) {
+					if (pnMessageResult.channel == subscribeChannel) {
+						chatAdapter.addMessage(
+							ChatMessageItem(
+								name = pnMessageResult.message.asJsonObject.get("author").asString,
+								message = pnMessageResult.message.asJsonObject.get("body").asString,
+								isArtist = pnMessageResult.message.asJsonObject.get("type").asString != "fan"
+							)
 						)
-					)
-					binding.listing.smoothScrollToPosition(chatAdapter.itemCount - 1)
+						binding.listing.smoothScrollToPosition(chatAdapter.itemCount - 1)
+					}
 				}
 			}
 
 			override fun signal(pubnub: PubNub, pnSignalResult: PNSignalResult) {
-				Logger.printWithTag(
-					"saumilchat", "New Signal is Received - ${pnSignalResult.message}"
-				)
 				when (pnSignalResult.message.asJsonObject.get("ls").asString) {
 					LastSignalTypes.DISCONNECTED, LastSignalTypes.NO_SIGNAL -> {
 						binding.videoPlayer.player?.pause()
@@ -660,51 +623,34 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		pubnub.subscribe(channels = listOf(signalChannel, artistChannel, subscribeChannel))
 
-		pubnub.history(channel = subscribeChannel, includeMeta = true, includeTimetoken = true)
-			.async { result, status ->
-				if (!status.error) {
-					result?.let { subscriberHistory ->
-						Logger.printWithTag(
-							"saumilchat",
-							"Message History Received For Subscriber, Total Messages are : ${subscriberHistory.messages.size}"
-						)
-						subscriberHistory.messages.forEach { messages ->
-							chatAdapter.addMessage(
-								ChatMessageItem(
-									name = messages.entry.asJsonObject.get("author").asString,
-									message = messages.entry.asJsonObject.get("body").asString,
-									isArtist = messages.entry.asJsonObject.get("type").asString != "fan",
+		if (isChatEnabled) {
+			pubnub.history(channel = subscribeChannel, includeMeta = true, includeTimetoken = true)
+				.async { result, status ->
+					if (!status.error) {
+						result?.let { subscriberHistory ->
+							subscriberHistory.messages.forEach { messages ->
+								chatAdapter.addMessage(
+									ChatMessageItem(
+										name = messages.entry.asJsonObject.get("author").asString,
+										message = messages.entry.asJsonObject.get("body").asString,
+										isArtist = messages.entry.asJsonObject.get("type").asString != "fan",
+									)
 								)
-							)
-							binding.listing.smoothScrollToPosition(chatAdapter.itemCount - 1)
+								binding.listing.smoothScrollToPosition(chatAdapter.itemCount - 1)
+							}
 						}
+					} else {
+						status.exception?.printStackTrace()
 					}
-				} else {
-					status.exception?.printStackTrace()
-					Logger.printWithTag(
-						"saumilchat",
-						"Error Received while fetching Message History for Subscriber - ${status.exception?.errorMessage}"
-					)
 				}
-			}
 
-		pubnub.history(channel = artistChannel, includeMeta = true, includeTimetoken = true)
-			.async { result, status ->
-				if (!status.error) {
-					result?.let { artistHistory ->
-						Logger.printWithTag(
-							"saumilchat",
-							"Message History Received For Artist, Total Messages are : ${artistHistory.messages.size}"
-						)
+			pubnub.history(channel = artistChannel, includeMeta = true, includeTimetoken = true)
+				.async { _, status ->
+					if (status.error) {
+						status.exception?.printStackTrace()
 					}
-				} else {
-					status.exception?.printStackTrace()
-					Logger.printWithTag(
-						"saumilchat",
-						"Error Received while fetching Message History for Artist - ${status.exception?.errorMessage}"
-					)
 				}
-			}
+		}
 	}
 
 	fun setSubtitles(needDisabled: Boolean, subtitle: Subtitle) {
@@ -758,10 +704,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		binding.seekDuration.text = seekDuration ?: "00:00:00"
 		binding.seekDuration.visibility =
 			if (isScrubVisible && binding.progress.hasFocus()) View.VISIBLE else View.INVISIBLE
-//		Logger.printWithTag(
-//			"saumil2",
-//			"scrubber  = $positionInPercentage - ${(scrubbedPosition / (player.duration / IntValue.NUMBER_1000))} - $isScrubVisible ${binding.progress.hasFocus()} ${binding.progress.isFocused} -- $scrubbedPosition ${(player.duration / IntValue.NUMBER_1000)}"
-//		)
 	}
 
 	private fun releaseVideoPlayer() {
@@ -778,9 +720,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		val totalDuration = player.duration / IntValue.NUMBER_1000
 		if (player.isPlaying) scrubbedPosition = currentPosition
 		setImagePreview()
+		binding.progress.setDuration(totalDuration)
 		binding.progress.setBufferedPosition(bufferedPosition)
 		binding.progress.setPosition(currentPosition)
-		binding.progress.setDuration(totalDuration)
 		val currentDuration =
 			PeriodFormatterBuilder().printZeroAlways().minimumPrintedDigits(2).appendHours()
 				.appendSeparator(":").printZeroAlways().minimumPrintedDigits(2).appendMinutes()
@@ -789,15 +731,50 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					Period.seconds((totalDuration - currentPosition).toInt()).normalizedStandard()
 				)
 		binding.currentDuration.text = currentDuration ?: "00:00:00"
-//		Logger.printWithTag(
-//			"saumil",
-//			"current pos: $currentPosition -- total duration: $totalDuration -- difference: ${totalDuration - currentPosition} -- Formatted String: ${currentDuration ?: "00:00:00"}"
-//		)
 		if (player.isPlaying) {
 			binding.videoPlayer.postDelayed(
 				{ getCurrentPlayerPosition() }, IntValue.NUMBER_1000.toLong()
 			)
 		}
+	}
+
+	private fun fetchUserStats(eventId: String) {
+		val userStatsAPIURL = AppPreferences.get(
+			AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
+		) + APIConstants.fetchUserStats
+		AppPreferences.set(AppConstants.generatedJWT, AppUtil.generateJWT(eventIds = eventId))
+		viewModel.fetchUserStats(userStatsAPIURL, eventIds = eventId)
+			.observe(this@VideoPlayerScreen) { userStatsDetails ->
+				fetch(
+					userStatsDetails,
+					isLoaderEnabled = false,
+					canUserAccessScreen = true,
+					shouldBeInBackground = true,
+				) {
+					userStatsDetails.response?.let { userStatsResponse ->
+						if (userStatsResponse.userStats.isNotEmpty()) {
+							val stats = userStatsResponse.userStats.filter { it.eventId == eventId }
+							val currentStat = (stats[0].cursor / stats[0].duration) * 100
+							Logger.printWithTag(
+								"saumil",
+								"user stats, current stat $currentStat. cursor is ${stats[0].cursor}, duration is ${stats[0].duration}"
+							)
+							if (stats.size == 1 && ((stats[0].cursor / stats[0].duration) * 100) < 95) {
+								val progress = stats[0].cursor.roundToInt()
+								val max = stats[0].duration.roundToInt()
+								playingPosition = progress.times(IntValue.NUMBER_1000).toLong()
+							} else {
+								playingPosition = 0
+							}
+						} else {
+							playingPosition = 0
+						}
+					} ?: run {
+						playingPosition = 0
+					}
+					fetchEventPlaybackDetails(eventId)
+				}
+			}
 	}
 
 	private fun fetchEventPlaybackDetails(eventId: String) {
@@ -853,27 +830,23 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			)
 		) {
 			initPubNub()
-			binding.chat.visibility = if (binding.chatToggle.isSelected) View.VISIBLE else View.GONE
+			binding.chat.visibility =
+				if (isChatEnabled && binding.chatToggle.isSelected) View.VISIBLE else View.GONE
 		}
-
-		Logger.printWithTag(
-			"saumilchat",
-			"Event Status is - $status, last signal is - ${eventDetails.lastSignal?.lowercase() ?: DEFAULT.EMPTY_STRING}"
-		)
 
 		if (status.contains(EventTypes.ON_DEMAND, true)) {
 			binding.standBy.visibility = View.GONE
 			viewModel.playbackURL.postValue(playbackStream.ifBlank { DEFAULT.EMPTY_STRING })
 		} else {
 			when (val lastSignal = eventDetails.lastSignal?.lowercase() ?: DEFAULT.EMPTY_STRING) {
-				LastSignalTypes.NO_SIGNAL, LastSignalTypes.DISCONNECTED, LastSignalTypes.CONNECTING, LastSignalTypes.CONNECTED, LastSignalTypes.IDLE -> {
+				LastSignalTypes.DISCONNECTED, LastSignalTypes.CONNECTING, LastSignalTypes.CONNECTED, LastSignalTypes.IDLE -> {
 					binding.standBy.visibility = View.VISIBLE
 					binding.topControls.visibility = View.VISIBLE
 					binding.liveControls.visibility = View.VISIBLE
 					binding.vodControls.visibility = View.GONE
 				}
 
-				LastSignalTypes.ACTIVE, LastSignalTypes.RECORDING -> {
+				LastSignalTypes.NO_SIGNAL, LastSignalTypes.ACTIVE, LastSignalTypes.RECORDING -> {
 					binding.standBy.visibility = View.GONE
 					viewModel.playbackURL.postValue(playbackStream.ifBlank { DEFAULT.EMPTY_STRING })
 				}
@@ -959,7 +932,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				companionResponse.response?.let { companion ->
 					companion.data?.let { companionData ->
 						binding.qrCode.loadImage(
-							APIConstants.QR_CODE_BASE_URL.plus(companionData.url), ImageTags.QR
+							APIConstants.QR_CODE_BASE_URL.plus(companionData.url.replace(" ", "").trim().lowercase()), ImageTags.QR
 						)
 					}
 				}
@@ -996,7 +969,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				shouldBeInBackground = true
 			) {
 				addStatsResponse.response?.let {
-
+					Logger.printWithTag("saumil", "Stats added for $currentTime")
 				}
 			}
 		}
@@ -1026,7 +999,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				binding.errorCode.visibility = View.VISIBLE
 				binding.errorDescription.text = description
 				binding.reWatchContainer.visibility = View.GONE
-				binding.errorCode.text = "Error Code: 001"
+				binding.errorCode.text = getString(R.string.error_label)
 				viewModel.errorPositiveLabel.postValue(getString(R.string.exit_player_label))
 				viewModel.errorNegativeLabel.postValue(getString(R.string.try_again_label))
 				viewModel.isErrorPositiveApplicable.postValue(true)
@@ -1150,11 +1123,15 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	}
 
 	fun onChatToggleClicked() {
-		binding.chatToggle.isSelected = !binding.chatToggle.isSelected
-		binding.chatToggleLabel.text =
-			if (binding.chatToggle.isSelected) getString(R.string.turn_chat_off) else getString(R.string.turn_chat_on)
-		binding.chat.visibility = if (binding.chatToggle.isSelected) View.VISIBLE else View.GONE
-
+		if (isChatEnabled) {
+			binding.chatToggle.isSelected = !binding.chatToggle.isSelected
+			binding.chatToggleLabel.text =
+				if (binding.chatToggle.isSelected) getString(R.string.turn_chat_off) else getString(
+					R.string.turn_chat_on
+				)
+			binding.chat.visibility =
+				if (isChatEnabled && binding.chatToggle.isSelected) View.VISIBLE else View.GONE
+		}
 	}
 
 	fun onErrorPositive(tag: Any?) {
@@ -1167,6 +1144,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 						)
 					} Finishing Activity"
 				)
+				Handler(Looper.getMainLooper()).post(addStatsTask)
 				releaseVideoPlayer()
 				finish()
 			}
@@ -1231,6 +1209,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 						)
 					}"
 				)
+				if (isChatEnabled) chatAdapter.clearAllMessages()
 				releaseVideoPlayer()
 				binding.standBy.visibility = View.GONE
 				loadAppContent()
@@ -1403,7 +1382,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_SPACE -> {
 					// When a key is hit, cancel the timeout of hiding the trick bar and set it again
 					if (!player.isCurrentMediaItemLive && binding.progress.hasFocus()) {
-						Logger.printWithTag("saumil2", "scrubber has focus and key")
 						isScrubVisible = false
 						setImagePreview()
 						player.seekTo(scrubbedPosition * 1000)

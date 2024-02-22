@@ -31,4 +31,6 @@ class EventViewModel : ViewModel(), DefaultLifecycleObserver {
 	fun setNewReservation(itemId: HashMap<String, Any>) = APIRepository().setNewReservation(itemId)
 	fun generateNewOrder() = APIRepository().generateNewOrder()
 	fun createOrder(orderDetails: HashMap<String, Any>) = APIRepository().createOrder(orderDetails)
+	fun fetchUserStats(userStatsAPIURL: String, eventIds: String) =
+		APIRepository().fetchUserStats(userStatsAPIURL, eventIds)
 }

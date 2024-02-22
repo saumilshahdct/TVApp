@@ -154,7 +154,7 @@
                     android:paddingEnd="20dp"
                     android:paddingBottom="8dp"
                     app:blurOverlayColor="@color/white_10"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/resumeProgress"
                     app:layout_constraintEnd_toStartOf="@+id/my_shows"
                     app:layout_constraintHorizontal_chainStyle="packed"
                     app:layout_constraintStart_toStartOf="parent"
@@ -180,6 +180,26 @@
 
                 </eightbitlab.com.blurview.BlurView>
 
+                <SeekBar
+                    android:id="@+id/resumeProgress"
+                    android:layout_width="0dp"
+                    android:layout_height="2dp"
+                    android:paddingStart="0dp"
+                    android:paddingLeft="0dp"
+                    android:paddingTop="0dp"
+                    android:paddingEnd="0dp"
+                    android:paddingRight="0dp"
+                    android:paddingBottom="0dp"
+                    android:layout_marginTop="2dp"
+                    android:progressBackgroundTint="@color/white_50"
+                    android:progressDrawable="@drawable/resume_watching_progress"
+                    android:splitTrack="false"
+                    android:thumb="@drawable/background_transparent"
+                    app:layout_constraintTop_toBottomOf="@id/primary"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="@id/primary"
+                    app:layout_constraintStart_toStartOf="@id/primary" />
+
                 <!-- Add / Remove My Shows CTA -->
                 <eightbitlab.com.blurview.BlurView
                     android:id="@+id/my_shows"
@@ -199,7 +219,7 @@
                     android:paddingEnd="20dp"
                     android:paddingBottom="8dp"
                     app:blurOverlayColor="@color/white_10"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/resumeProgress"
                     app:layout_constraintEnd_toStartOf="@+id/date"
                     app:layout_constraintStart_toEndOf="@+id/primary"
                     app:layout_constraintTop_toTopOf="parent">
@@ -241,7 +261,7 @@
                     android:textColor="@color/white_50"
                     android:textIsSelectable="false"
                     android:textSize="13sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/resumeProgress"
                     app:layout_constraintEnd_toStartOf="@id/live_now"
                     app:layout_constraintStart_toEndOf="@id/my_shows"
                     app:layout_constraintTop_toTopOf="parent"
@@ -266,7 +286,7 @@
                     android:textColor="@color/white_50"
                     android:textIsSelectable="false"
                     android:textSize="13sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/resumeProgress"
                     app:layout_constraintEnd_toStartOf="@id/view"
                     app:layout_constraintStart_toEndOf="@id/date"
                     app:layout_constraintTop_toTopOf="parent"
@@ -344,7 +364,7 @@
                 android:textAlignment="gravity"
                 android:textColor="@color/white"
                 android:textIsSelectable="false"
-                android:textSize="10sp"
+                android:textSize="11sp"
                 tools:ignore="MissingPrefix" />
 
             <ImageView
@@ -368,7 +388,7 @@
                 android:textAlignment="gravity"
                 android:textColor="@color/white"
                 android:textIsSelectable="false"
-                android:textSize="10sp"
+                android:textSize="11sp"
                 tools:ignore="MissingPrefix" />
 
         </LinearLayout>

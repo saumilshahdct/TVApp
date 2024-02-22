@@ -41,7 +41,6 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 		setContentView(binding.root)
 		layoutContainer = binding.root.findViewById(R.id.layout_container)
 		screenLoader = binding.root.findViewById(R.id.loader)
-		Logger.print("Screen Rendered")
 		onRendered(viewModel, binding)
 
 	}
@@ -109,7 +108,7 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 						block.invoke()
 					}
 
-					APIConstants.fetchEventStreamDetails, APIConstants.fetchEventDetails, APIConstants.fetchEventProductDetails, APIConstants.clearAllReservations, APIConstants.fetchStoryBoard -> {
+					APIConstants.fetchEventStreamDetails, APIConstants.fetchUserStats, APIConstants.fetchEventDetails, APIConstants.fetchEventProductDetails, APIConstants.clearAllReservations, APIConstants.fetchStoryBoard -> {
 						block.invoke()
 					}
 

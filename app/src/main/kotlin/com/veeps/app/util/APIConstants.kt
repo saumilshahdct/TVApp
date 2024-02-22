@@ -48,4 +48,5 @@ object APIConstants {
 	const val fetchStoryBoard: String = "fetchStoryBoard"
 	const val addStats: String = "/addstat"
 	const val fetchCompanions: String = API_VERSION + "me/companion"
+	const val fetchFeaturedContent: String = API_VERSION + "features?scope=search"
 }

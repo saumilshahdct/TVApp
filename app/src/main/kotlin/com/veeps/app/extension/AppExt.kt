@@ -66,7 +66,7 @@ fun goToPage(
 		}
 		if (shouldAddToBackStack) addToBackStack(tag)
 		Logger.print(
-			"Page is asked to load -- ${
+			"Page is requested to load -- ${
 				fragment.javaClass.name.substringAfterLast(".")
 			}"
 		)

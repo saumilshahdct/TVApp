@@ -230,7 +230,7 @@
                             android:textAllCaps="false"
                             android:textColor="@color/white"
                             android:textIsSelectable="false"
-                            android:textSize="10sp"
+                            android:textSize="11sp"
                             tools:ignore="MissingPrefix" />
 
                     </eightbitlab.com.blurview.BlurView>
@@ -275,7 +275,7 @@
                             android:textAllCaps="false"
                             android:textColor="@color/selector_home_label"
                             android:textIsSelectable="false"
-                            android:textSize="10sp"
+                            android:textSize="11sp"
                             tools:ignore="MissingPrefix" />
 
                     </eightbitlab.com.blurview.BlurView>
@@ -319,7 +319,7 @@
                             android:textAllCaps="false"
                             android:textColor="@color/selector_home_label"
                             android:textIsSelectable="false"
-                            android:textSize="10sp"
+                            android:textSize="11sp"
                             tools:ignore="MissingPrefix" />
 
                     </eightbitlab.com.blurview.BlurView>
@@ -826,7 +826,7 @@
                             android:textAlignment="gravity"
                             android:textColor="@color/white"
                             android:textIsSelectable="false"
-                            android:textSize="10sp"
+                            android:textSize="11sp"
                             tools:ignore="MissingPrefix" />
 
                     </LinearLayout>

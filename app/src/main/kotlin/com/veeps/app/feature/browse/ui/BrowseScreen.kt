@@ -77,7 +77,6 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		FragmentBrowseScreenBinding.inflate(layoutInflater)
 
 	override fun onDestroyView() {
-		Logger.print("browse view is destroyed")
 		viewModel.railData.postValue(arrayListOf())
 		viewModelStore.clear()
 		releaseVideoPlayer()
@@ -287,9 +286,6 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			}
 		}
 		homeViewModel.translateCarouselToBottom.observe(viewLifecycleOwner) { shouldTranslate ->
-			Logger.printWithTag(
-				"saumil", " Here in bottom - $shouldTranslate -- ${viewModel.isVisible.value}"
-			)
 			if (shouldTranslate && viewModel.isVisible.value == true) {
 				if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && !player.isPlaying && homeViewModel.isErrorVisible.value?.equals(
 						false
@@ -310,8 +306,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		}
 
 		viewModel.isVisible.observeForever { isVisible ->
-			Logger.printWithTag(
-				"MenuFocus", "Visibility Changed to $isVisible On ${
+			Logger.print("Visibility Changed to $isVisible On ${
 					this@BrowseScreen.javaClass.name.substringAfterLast(".")
 				}"
 			)
@@ -352,7 +347,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 					requireCarouselRemoval = true
 				}
 				rails.removeIf { rail ->
-					rail.cardType.equals("wide")
+					rail.cardType.equals(CardTypes.WIDE)
 				}
 				railAdapter.setRails(rails)
 			} else {
@@ -387,12 +382,11 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			.toDateTime()
 		binding.date.text = otherDate.toString("MMM dd, yyyy${DEFAULT.SEPARATOR}ha")
 		if (AppUtil.compare(otherDate, currentDate) == DateTimeCompareDifference.GREATER_THAN) {
-			binding.date.visibility =
-				if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
+			binding.date.visibility = View.VISIBLE
 			binding.liveNow.visibility = View.GONE
 		} else {
-			binding.date.visibility = View.GONE
-			binding.liveNow.visibility = if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
+			binding.date.visibility = View.VISIBLE
+			binding.liveNow.visibility = View.GONE
 		}
 		val title = entity.eventName?.ifBlank { DEFAULT.EMPTY_STRING } ?: DEFAULT.EMPTY_STRING
 		posterImage =
@@ -560,16 +554,8 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		binding.myShows.isSelected = isAdded
 		binding.myShowsLabel.setCompoundDrawablesRelativeWithIntrinsicBounds(
 			if (binding.myShows.isSelected) {
-				Logger.printWithTag(
-					"myshows",
-					"has focus ${binding.myShows.hasFocus()} + is focused ${binding.myShows.isFocused} + tag is ${binding.myShows.tag}"
-				)
 				if (binding.myShows.hasFocus()) R.drawable.check_black else R.drawable.check_white
 			} else {
-				Logger.printWithTag(
-					"myshows",
-					"has focus ${binding.myShows.hasFocus()} + is focused ${binding.myShows.isFocused} + tag is ${binding.myShows.tag}"
-				)
 				if (binding.myShows.hasFocus()) R.drawable.add_black else R.drawable.add_white
 			}, 0, 0, 0
 		)
