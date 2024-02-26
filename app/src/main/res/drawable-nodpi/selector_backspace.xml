@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-	<item android:state_focused="true">
-		<vector android:width="15dp" android:height="11.842105dp" android:autoMirrored="true" android:viewportWidth="38" android:viewportHeight="30">
-			<path android:fillColor="@android:color/transparent" android:fillType="evenOdd" android:pathData="M10.94,4.199C12.071,3.03 13.628,2.369 15.255,2.369H30.314C33.628,2.369 36.314,5.055 36.314,8.369V21.632C36.314,24.946 33.628,27.632 30.314,27.632H15.255C13.628,27.632 12.071,26.972 10.94,25.802L2.515,17.086C1.391,15.923 1.391,14.078 2.515,12.916L10.94,4.199Z" android:strokeWidth="3" android:strokeColor="@color/black" />
-		</vector>
-	</item>
-	<item>
-		<vector android:width="15dp" android:height="11.842105dp" android:autoMirrored="true" android:viewportWidth="38" android:viewportHeight="30">
-			<path android:fillColor="@android:color/transparent" android:fillType="evenOdd" android:pathData="M10.94,4.199C12.071,3.03 13.628,2.369 15.255,2.369H30.314C33.628,2.369 36.314,5.055 36.314,8.369V21.632C36.314,24.946 33.628,27.632 30.314,27.632H15.255C13.628,27.632 12.071,26.972 10.94,25.802L2.515,17.086C1.391,15.923 1.391,14.078 2.515,12.916L10.94,4.199Z" android:strokeWidth="3" android:strokeColor="@color/white" />
-		</vector>
+    <item android:state_focused="true">
+        <vector android:width="15dp" android:height="11.842105dp" android:autoMirrored="true" android:viewportWidth="38" android:viewportHeight="30">
+            <path android:fillColor="@android:color/transparent" android:fillType="evenOdd" android:pathData="M10.94,4.199C12.071,3.03 13.628,2.369 15.255,2.369H30.314C33.628,2.369 36.314,5.055 36.314,8.369V21.632C36.314,24.946 33.628,27.632 30.314,27.632H15.255C13.628,27.632 12.071,26.972 10.94,25.802L2.515,17.086C1.391,15.923 1.391,14.078 2.515,12.916L10.94,4.199Z" android:strokeWidth="3" android:strokeColor="@color/black" />
+        </vector>
+    </item>
+    <item>
+        <vector android:width="15dp" android:height="11.842105dp" android:autoMirrored="true" android:viewportWidth="38" android:viewportHeight="30">
+            <path android:fillColor="@android:color/transparent" android:fillType="evenOdd" android:pathData="M10.94,4.199C12.071,3.03 13.628,2.369 15.255,2.369H30.314C33.628,2.369 36.314,5.055 36.314,8.369V21.632C36.314,24.946 33.628,27.632 30.314,27.632H15.255C13.628,27.632 12.071,26.972 10.94,25.802L2.515,17.086C1.391,15.923 1.391,14.078 2.515,12.916L10.94,4.199Z" android:strokeWidth="3" android:strokeColor="@color/white" />
+        </vector>
 
-	</item>
+    </item>
 
 </selector>

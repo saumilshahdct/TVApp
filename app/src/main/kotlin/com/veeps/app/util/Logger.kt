@@ -60,7 +60,10 @@ object Logger {
 			)
 		}
 		printWithTag("VeepsAPI", "Response Code :: ${response.code} \n\n")
-		printWithTag("VeepsAPI", "Response Codssssss :: ${("https://bacon.veeps.com/addstat?cur=0.0&pld=0.0&plv=ntv&dvm=iPhone15&dvv=Apple&pls=LIVE&p=iOS&s=b".uppercase())} \n\n")
+		printWithTag(
+			"VeepsAPI",
+			"Response Codssssss :: ${("https://bacon.veeps.com/addstat?cur=0.0&pld=0.0&plv=ntv&dvm=iPhone15&dvv=Apple&pls=LIVE&p=iOS&s=b".uppercase())} \n\n"
+		)
 		val maxLogSize = 4000
 		for (i in 0..bodyString.length / maxLogSize) {
 			val start = i * maxLogSize

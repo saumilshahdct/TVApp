@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.veeps.app.data.common.APIRepository
 import com.veeps.app.feature.contentRail.model.RailData
+import kotlinx.coroutines.Job
 
 class SearchViewModel : ViewModel(), DefaultLifecycleObserver {
 	var contentHasLoaded = MutableLiveData(false)
@@ -38,5 +39,5 @@ class SearchViewModel : ViewModel(), DefaultLifecycleObserver {
 
 	fun fetchUpcomingEvents() = APIRepository().fetchUpcomingEvents()
 	fun fetchFeaturedContent() = APIRepository().fetchFeaturedContent()
-	fun fetchSearchResult() = APIRepository().fetchSearchResult(search = search.value.orEmpty())
+	fun fetchSearchResult(job: Job) = APIRepository().fetchSearchResult(search = search.value.orEmpty(), job)
 }

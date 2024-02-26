@@ -28,5 +28,6 @@ class HomeViewModel : ViewModel() {
 	var orderId = ""
 
 	fun fetchAllWatchListEvents() = APIRepository().fetchAllWatchListEvents()
-	fun addRemoveWatchListEvent(eventId: HashMap<String, Any>, isRemoveFromWatchList: Boolean) = APIRepository().addRemoveWatchListEvent(eventId, isRemoveFromWatchList)
+	fun addRemoveWatchListEvent(eventId: HashMap<String, Any>, isRemoveFromWatchList: Boolean) =
+		APIRepository().addRemoveWatchListEvent(eventId, isRemoveFromWatchList)
 }

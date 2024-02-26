@@ -320,7 +320,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					val mediaSource = HlsMediaSource.Factory(DefaultHttpDataSource.Factory())
 						.setAllowChunklessPreparation(true)
 						.createMediaSource(MediaItem.fromUri(Uri.parse(playbackURL)))
-					Logger.printWithTag("saumil", "setting up player with playing position - $playingPosition")
 					player.setMediaSource(MergingMediaSource(mediaSource), playingPosition)
 					player.prepare()
 					player.play()
@@ -752,22 +751,18 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					shouldBeInBackground = true,
 				) {
 					userStatsDetails.response?.let { userStatsResponse ->
-						if (userStatsResponse.userStats.isNotEmpty()) {
+						playingPosition = if (userStatsResponse.userStats.isNotEmpty()) {
 							val stats = userStatsResponse.userStats.filter { it.eventId == eventId }
 							val currentStat = (stats[0].cursor / stats[0].duration) * 100
-							Logger.printWithTag(
-								"saumil",
-								"user stats, current stat $currentStat. cursor is ${stats[0].cursor}, duration is ${stats[0].duration}"
-							)
 							if (stats.size == 1 && ((stats[0].cursor / stats[0].duration) * 100) < 95) {
 								val progress = stats[0].cursor.roundToInt()
 								val max = stats[0].duration.roundToInt()
-								playingPosition = progress.times(IntValue.NUMBER_1000).toLong()
+								progress.times(IntValue.NUMBER_1000).toLong()
 							} else {
-								playingPosition = 0
+								0
 							}
 						} else {
-							playingPosition = 0
+							0
 						}
 					} ?: run {
 						playingPosition = 0
@@ -932,7 +927,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				companionResponse.response?.let { companion ->
 					companion.data?.let { companionData ->
 						binding.qrCode.loadImage(
-							APIConstants.QR_CODE_BASE_URL.plus(companionData.url.replace(" ", "").trim().lowercase()), ImageTags.QR
+							APIConstants.QR_CODE_BASE_URL.plus(
+								companionData.url.replace(" ", "").trim().lowercase()
+							), ImageTags.QR
 						)
 					}
 				}
@@ -969,7 +966,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				shouldBeInBackground = true
 			) {
 				addStatsResponse.response?.let {
-					Logger.printWithTag("saumil", "Stats added for $currentTime")
+					Logger.doNothing()
 				}
 			}
 		}

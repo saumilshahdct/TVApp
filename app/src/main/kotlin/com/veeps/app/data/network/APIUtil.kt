@@ -55,39 +55,47 @@ object APIUtil {
 			if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
 
 		val httpClient = OkHttpClient.Builder().addInterceptor(
-				SentryOkHttpInterceptor(
-					captureFailedRequests = true, failedRequestStatusCodes = listOf(
-						HttpStatusCodeRange(400, 599)
-					)
+			SentryOkHttpInterceptor(
+				captureFailedRequests = true, failedRequestStatusCodes = listOf(
+					HttpStatusCodeRange(400, 599)
 				)
-			).eventListener(SentryOkHttpEventListener()).addInterceptor { chain ->
-				if (isAppConnected()) {
-					startNs = System.nanoTime()
-					var request = chain.request()
-					val originalHttpUrl = request.url
-					val headerToken = if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppPreferences.get(AppConstants.generatedJWT, "GeneratedJWT") else AppPreferences.get(AppConstants.authenticatedUserToken, "AuthenticatedUserToken")
-					val builder: Request.Builder = request.newBuilder().header("Authorization", "Bearer $headerToken")
-					request = builder.build()
-					if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppPreferences.remove(
-						AppConstants.generatedJWT
+			)
+		).eventListener(SentryOkHttpEventListener()).addInterceptor { chain ->
+			if (isAppConnected()) {
+				startNs = System.nanoTime()
+				var request = chain.request()
+				val originalHttpUrl = request.url
+				val headerToken =
+					if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppPreferences.get(
+						AppConstants.generatedJWT,
+						"GeneratedJWT"
+					) else AppPreferences.get(
+						AppConstants.authenticatedUserToken,
+						"AuthenticatedUserToken"
 					)
-					chain.proceed(request)
-				} else {
-					throw NoConnectivityException()
-				}
-			}.addInterceptor { chain ->
-				val response = chain.proceed(chain.request())
-				var bodyString: String
-				response.body.let {
-					bodyString = response.body.string()
-					val tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs)
-					val tookS = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - startNs)
-					Logger.printAPILogs(chain, response, bodyString, tookMs, tookS)
-				}
-				val newResponse: okhttp3.Response.Builder = response.newBuilder()
-				newResponse.body(bodyString.toResponseBody(response.body.contentType()))
-				newResponse.build()
-			}.addInterceptor(logging).connectTimeout(1, TimeUnit.MINUTES)
+				val builder: Request.Builder =
+					request.newBuilder().header("Authorization", "Bearer $headerToken")
+				request = builder.build()
+				if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppPreferences.remove(
+					AppConstants.generatedJWT
+				)
+				chain.proceed(request)
+			} else {
+				throw NoConnectivityException()
+			}
+		}.addInterceptor { chain ->
+			val response = chain.proceed(chain.request())
+			var bodyString: String
+			response.body.let {
+				bodyString = response.body.string()
+				val tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs)
+				val tookS = TimeUnit.NANOSECONDS.toSeconds(System.nanoTime() - startNs)
+				Logger.printAPILogs(chain, response, bodyString, tookMs, tookS)
+			}
+			val newResponse: okhttp3.Response.Builder = response.newBuilder()
+			newResponse.body(bodyString.toResponseBody(response.body.contentType()))
+			newResponse.build()
+		}.addInterceptor(logging).connectTimeout(1, TimeUnit.MINUTES)
 			.readTimeout(1, TimeUnit.MINUTES).writeTimeout(1, TimeUnit.MINUTES).build()
 
 		Retrofit.Builder().baseUrl(APIConstants.BASE_URL)

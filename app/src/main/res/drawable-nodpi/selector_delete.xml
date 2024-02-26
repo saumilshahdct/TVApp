@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-	<item android:state_focused="true">
-		<vector android:width="15dp" android:height="15dp" android:autoMirrored="true" android:viewportWidth="48" android:viewportHeight="48">
-			<path android:fillColor="@color/black" android:fillType="evenOdd" android:pathData="M33,12C33,8.686 30.314,6 27,6H21C17.686,6 15,8.686 15,12H18C18,10.343 19.343,9 21,9H27C28.657,9 30,10.343 30,12H33Z" />
-			<path android:fillColor="@color/black" android:pathData="M9,12L39,12A1,1 0,0 1,40 13L40,14A1,1 0,0 1,39 15L9,15A1,1 0,0 1,8 14L8,13A1,1 0,0 1,9 12z" />
-			<path android:fillColor="@color/black" android:fillType="evenOdd" android:pathData="M10.686,18L12.985,39.772C13.12,41.044 14.192,42.01 15.472,42.01H31.702C32.949,42.01 34.004,41.092 34.178,39.858L37.257,18H34.227L31.268,39.01H15.922L13.702,18H10.686Z" />
-		</vector>
-	</item>
-	<item>
-		<vector android:width="15dp" android:height="15dp" android:autoMirrored="true" android:viewportWidth="48" android:viewportHeight="48">
-			<path android:fillColor="@color/white" android:fillType="evenOdd" android:pathData="M33,12C33,8.686 30.314,6 27,6H21C17.686,6 15,8.686 15,12H18C18,10.343 19.343,9 21,9H27C28.657,9 30,10.343 30,12H33Z" />
-			<path android:fillColor="@color/white" android:pathData="M9,12L39,12A1,1 0,0 1,40 13L40,14A1,1 0,0 1,39 15L9,15A1,1 0,0 1,8 14L8,13A1,1 0,0 1,9 12z" />
-			<path android:fillColor="@color/white" android:fillType="evenOdd" android:pathData="M10.686,18L12.985,39.772C13.12,41.044 14.192,42.01 15.472,42.01H31.702C32.949,42.01 34.004,41.092 34.178,39.858L37.257,18H34.227L31.268,39.01H15.922L13.702,18H10.686Z" />
-		</vector>
-	</item>
+    <item android:state_focused="true">
+        <vector android:width="15dp" android:height="15dp" android:autoMirrored="true" android:viewportWidth="48" android:viewportHeight="48">
+            <path android:fillColor="@color/black" android:fillType="evenOdd" android:pathData="M33,12C33,8.686 30.314,6 27,6H21C17.686,6 15,8.686 15,12H18C18,10.343 19.343,9 21,9H27C28.657,9 30,10.343 30,12H33Z" />
+            <path android:fillColor="@color/black" android:pathData="M9,12L39,12A1,1 0,0 1,40 13L40,14A1,1 0,0 1,39 15L9,15A1,1 0,0 1,8 14L8,13A1,1 0,0 1,9 12z" />
+            <path android:fillColor="@color/black" android:fillType="evenOdd" android:pathData="M10.686,18L12.985,39.772C13.12,41.044 14.192,42.01 15.472,42.01H31.702C32.949,42.01 34.004,41.092 34.178,39.858L37.257,18H34.227L31.268,39.01H15.922L13.702,18H10.686Z" />
+        </vector>
+    </item>
+    <item>
+        <vector android:width="15dp" android:height="15dp" android:autoMirrored="true" android:viewportWidth="48" android:viewportHeight="48">
+            <path android:fillColor="@color/white" android:fillType="evenOdd" android:pathData="M33,12C33,8.686 30.314,6 27,6H21C17.686,6 15,8.686 15,12H18C18,10.343 19.343,9 21,9H27C28.657,9 30,10.343 30,12H33Z" />
+            <path android:fillColor="@color/white" android:pathData="M9,12L39,12A1,1 0,0 1,40 13L40,14A1,1 0,0 1,39 15L9,15A1,1 0,0 1,8 14L8,13A1,1 0,0 1,9 12z" />
+            <path android:fillColor="@color/white" android:fillType="evenOdd" android:pathData="M10.686,18L12.985,39.772C13.12,41.044 14.192,42.01 15.472,42.01H31.702C32.949,42.01 34.004,41.092 34.178,39.858L37.257,18H34.227L31.268,39.01H15.922L13.702,18H10.686Z" />
+        </vector>
+    </item>
 
 </selector>

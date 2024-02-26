@@ -14,6 +14,7 @@ interface AppAction {
 			"Action performed but not implemented"
 		)
 	}
+
 	fun focusUp() = run {
 		Logger.print(
 			"Action performed but not implemented"
@@ -31,6 +32,7 @@ interface AppAction {
 			"Action performed but not implemented"
 		)
 	}
+
 	fun onEvent(entity: Entities, tag: String) = run {
 		Logger.print(
 			"Action performed but not implemented"
@@ -42,6 +44,7 @@ interface AppAction {
 			"Action performed but not implemented"
 		)
 	}
+
 	fun onArtist(entity: Entities, tag: String) = run {
 		Logger.print(
 			"Action performed but not implemented"

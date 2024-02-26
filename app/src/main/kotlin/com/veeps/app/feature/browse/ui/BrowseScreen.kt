@@ -306,7 +306,8 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		}
 
 		viewModel.isVisible.observeForever { isVisible ->
-			Logger.print("Visibility Changed to $isVisible On ${
+			Logger.print(
+				"Visibility Changed to $isVisible On ${
 					this@BrowseScreen.javaClass.name.substringAfterLast(".")
 				}"
 			)

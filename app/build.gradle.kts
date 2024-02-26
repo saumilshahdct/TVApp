@@ -154,7 +154,7 @@ dependencies {
 	/* Joda Time */
 	implementation("net.danlew:android.joda:2.12.7")
 
-	val exoVersion = "1.2.1"	/* ExoPlayer */
+	val exoVersion = "1.2.1"    /* ExoPlayer */
 	implementation("androidx.media3:media3-exoplayer:$exoVersion")
 	implementation("androidx.media3:media3-exoplayer-dash:$exoVersion")
 	implementation("androidx.media3:media3-exoplayer-hls:$exoVersion")

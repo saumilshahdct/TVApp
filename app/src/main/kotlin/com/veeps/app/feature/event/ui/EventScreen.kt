@@ -691,41 +691,30 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				) {
 					userStatsDetails.response?.let { userStatsResponse ->
 						if (userStatsResponse.userStats.isNotEmpty()) {
-							val stats = userStatsResponse.userStats.filter { it.eventId == viewModel.eventId }
+							val stats =
+								userStatsResponse.userStats.filter { it.eventId == viewModel.eventId }
 							if (stats.size == 1) {
 								val currentStat = (stats[0].cursor / stats[0].duration) * 100
-								Logger.printWithTag(
-									"saumil",
-									"user stats, current stat $currentStat. cursor is ${stats[0].cursor}, duration is ${stats[0].duration}"
-								)
 								if (currentStat < 95 && currentStat > 0) {
 									binding.primaryLabel.text = ButtonLabels.RESUME
 									binding.resumeProgress.visibility = View.VISIBLE
 									binding.resumeProgress.max = stats[0].duration.roundToInt()
 									binding.resumeProgress.progress = stats[0].cursor.roundToInt()
-									Logger.printWithTag(
-										"saumil",
-										"Resume should be visible, progress is ${binding.resumeProgress.progress} out of ${binding.resumeProgress.max}"
-									)
 								} else {
 									binding.primaryLabel.text = ButtonLabels.PLAY
 									binding.resumeProgress.visibility = View.INVISIBLE
-									Logger.printWithTag("saumil", "Play should be visible")
 								}
 							} else {
 								binding.primaryLabel.text = ButtonLabels.PLAY
 								binding.resumeProgress.visibility = View.INVISIBLE
-								Logger.printWithTag("saumil", "Play should be visible")
 							}
 						} else {
 							binding.primaryLabel.text = ButtonLabels.PLAY
 							binding.resumeProgress.visibility = View.INVISIBLE
-							Logger.printWithTag("saumil", "Play should be visible")
 						}
 					} ?: run {
 						binding.primaryLabel.text = ButtonLabels.PLAY
 						binding.resumeProgress.visibility = View.INVISIBLE
-						Logger.printWithTag("saumil", "Play should be visible")
 					}
 
 					binding.primaryLabel.compoundDrawablePadding =

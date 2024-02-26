@@ -1,24 +1,24 @@
 <resources>
 
-	<style name="Theme.Veeps" parent="@style/Theme.Leanback">
-		<item name="browseRowsMarginTop">0dp</item>
-		<item name="backgroundColor">@color/dark_black</item>
-		<item name="background">@color/dark_black</item>
-		<item name="android:windowBackground">@color/dark_black</item>
-	</style>
+    <style name="Theme.Veeps" parent="@style/Theme.Leanback">
+        <item name="browseRowsMarginTop">0dp</item>
+        <item name="backgroundColor">@color/dark_black</item>
+        <item name="background">@color/dark_black</item>
+        <item name="android:windowBackground">@color/dark_black</item>
+    </style>
 
-	<!--<style name="Splash" parent="Theme.SplashScreen">
-		<item name="windowSplashScreenAnimatedIcon">@mipmap/ic_channel_foreground</item>
-		<item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
-		<item name="windowSplashScreenAnimationDuration">200</item>
-		<item name="postSplashScreenTheme">@style/Theme.Veeps</item>
-	</style>-->
+    <!--<style name="Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_channel_foreground</item>
+        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="windowSplashScreenAnimationDuration">200</item>
+        <item name="postSplashScreenTheme">@style/Theme.Veeps</item>
+    </style>-->
 
     <style name="CornerSize50Percent" parent="">
-		<item name="cornerSize">50%</item>
-	</style>
+        <item name="cornerSize">50%</item>
+    </style>
 
-	<style name="CornerSize10Percent" parent="">
-		<item name="cornerSize">10%</item>
-	</style>
+    <style name="CornerSize10Percent" parent="">
+        <item name="cornerSize">10%</item>
+    </style>
 </resources>

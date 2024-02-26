@@ -184,21 +184,21 @@
                     android:id="@+id/resumeProgress"
                     android:layout_width="0dp"
                     android:layout_height="2dp"
+                    android:layout_marginTop="2dp"
                     android:paddingStart="0dp"
                     android:paddingLeft="0dp"
                     android:paddingTop="0dp"
                     android:paddingEnd="0dp"
                     android:paddingRight="0dp"
                     android:paddingBottom="0dp"
-                    android:layout_marginTop="2dp"
                     android:progressBackgroundTint="@color/white_50"
                     android:progressDrawable="@drawable/resume_watching_progress"
                     android:splitTrack="false"
                     android:thumb="@drawable/background_transparent"
-                    app:layout_constraintTop_toBottomOf="@id/primary"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@id/primary"
-                    app:layout_constraintStart_toStartOf="@id/primary" />
+                    app:layout_constraintStart_toStartOf="@id/primary"
+                    app:layout_constraintTop_toBottomOf="@id/primary" />
 
                 <!-- Add / Remove My Shows CTA -->
                 <eightbitlab.com.blurview.BlurView
@@ -335,10 +335,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="75dp"
-            android:paddingTop="30dp"
-            android:paddingBottom="30dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
+            android:paddingTop="30dp"
+            android:paddingBottom="30dp"
             app:layout_constraintBottom_toTopOf="@+id/scrollView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/listing">
@@ -428,11 +428,11 @@
             android:id="@+id/logo"
             android:layout_width="50dp"
             android:layout_height="10dp"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
             android:layout_marginTop="41.5dp"
             android:layout_marginEnd="30dp"
             android:contentDescription="@string/app_description"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             android:src="@drawable/logo"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

@@ -21,9 +21,11 @@ import com.veeps.app.util.EntityTypes
 import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
 import com.veeps.app.widget.navigationMenu.NavigationItems
+import kotlinx.coroutines.Job
 
 class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>() {
 
+	private var searchJob = Job()
 	private val action by lazy {
 		object : AppAction {
 			override fun onAction() {
@@ -98,7 +100,7 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 					if (railData.data.isNotEmpty()) {
 						val upcomingEventsRail = RailData(
 							name = getString(
-								R.string.upcoming_events_label
+								R.string.suggested_events_label
 							),
 							entities = railData.data,
 							cardType = CardTypes.PORTRAIT,
@@ -106,7 +108,6 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 						)
 						val rails = ArrayList<RailData>()
 						rails.add(upcomingEventsRail)
-						viewModel.noResult.postValue(false)
 						viewModel.upcomingRail.postValue(rails)
 					}
 				}
@@ -123,6 +124,7 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 				shouldBeInBackground = true,
 			) {
 				featuredContent.response?.let { railResponse ->
+					viewModel.noResult.postValue(false)
 					viewModel.featuredContentRail.postValue(railResponse.railData)
 				}
 			}
@@ -130,7 +132,16 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 	}
 
 	private fun fetchSearchedResult() {
-		viewModel.fetchSearchResult().observe(viewLifecycleOwner) { searchedEvents ->
+		if (searchJob.isActive) {
+			Logger.print("search job is active")
+		} else if (searchJob.isCancelled) {
+				Logger.print("search job is cancelled")
+			}else if (searchJob.isCompleted){
+				Logger.print("search job is completed")
+			} else {
+			Logger.print("search job is dont know")
+		}
+		viewModel.fetchSearchResult(searchJob).observe(viewLifecycleOwner) { searchedEvents ->
 			fetch(
 				searchedEvents,
 				isLoaderEnabled = false,
@@ -141,8 +152,8 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 					if (searchResponse.data != null) {
 						searchResponse.data.let {
 							val rails = ArrayList<RailData>()
-							var eventsRail = RailData()
-							var artistRail = RailData()
+							val eventsRail: RailData
+							val artistRail: RailData
 							if (searchResponse.data!!.events.isNotEmpty()) {
 								eventsRail = RailData(
 									name = getString(R.string.events_label),
@@ -166,7 +177,7 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 								viewModel.searchResult.postValue(rails)
 							} else {
 								viewModel.noResult.postValue(true)
-								fetchFeaturedContent()
+								fetchUpcomingEvents()
 							}
 						}
 					}
@@ -215,7 +226,8 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 		viewModel.featuredContentRail.observe(viewLifecycleOwner) { featuredContentRails ->
 			if (featuredContentRails.isNotEmpty()) {
 				featuredContentRails.removeIf { rail ->
-					rail.cardType.equals(CardTypes.WIDE).or(rail.cardType.equals(CardTypes.HERO)).or(rail.cardType.equals(CardTypes.GENRE))
+					rail.cardType.equals(CardTypes.WIDE).or(rail.cardType.equals(CardTypes.HERO))
+						.or(rail.cardType.equals(CardTypes.GENRE))
 				}
 				binding.listing.apply {
 					itemAnimator = null
@@ -224,8 +236,12 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 					windowAlignmentOffsetPercent = 0f
 					isItemAlignmentOffsetWithPadding = true
 					itemAlignmentOffsetPercent = 0f
-					adapter =
-						ContentRailsAdapter(rails = featuredContentRails, helper, Screens.SEARCH, action)
+					adapter = ContentRailsAdapter(
+						rails = featuredContentRails,
+						helper,
+						Screens.SEARCH,
+						action
+					)
 					onFlingListener = PagerSnapHelper()
 				}
 				binding.listing.visibility = View.VISIBLE
@@ -242,7 +258,7 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 
 		viewModel.search.observe(viewLifecycleOwner) { searchedText ->
 			if (searchedText.isBlank()) {
-				fetchUpcomingEvents()
+				fetchFeaturedContent()
 			} else {
 				fetchSearchedResult()
 			}

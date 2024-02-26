@@ -26,7 +26,7 @@ class ProfileScreen : BaseFragment<ProfileViewModel, FragmentProfileScreenBindin
 	}
 
 	private fun notifyAppEvents() {
-		viewModel.isVisible.observeForever  { isVisible ->
+		viewModel.isVisible.observeForever { isVisible ->
 			if (isVisible) {
 				helper.selectNavigationMenu(NavigationItems.PROFILE_MENU)
 				helper.completelyHideNavigationMenu()

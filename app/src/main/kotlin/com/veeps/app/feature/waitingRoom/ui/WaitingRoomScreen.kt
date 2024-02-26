@@ -103,26 +103,35 @@ class WaitingRoomScreen : BaseActivity<WaitingRoomViewModel, ActivityWaitingRoom
 				viewModel.eventTimerDescription.postValue(getString(R.string.door_opens_at_label))
 			}
 
-			val timer = object : CountDownTimer(abs(Duration(currentDate, eventDate).millis), 1000) {
-				override fun onTick(millisUntilFinished: Long) {
-					viewModel.eventTimer.postValue(
-						PeriodFormatterBuilder()
-							.printZeroNever().minimumPrintedDigits(2).appendDays().appendSeparator(":")
-							.printZeroAlways().minimumPrintedDigits(2).appendHours().appendSeparator(":")
-							.printZeroAlways().minimumPrintedDigits(2).appendMinutes().appendSeparator(":")
-							.printZeroAlways().minimumPrintedDigits(2).appendSeconds()
-							.toFormatter().print(Period.millis(millisUntilFinished.toInt()).normalizedStandard(
-								PeriodType.yearMonthDayTime()))
-					)
-				}
+			val timer =
+				object : CountDownTimer(abs(Duration(currentDate, eventDate).millis), 1000) {
+					override fun onTick(millisUntilFinished: Long) {
+						viewModel.eventTimer.postValue(
+							PeriodFormatterBuilder()
+								.printZeroNever().minimumPrintedDigits(2).appendDays()
+								.appendSeparator(":")
+								.printZeroAlways().minimumPrintedDigits(2).appendHours()
+								.appendSeparator(":")
+								.printZeroAlways().minimumPrintedDigits(2).appendMinutes()
+								.appendSeparator(":")
+								.printZeroAlways().minimumPrintedDigits(2).appendSeconds()
+								.toFormatter().print(
+									Period.millis(millisUntilFinished.toInt()).normalizedStandard(
+										PeriodType.yearMonthDayTime()
+									)
+								)
+						)
+					}
 
-				override fun onFinish() {
-					goToScreen<VideoPlayerScreen>(
-						false, AppConstants.TAG to Screens.VIDEO, "eventId" to (viewModel.eventId.value ?: DEFAULT.EMPTY_STRING)
-					)
-					finish()
+					override fun onFinish() {
+						goToScreen<VideoPlayerScreen>(
+							false,
+							AppConstants.TAG to Screens.VIDEO,
+							"eventId" to (viewModel.eventId.value ?: DEFAULT.EMPTY_STRING)
+						)
+						finish()
+					}
 				}
-			}
 			timer.start()
 		} else {
 			onExit()
