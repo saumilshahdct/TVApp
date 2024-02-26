@@ -9,7 +9,6 @@ import com.veeps.app.application.Veeps
 import com.veeps.app.data.network.NoConnectivityException
 import com.veeps.app.util.APIConstants
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
@@ -147,25 +146,19 @@ abstract class BaseDataSource {
 		}
 	}.flowOn(Dispatchers.Main)
 
-	fun <T> performOperation(tag: String, networkCall: suspend () -> Resource<T>, ): LiveData<Resource<T?>> = liveData(Dispatchers.IO) {
-		try {
-			emit(Resource.loading(tag, response = null))
-			val responseStatus = networkCall.invoke()
-			emit(responseStatus)
-		} catch (e: Exception) {
-			emit(Resource.error<T>(tag, e.message ?: e.toString()))
+	fun <T> performOperation(
+		tag: String,
+		networkCall: suspend () -> Resource<T>,
+	): LiveData<Resource<T?>> =
+		liveData(Dispatchers.IO) {
+			try {
+				emit(Resource.loading(tag, response = null))
+				val responseStatus = networkCall.invoke()
+				emit(responseStatus)
+			} catch (e: Exception) {
+				emit(Resource.error<T>(tag, e.message ?: e.toString()))
+			}
 		}
-	}
-
-	fun <T> performOperationWithJob(job: Job, tag: String, networkCall: suspend () -> Resource<T>): LiveData<Resource<T?>> = liveData(job+ Dispatchers.IO) {
-		try {
-			emit(Resource.loading(tag, response = null))
-			val responseStatus = networkCall.invoke()
-			emit(responseStatus)
-		} catch (e: Exception) {
-			emit(Resource.error<T>(tag, e.message ?: e.toString()))
-		}
-	}
 
 	data class Resource<out T>(
 		val callStatus: CallStatus, val response: T?, val message: String?, val tag: String,

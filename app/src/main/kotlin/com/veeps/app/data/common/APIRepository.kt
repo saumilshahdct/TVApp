@@ -4,7 +4,6 @@ import com.veeps.app.core.BaseDataSource
 import com.veeps.app.data.network.APIUtil
 import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppConstants
-import kotlinx.coroutines.Job
 
 class APIRepository : BaseDataSource() {
 	fun authenticationDetails(clientId: String) =
@@ -69,11 +68,12 @@ class APIRepository : BaseDataSource() {
 		}
 	}
 
-	fun fetchSearchResult(search: String, job: Job) = performOperationWithJob(job, APIConstants.fetchSearchResult) {
-		getResult(APIConstants.fetchSearchResult) {
-			APIUtil.service.fetchSearchResult(search)
+	fun fetchSearchResult(search: String) =
+		performOperation(APIConstants.fetchSearchResult) {
+			getResult(APIConstants.fetchSearchResult) {
+				APIUtil.service.fetchSearchResult(search)
+			}
 		}
-	}
 
 	fun fetchEntityDetails(entity: String, entityId: String) =
 		performOperation(APIConstants.fetchEntityDetails) {

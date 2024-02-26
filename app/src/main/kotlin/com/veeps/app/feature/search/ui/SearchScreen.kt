@@ -21,11 +21,9 @@ import com.veeps.app.util.EntityTypes
 import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
 import com.veeps.app.widget.navigationMenu.NavigationItems
-import kotlinx.coroutines.Job
 
 class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>() {
 
-	private var searchJob = Job()
 	private val action by lazy {
 		object : AppAction {
 			override fun onAction() {
@@ -132,16 +130,7 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 	}
 
 	private fun fetchSearchedResult() {
-		if (searchJob.isActive) {
-			Logger.print("search job is active")
-		} else if (searchJob.isCancelled) {
-				Logger.print("search job is cancelled")
-			}else if (searchJob.isCompleted){
-				Logger.print("search job is completed")
-			} else {
-			Logger.print("search job is dont know")
-		}
-		viewModel.fetchSearchResult(searchJob).observe(viewLifecycleOwner) { searchedEvents ->
+		viewModel.fetchSearchResult().observe(viewLifecycleOwner) { searchedEvents ->
 			fetch(
 				searchedEvents,
 				isLoaderEnabled = false,

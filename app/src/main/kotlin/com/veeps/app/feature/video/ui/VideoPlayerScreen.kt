@@ -751,7 +751,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 							if (stats.size == 1) {
 								val currentStat = (stats[0].cursor / stats[0].duration) * 100
 								if (currentStat < 95) {
-									stats[0].cursor.roundToInt().times(IntValue.NUMBER_1000).toLong()
+									stats[0].cursor.roundToInt().times(IntValue.NUMBER_1000)
+										.toLong()
 								} else {
 									0
 								}
