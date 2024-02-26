@@ -7,7 +7,6 @@ import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
-import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
@@ -50,11 +49,11 @@ import com.pubnub.api.UserId
 import com.pubnub.api.callbacks.SubscribeCallback
 import com.pubnub.api.enums.PNHeartbeatNotificationOptions
 import com.pubnub.api.enums.PNLogVerbosity
-import com.pubnub.api.enums.PNReconnectionPolicy
 import com.pubnub.api.enums.PNStatusCategory
 import com.pubnub.api.models.consumer.PNStatus
 import com.pubnub.api.models.consumer.pubsub.PNMessageResult
 import com.pubnub.api.models.consumer.pubsub.PNSignalResult
+import com.pubnub.api.retry.RetryConfiguration
 import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
 import com.veeps.app.databinding.ActivityVideoPlayerScreenBinding
@@ -180,15 +179,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				chatFromPhone.nextFocusRightId = chatFromPhone.id
 			}
 		}
-		var int = 0
-		val timer = object : CountDownTimer(10000000000, 1000) {
-			override fun onTick(millisUntilFinished: Long) {
-				int++
-
-			}
-
-			override fun onFinish() {}
-		}.start()
 		notifyAppEvents()
 		loadAppContent()
 	}
@@ -367,7 +357,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				super.onCues(cueGroup)
 				if (cueGroup.cues.isNotEmpty() && cueGroup.cues.isNotEmpty()) {
 					for (i in 0 until cueGroup.cues.size) {
-
+						Logger.doNothing()
 					}
 				}
 			}
@@ -435,6 +425,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			override fun onTracksChanged(tracks: Tracks) {
 				super.onTracksChanged(tracks)
 				if (tracks.isEmpty) {
+					Logger.doNothing()
 				} else {
 					if (tracks.containsType(TRACK_TYPE_TEXT)) {
 						val subtitles: ArrayList<Subtitle> = arrayListOf()
@@ -519,6 +510,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				if (pnStatus.category == PNStatusCategory.PNUnexpectedDisconnectCategory || pnStatus.category == PNStatusCategory.PNTimeoutCategory) {
 					pubnub.reconnect()
 				} else if (pnStatus.category === PNStatusCategory.PNConnectedCategory) {
+					Logger.doNothing()
 				}
 			}
 
@@ -617,8 +609,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		}
 		pubnub = PubNub(config)
 		pubnub.addListener(pubNubListener)
-		pubnub.configuration.reconnectionPolicy = PNReconnectionPolicy.EXPONENTIAL
-		pubnub.configuration.maximumReconnectionRetries = 5
+		pubnub.configuration.retryConfiguration = RetryConfiguration.Exponential(
+			minDelayInSec = 3,
+			maxDelayInSec = 10,
+			maxRetryNumber = 5
+		)
 
 		pubnub.subscribe(channels = listOf(signalChannel, artistChannel, subscribeChannel))
 
@@ -753,11 +748,13 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					userStatsDetails.response?.let { userStatsResponse ->
 						playingPosition = if (userStatsResponse.userStats.isNotEmpty()) {
 							val stats = userStatsResponse.userStats.filter { it.eventId == eventId }
-							val currentStat = (stats[0].cursor / stats[0].duration) * 100
-							if (stats.size == 1 && ((stats[0].cursor / stats[0].duration) * 100) < 95) {
-								val progress = stats[0].cursor.roundToInt()
-								val max = stats[0].duration.roundToInt()
-								progress.times(IntValue.NUMBER_1000).toLong()
+							if (stats.size == 1) {
+								val currentStat = (stats[0].cursor / stats[0].duration) * 100
+								if (currentStat < 95) {
+									stats[0].cursor.roundToInt().times(IntValue.NUMBER_1000).toLong()
+								} else {
+									0
+								}
 							} else {
 								0
 							}
@@ -833,7 +830,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			binding.standBy.visibility = View.GONE
 			viewModel.playbackURL.postValue(playbackStream.ifBlank { DEFAULT.EMPTY_STRING })
 		} else {
-			when (val lastSignal = eventDetails.lastSignal?.lowercase() ?: DEFAULT.EMPTY_STRING) {
+			when (eventDetails.lastSignal?.lowercase() ?: DEFAULT.EMPTY_STRING) {
 				LastSignalTypes.DISCONNECTED, LastSignalTypes.CONNECTING, LastSignalTypes.CONNECTED, LastSignalTypes.IDLE -> {
 					binding.standBy.visibility = View.VISIBLE
 					binding.topControls.visibility = View.VISIBLE

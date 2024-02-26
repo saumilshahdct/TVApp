@@ -900,7 +900,6 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				val eventId = eventDetails.eventId ?: eventDetails.id ?: DEFAULT.EMPTY_STRING
 				val eventTitle =
 					eventDetails.eventName?.ifBlank { DEFAULT.EMPTY_STRING } ?: DEFAULT.EMPTY_STRING
-				val currentDate = DateTime.now()
 				val streamStartsAt = eventDetails.eventStreamStartsAt ?: ""
 				val doorOpensAt = eventDetails.eventDoorsAt ?: ""
 				helper.goToWaitingRoom(eventId, eventLogo, eventTitle, doorOpensAt, streamStartsAt)
