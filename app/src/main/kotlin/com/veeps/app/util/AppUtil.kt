@@ -209,9 +209,9 @@ object AppUtil {
 						currentDate.toLocalDate(), streamStartsAtDate.toLocalDate()
 					).days == 0
 				) {
-					BadgeStatus.TODAY
+					BadgeStatus.DO_NOT_SHOW//BadgeStatus.TODAY
 				} else {
-					streamStartsAtDate.toString("MMM dd")
+					BadgeStatus.DO_NOT_SHOW//streamStartsAtDate.toString("MMM dd")
 				}
 			} else {
 				if (watchUntil.isBlank() || watchUntil == currentDate.toString()) {
@@ -259,9 +259,9 @@ object AppUtil {
 								currentDate.toLocalDate(), streamStartsAtDate.toLocalDate()
 							).days == 0
 						) {
-							BadgeStatus.TODAY
+							BadgeStatus.DO_NOT_SHOW//TODAY
 						} else {
-							streamStartsAtDate.toString("MMM dd")
+							BadgeStatus.DO_NOT_SHOW//streamStartsAtDate.toString("MMM dd")
 						}
 					}
 				} else {
@@ -275,9 +275,9 @@ object AppUtil {
 							currentDate.toLocalDate(), streamStartsAtDate.toLocalDate()
 						).days == 0
 					) {
-						BadgeStatus.TODAY
+						BadgeStatus.DO_NOT_SHOW//BadgeStatus.TODAY
 					} else {
-						streamStartsAtDate.toString("MMM dd")
+						BadgeStatus.DO_NOT_SHOW//streamStartsAtDate.toString("MMM dd")
 					}
 				}
 			} else {
@@ -293,6 +293,8 @@ object AppUtil {
 				))
 			) {
 				BadgeStatus.ENDED
+			} else if (status.contains(EventTypes.ON_DEMAND, true)) {
+				BadgeStatus.DO_NOT_SHOW
 			} else {
 				if (Days.daysBetween(
 						currentDate.toLocalDate(), streamStartsAtDate.toLocalDate()

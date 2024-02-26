@@ -186,6 +186,7 @@ object LastSignalTypes {
 }
 
 object BadgeStatus {
+	const val DO_NOT_SHOW = "Do Not Show"
 	const val TODAY = "Today"
 	const val NOTHING = "Nothing"
 	const val LIVE = "Live"

@@ -211,7 +211,7 @@ class CardAdapterGrid(private val action: AppAction) :
 					holder.binding.eventDateContainer.visibility = View.GONE
 				}
 
-				BadgeStatus.NOTHING,
+				BadgeStatus.DO_NOT_SHOW, BadgeStatus.NOTHING,
 				-> {
 					holder.binding.eventLiveBadgeContainer.visibility = View.GONE
 					holder.binding.eventDateContainer.visibility = View.GONE
