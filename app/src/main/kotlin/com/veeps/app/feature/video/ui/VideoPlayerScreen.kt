@@ -300,13 +300,13 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		viewModel.playbackURL.observe(this@VideoPlayerScreen) { playbackURL ->
 			if (!playbackURL.isNullOrBlank()) {
 				if (this::player.isInitialized) {
-					//https://mtoczko.github.io/hls-test-streams/test-vtt/playlist.m3u8
-					//https://cdn.bitmovin.com/content/assets/sintel/hls/playlist.m3u8
-					//https://cdn.bitmovin.com/content/assets/sintel/sintel.mpd
-					//https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8
-					//https://mtoczko.github.io/hls-test-streams/test-group/playlist.m3u8
-					//https://mtoczko.github.io/hls-test-streams/test-vtt-ts-segments/playlist.m3u8
-					//https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8
+					//https://mtoczko.github.io/hls-test-streams/test-vtt/playlist.m3u8 // VOD 10 mins
+					//https://cdn.bitmovin.com/content/assets/sintel/hls/playlist.m3u8 // VOD Full
+					//https://cdn.bitmovin.com/content/assets/sintel/sintel.mpd // VOD DASH
+					//https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8 // VOD 4 min Gap video
+					//https://mtoczko.github.io/hls-test-streams/test-group/playlist.m3u8 // VOD 1 min Quality changes
+					//https://mtoczko.github.io/hls-test-streams/test-vtt-ts-segments/playlist.m3u8 // vod 20 seconds timer
+					//https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8 // Live HLS
 					val mediaSource = HlsMediaSource.Factory(DefaultHttpDataSource.Factory())
 						.setAllowChunklessPreparation(true)
 						.createMediaSource(MediaItem.fromUri(Uri.parse(playbackURL)))

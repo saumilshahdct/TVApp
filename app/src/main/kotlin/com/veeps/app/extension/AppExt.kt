@@ -9,9 +9,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
+import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.analytics.logEvent
+import com.google.firebase.ktx.Firebase
 import com.veeps.app.R
 import com.veeps.app.application.Veeps
 import com.veeps.app.feature.contentRail.model.Entities
+import com.veeps.app.util.AppConstants
+import com.veeps.app.util.AppPreferences
 import com.veeps.app.util.AppUtil
 import com.veeps.app.util.DEFAULT
 import com.veeps.app.util.DateTimeCompareDifference
@@ -133,3 +139,16 @@ fun View.dpToPx(dimension: Dp): Int {
 fun Int?.isGreaterThan(other: Int?) = this != null && other != null && this > other
 
 fun Int?.convertToMilli() = if (this != null && this.isGreaterThan(0)) this * 1000 else 0
+
+fun getAnalytics() = Firebase.analytics
+
+fun logAnalyticsEvent(eventName: String, params: Bundle) =
+	getAnalytics().logEvent(eventName, params)
+
+fun logScreenViewEvent(screenName: String, screenClassName: String) =
+	getAnalytics().logEvent(FirebaseAnalytics.Event.SCREEN_VIEW) {
+		param(FirebaseAnalytics.Param.SCREEN_NAME, screenName)
+		param(FirebaseAnalytics.Param.SCREEN_CLASS, screenClassName)
+	}
+
+fun setUserIdForAnalytics() = getAnalytics().setUserId(AppPreferences.get(AppConstants.userID, ""))

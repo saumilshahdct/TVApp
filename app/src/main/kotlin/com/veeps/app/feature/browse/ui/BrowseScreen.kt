@@ -383,10 +383,10 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			.toDateTime()
 		binding.date.text = otherDate.toString("MMM dd, yyyy${DEFAULT.SEPARATOR}ha")
 		if (AppUtil.compare(otherDate, currentDate) == DateTimeCompareDifference.GREATER_THAN) {
-			binding.date.visibility = View.VISIBLE
+			binding.date.visibility = if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
 			binding.liveNow.visibility = View.GONE
 		} else {
-			binding.date.visibility = View.VISIBLE
+			binding.date.visibility = if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
 			binding.liveNow.visibility = View.GONE
 		}
 		val title = entity.eventName?.ifBlank { DEFAULT.EMPTY_STRING } ?: DEFAULT.EMPTY_STRING

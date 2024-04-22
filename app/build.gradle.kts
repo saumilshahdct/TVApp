@@ -1,7 +1,9 @@
 import io.sentry.android.gradle.extensions.InstrumentationFeature
 import io.sentry.android.gradle.instrumentation.logcat.LogcatLevel
+import java.io.FileInputStream
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Properties
 
 val mainVersionCode = 4
 val mainVersionName = ".3"
@@ -14,21 +16,25 @@ plugins {
 	id("kotlin-kapt")
 	id("io.sentry.android.gradle") version "4.1.1"
 	id("com.google.devtools.ksp")
+	id("com.google.gms.google-services")
 }
 
 android {
+	val keyStore = Properties()
+	keyStore.load(FileInputStream(file("$rootDir/keystore/keystore.config")))
+
 	signingConfigs {
 		getByName(debugLabel) {
-			storeFile = file("/Users/saumilshah/Projects/dcafe/Veeps/keystore/veeps")
-			storePassword = "b8d01c2c1db72d2ab195c06694daa8a7"
-			keyPassword = "b8d01c2c1db72d2ab195c06694daa8a7"
-			keyAlias = "Veeps"
+			storeFile = file("$rootDir/keystore/veeps")
+			storePassword = keyStore["password"].toString()
+			keyPassword = keyStore["password"].toString()
+			keyAlias = keyStore["alias"].toString()
 		}
 		create(releaseLabel) {
-			storeFile = file("/Users/saumilshah/Projects/dcafe/Veeps/keystore/veeps")
-			storePassword = "b8d01c2c1db72d2ab195c06694daa8a7"
-			keyPassword = "b8d01c2c1db72d2ab195c06694daa8a7"
-			keyAlias = "Veeps"
+			storeFile = file("$rootDir/keystore/veeps")
+			storePassword = keyStore["password"].toString()
+			keyPassword = keyStore["password"].toString()
+			keyAlias = keyStore["alias"].toString()
 		}
 	}
 	namespace = "com.veeps.app"
@@ -55,7 +61,7 @@ android {
 			signingConfig = signingConfigs.getByName(releaseLabel)
 		}
 		getByName(debugLabel) {
-			applicationIdSuffix = ".$debugLabel"
+			/*applicationIdSuffix = ".$debugLabel"*/
 			versionNameSuffix = ".$mainVersionName.$debugLabel" + LocalDateTime.now()
 				.format(DateTimeFormatter.ofPattern(".MMdd"))
 			signingConfig = signingConfigs.getByName(debugLabel)
@@ -97,84 +103,78 @@ android {
 dependencies {
 
 	/* Amazon IAP */
-	implementation("com.amazon.device:amazon-appstore-sdk:3.0.4")
+	implementation(libs.amazon.appstore)
 
 	/* Android Core */
-	implementation("androidx.core:core-ktx:1.12.0")
-	implementation("androidx.leanback:leanback:1.2.0-alpha04")
-	implementation("androidx.leanback:leanback-grid:1.0.0-alpha03")
-	implementation("androidx.palette:palette-ktx:1.0.0")
-	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-	implementation("androidx.activity:activity-ktx:1.8.2")
-	implementation("com.google.android.material:material:1.11.0")
-	implementation("androidx.fragment:fragment-ktx:1.6.2")
-	implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-	implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-	implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-	implementation("androidx.lifecycle:lifecycle-common-java8:2.7.0")
-	implementation("androidx.work:work-runtime-ktx:2.9.0")
-	implementation("com.rubensousa.dpadrecyclerview:dpadrecyclerview:1.2.0-alpha03")
+	implementation(libs.core)
+	implementation(libs.leanback)
+	implementation(libs.leanback.grid)
+	implementation(libs.palette)
+	implementation(libs.kotlinx.coroutines.android)
+	implementation(libs.kotlinx.coroutines.core)
+	implementation(libs.activity)
+	implementation(libs.material)
+	implementation(libs.fragment)
+	implementation(libs.constraintlayout)
+	implementation(libs.lifecycle.viewmodel)
+	implementation(libs.lifecycle.livedata)
+	implementation(libs.lifecycle.common.java8)
+	implementation(libs.androidx.work.runtime)
+	implementation(libs.dpadrecyclerview)
+	implementation(libs.androidx.ui.unit.android)
 
-	/* Splash Screen */
-//	implementation("androidx.core:core-splashscreen:1.0.1")
+	/* Splash Screen implementation(libs.androidx.core.splashscreen) */
 
 	/* Calligraphy for Fonts */
-	implementation("io.github.inflationx:calligraphy3:3.1.1")
-	//noinspection GradleDependency
-	implementation("io.github.inflationx:viewpump:2.0.3") /* Keep library version "2.0.3" due to initialization issue on latest version "2.1.1" */
+	implementation(libs.calligraphy3)
+	implementation(libs.viewpump) /* Keep library version "2.0.3" due to initialization issue on latest version "2.1.1" */
 
 	/* Retrofit */
-	implementation("com.google.code.gson:gson:2.10.1")
-	implementation("com.squareup.retrofit2:retrofit:2.9.0")
-	implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
-	implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-	implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.12")
-	implementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.12")
-
-	/* Glide */
-	implementation("com.github.bumptech.glide:glide:4.16.0")
-	implementation("androidx.compose.ui:ui-unit-android:1.6.2")
-	ksp("com.github.bumptech.glide:ksp:4.16.0")
-	implementation("com.github.bumptech.glide:recyclerview-integration:4.16.0") {
-		// Excludes the support library because it's already included by Glide.
-		isTransitive = false
-	}
-
-	/* JWT */
-//	implementation("com.auth0:java-jwt:4.4.0")
-	implementation("io.jsonwebtoken:jjwt-api:0.12.3")
-	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.3")
-	runtimeOnly("io.jsonwebtoken:jjwt-orgjson:0.12.3") {
-		exclude(
-			group = "org.json", module = "json"
-		) // Excludes the support library because it's already included by Android natively.
-	}
+	implementation(libs.gson)
+	implementation(libs.retrofit)
+	implementation(libs.converter.scalars)
+	implementation(libs.converter.gson)
+	implementation(libs.okhttp)
+	implementation(libs.logging.interceptor)
 
 	/* Joda Time */
-	implementation("net.danlew:android.joda:2.12.7")
+	implementation(libs.android.joda)
 
-	val exoVersion = "1.2.1"    /* ExoPlayer */
-	implementation("androidx.media3:media3-exoplayer:$exoVersion")
-	implementation("androidx.media3:media3-exoplayer-dash:$exoVersion")
-	implementation("androidx.media3:media3-exoplayer-hls:$exoVersion")
-	implementation("androidx.media3:media3-datasource-okhttp:$exoVersion")
-	implementation("androidx.media3:media3-ui-leanback:$exoVersion")
-	implementation("androidx.media3:media3-ui:$exoVersion")
-	implementation("androidx.media3:media3-extractor:$exoVersion")
-	implementation("androidx.media3:media3-transformer:$exoVersion")
+	/* ExoPlayer */
+	implementation(libs.androidx.media3.exoplayer)
+	implementation(libs.androidx.media3.exoplayer.dash)
+	implementation(libs.androidx.media3.exoplayer.hls)
+	implementation(libs.androidx.media3.datasource.okhttp)
+	implementation(libs.androidx.media3.ui.leanback)
+	implementation(libs.androidx.media3.ui)
+	implementation(libs.androidx.media3.extractor)
+	implementation(libs.androidx.media3.transformer)
 
 	/* Blur */
-	implementation("com.github.Dimezis:BlurView:version-2.0.3")
+	implementation(libs.blurView)
 
 	/* PubNub */
-	implementation("com.pubnub:pubnub-kotlin:7.8.0")
+	implementation(libs.pubnub)
 
 	/* Lottie Animation */
-	implementation("com.airbnb.android:lottie:6.3.0")
+	implementation(libs.lottie)
 
 	/* Markdown Parser */
-	implementation("io.noties.markwon:core:4.6.2")
+	implementation(libs.markwon.core)
+
+	implementation(platform(libs.firebase.bom))
+	implementation(libs.firebase.analytics)
+
+	/* Glide */
+	implementation(libs.glide)
+	ksp(libs.glide.ksp)
+	implementation(libs.glide.recyclerview.integration)
+
+	/* JWT */
+	implementation(libs.jjwt.api)
+	runtimeOnly(libs.jjwt.impl)
+	runtimeOnly(libs.jjwt.orgjson)
+
 }
 
 sentry {

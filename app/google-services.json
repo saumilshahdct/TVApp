@@ -1,0 +1,83 @@
+{
+  "project_info": {
+    "project_number": "721765470745",
+    "firebase_url": "https://veeps-web-20-default-rtdb.firebaseio.com",
+    "project_id": "veeps-web-20",
+    "storage_bucket": "veeps-web-20.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:721765470745:android:9b9d612b0c152ce5709088",
+        "android_client_info": {
+          "package_name": "com.veeps.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "721765470745-b64480aebth6la9i16vbbvaq7vh4igc4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGgaVUb_krNQYGG8NWDI0V3g_obsYRHmo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "721765470745-b64480aebth6la9i16vbbvaq7vh4igc4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "721765470745-5aprm7mc43upggivjsmsev5b7fd46k25.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.veeps.app"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:721765470745:android:b8b5256e8edbbb9f709088",
+        "android_client_info": {
+          "package_name": "com.veepsapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "721765470745-b64480aebth6la9i16vbbvaq7vh4igc4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGgaVUb_krNQYGG8NWDI0V3g_obsYRHmo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "721765470745-b64480aebth6la9i16vbbvaq7vh4igc4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "721765470745-5aprm7mc43upggivjsmsev5b7fd46k25.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.veeps.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

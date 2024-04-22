@@ -138,35 +138,39 @@ class SearchScreen : BaseFragment<SearchViewModel, FragmentSearchScreenBinding>(
 				shouldBeInBackground = true,
 			) {
 				searchedEvents.response?.let { searchResponse ->
-					if (searchResponse.data != null) {
-						searchResponse.data.let {
-							val rails = ArrayList<RailData>()
-							val eventsRail: RailData
-							val artistRail: RailData
-							if (searchResponse.data!!.events.isNotEmpty()) {
-								eventsRail = RailData(
-									name = getString(R.string.events_label),
-									entities = searchResponse.data!!.events,
-									cardType = CardTypes.PORTRAIT,
-									entitiesType = EntityTypes.EVENT
-								)
-								rails.add(eventsRail)
-							}
-							if (searchResponse.data!!.artists.isNotEmpty()) {
-								artistRail = RailData(
-									name = getString(R.string.artists_label),
-									entities = searchResponse.data!!.artists,
-									cardType = CardTypes.CIRCLE,
-									entitiesType = EntityTypes.ARTIST
-								)
-								rails.add(artistRail)
-							}
-							if (rails.isNotEmpty()) {
-								viewModel.noResult.postValue(false)
-								viewModel.searchResult.postValue(rails)
-							} else {
-								viewModel.noResult.postValue(true)
-								fetchUpcomingEvents()
+					if (viewModel.search.value.isNullOrEmpty()) {
+						fetchFeaturedContent()
+					} else {
+						if (searchResponse.data != null) {
+							searchResponse.data.let {
+								val rails = ArrayList<RailData>()
+								val eventsRail: RailData
+								val artistRail: RailData
+								if (searchResponse.data!!.events.isNotEmpty()) {
+									eventsRail = RailData(
+										name = getString(R.string.events_label),
+										entities = searchResponse.data!!.events,
+										cardType = CardTypes.PORTRAIT,
+										entitiesType = EntityTypes.EVENT
+									)
+									rails.add(eventsRail)
+								}
+								if (searchResponse.data!!.artists.isNotEmpty()) {
+									artistRail = RailData(
+										name = getString(R.string.artists_label),
+										entities = searchResponse.data!!.artists,
+										cardType = CardTypes.CIRCLE,
+										entitiesType = EntityTypes.ARTIST
+									)
+									rails.add(artistRail)
+								}
+								if (rails.isNotEmpty()) {
+									viewModel.noResult.postValue(false)
+									viewModel.searchResult.postValue(rails)
+								} else {
+									viewModel.noResult.postValue(true)
+									fetchUpcomingEvents()
+								}
 							}
 						}
 					}

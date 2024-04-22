@@ -19,6 +19,7 @@ data class Entities(
 	@SerializedName("watch_status") var watchStatus: String? = null,
 	@SerializedName("watch_until") var watchUntil: String? = null,
 	@SerializedName("gating") var gating: String? = null,
+	@SerializedName("subscriber_access_ends_at") var subscriberAccessEndsAt: String? = null,
 	@SerializedName("on_sale_status") var onSaleStatus: String? = null,
 	@SerializedName("lineup") var lineup: ArrayList<Lineup> = arrayListOf(),
 	@SerializedName("event_currency") var eventCurrency: String? = null,

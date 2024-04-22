@@ -550,40 +550,48 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			?: DEFAULT.EMPTY_STRING
 		binding.contentBadge.text = AppUtil.getContentBadge(eventDetails.presentation.contentBadges)
 
-		val status = eventDetails.status?.lowercase() ?: DEFAULT.EMPTY_STRING
-		if (eventDetails.eventReWatchDuration.isNullOrBlank()) {
-			binding.reWatch.text = getString(R.string.re_watch_not_available)
-		} else {
-			val reWatchDuration = eventDetails.eventReWatchDuration!!.ifBlank { "0" }.toInt()
-			if (reWatchDuration == 0) {
-				binding.reWatch.text = getString(R.string.no_re_watch_period)
-			} else {
-				val reWatchDurationString = AppUtil.calculateReWatchTime(reWatchDuration)
-				when (status) {
-					"on_demand" -> {
-						binding.reWatch.text = if (eventDetails.watchUntil.isNullOrBlank()) {
-							"Rewatch available for $reWatchDurationString after purchase."
-						} else {
-							"Rewatch until ${
-								DateTime(eventDetails.watchUntil, DateTimeZone.UTC).withZone(
-									DateTimeZone.getDefault()
-								).toDateTime().toString("EEEE, MMM d, yyyy – h:mm a")
-							}"
-						}
-					}
+		when (val reWatchLabel = AppUtil.getRewatchLabelText(entity = eventDetails)) {
+			DEFAULT.EMPTY_STRING -> {
+				binding.reWatch.visibility = View.GONE
+				binding.reWatchImage.visibility = View.GONE
+			}
 
-					"ended" -> {
-						binding.reWatch.text = DEFAULT.EMPTY_STRING
-					}
+			else -> {
+				binding.reWatch.text = reWatchLabel
+			}
+		}
 
-					else -> {
-						binding.reWatch.text = getString(
-							R.string.re_watch_available_for_time_after_start, reWatchDurationString
-						)
+		setupRails()
+
+		val videoPreviewTreeMap = eventDetails.videoPreviews ?: false
+		trailerUrl = DEFAULT.EMPTY_STRING
+		if (videoPreviewTreeMap is LinkedTreeMap<*, *>) {
+			if (videoPreviewTreeMap.isNotEmpty()) {
+				val jsonObject = Gson().toJsonTree(videoPreviewTreeMap).asJsonObject
+				if (jsonObject != null && !jsonObject.isJsonNull && !jsonObject.isEmpty) {
+					val videoPreviewString: String = Gson().toJson(jsonObject)
+					val videoPreview = JSONObject(videoPreviewString)
+					if (videoPreview.has("high")) {
+						trailerUrl = videoPreview.getString("high")
 					}
 				}
 			}
 		}
+		binding.carouselLogo.loadImage(logoImage, ImageTags.LOGO)
+		binding.heroImage.loadImage(posterImage, ImageTags.HERO)
+		if (trailerUrl.isBlank()) {
+			releaseVideoPlayer()
+		} else {
+			setupVideoPlayer()
+		}
+		binding.darkBackground.visibility = View.GONE
+		binding.carousel.visibility = View.VISIBLE
+		binding.primary.requestFocus()
+		binding.logo.isFocusable = false
+		binding.logo.isFocusableInTouchMode = false
+	}
+
+	private fun setupRails() {
 		rail = arrayListOf()
 		val artistEntities: ArrayList<Entities> = arrayListOf()
 		eventDetails.lineup.forEach { lineup ->
@@ -645,33 +653,6 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			}
 			binding.listing.visibility = View.VISIBLE
 		}
-
-		val videoPreviewTreeMap = eventDetails.videoPreviews ?: false
-		trailerUrl = DEFAULT.EMPTY_STRING
-		if (videoPreviewTreeMap is LinkedTreeMap<*, *>) {
-			if (videoPreviewTreeMap.isNotEmpty()) {
-				val jsonObject = Gson().toJsonTree(videoPreviewTreeMap).asJsonObject
-				if (jsonObject != null && !jsonObject.isJsonNull && !jsonObject.isEmpty) {
-					val videoPreviewString: String = Gson().toJson(jsonObject)
-					val videoPreview = JSONObject(videoPreviewString)
-					if (videoPreview.has("high")) {
-						trailerUrl = videoPreview.getString("high")
-					}
-				}
-			}
-		}
-		binding.carouselLogo.loadImage(logoImage, ImageTags.LOGO)
-		binding.heroImage.loadImage(posterImage, ImageTags.HERO)
-		if (trailerUrl.isBlank()) {
-			releaseVideoPlayer()
-		} else {
-			setupVideoPlayer()
-		}
-		binding.darkBackground.visibility = View.GONE
-		binding.carousel.visibility = View.VISIBLE
-		binding.primary.requestFocus()
-		binding.logo.isFocusable = false
-		binding.logo.isFocusableInTouchMode = false
 	}
 
 	private fun fetchUserStats() {

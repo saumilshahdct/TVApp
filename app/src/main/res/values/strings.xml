@@ -69,6 +69,7 @@
     <string name="show_starts_in_label">Show starts in</string>
     <string name="door_opens_at_label">Doors open in</string>
     <string name="time_label">00:00:00</string>
+    <string name="re_watch_option_not_available">Rewatch is not available.</string>
     <string name="re_watch_not_available">Rewatch is not available for this event.</string>
     <string name="no_re_watch_period">This event is live only. There will be no rewatch period.</string>
     <string name="re_watch_available_for_time_after_start">Rewatch available for %1$s after the start of the event.</string>

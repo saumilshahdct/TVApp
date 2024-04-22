@@ -1,5 +1,7 @@
 package com.veeps.app.util
 
+import com.veeps.app.R
+import com.veeps.app.application.Veeps
 import com.veeps.app.feature.contentRail.model.Entities
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -351,6 +353,75 @@ object AppUtil {
 		}
 		return contentBadges.joinToString(separator = DEFAULT.SEPARATOR)
 			.ifBlank { ContentBadges.BADGE_GLOBAL }
+	}
+
+	fun getRewatchLabelText(entity: Entities): String {
+		val currentDate = DateTime.now()
+		val streamStartAtDate =
+			if (entity.eventStreamStartsAt.isNullOrBlank()) currentDate else DateTime(
+				entity.eventStreamStartsAt, DateTimeZone.UTC
+			).withZone(DateTimeZone.getDefault()).toDateTime()
+		val isEventStarted =
+			compare(streamStartAtDate, currentDate) != DateTimeCompareDifference.GREATER_THAN
+
+		val subscriberAccessEndsAt =
+			if (entity.subscriberAccessEndsAt.isNullOrBlank()) currentDate else DateTime(
+				entity.subscriberAccessEndsAt, DateTimeZone.UTC
+			).withZone(DateTimeZone.getDefault()).toDateTime()
+		val subscriberAccessEndsAtString = subscriberAccessEndsAt.toString("MMM d yyyy")
+		val reWatchDuration = entity.eventReWatchDuration!!.ifBlank { "0" }.toInt()
+		val reWatchDurationString = calculateReWatchTime(reWatchDuration)
+
+		entity.access.replaceAll(String::lowercase)
+		val userEventAccess = if (entity.access.containsAll(arrayListOf("veeps_plus", "paid"))) {
+			EventAccessType.VEEPS_PLUS_PAID
+		} else if (entity.access.contains("veeps_plus")) {
+			EventAccessType.VEEPS_PLUS
+		} else if (entity.access.contains("paid")) {
+			EventAccessType.PAID
+		} else if (entity.access.contains("free")) {
+			EventAccessType.FREE
+		} else EventAccessType.NONE
+
+		if (entity.eventReWatchDuration.isNullOrBlank()) {
+			return Veeps.appContext.getString(R.string.re_watch_not_available)
+		} else {
+			if (reWatchDuration == 0) {
+				return Veeps.appContext.getString(R.string.no_re_watch_period)
+			} else {
+				when (userEventAccess) {
+					EventAccessType.VEEPS_PLUS_PAID -> {
+						return if (compare(
+								subscriberAccessEndsAt, currentDate
+							) == DateTimeCompareDifference.EQUALS
+						) {
+							"Rewatch through $subscriberAccessEndsAtString for subscribers or $reWatchDurationString after ${if (isEventStarted) "purchase" else "the event"}."
+						} else {
+							"Rewatch through $reWatchDurationString after ${if (isEventStarted) "purchase" else "the event"}."
+						}
+					}
+
+					EventAccessType.VEEPS_PLUS -> {
+						return if (compare(
+								subscriberAccessEndsAt, currentDate
+							) == DateTimeCompareDifference.EQUALS
+						) {
+							"Available through $subscriberAccessEndsAtString for all access subscribers."
+						} else {
+							DEFAULT.EMPTY_STRING
+						}
+					}
+
+					EventAccessType.PAID -> {
+						return "Rewatch available for $reWatchDurationString after the event or rewatch available for $reWatchDurationString after purchase."
+					}
+
+					else -> {
+						return DEFAULT.EMPTY_STRING
+					}
+				}
+			}
+		}
 	}
 
 	fun getPrimaryLabelText(entity: Entities, screen: String, isEventPurchased: Boolean): String {

@@ -344,6 +344,7 @@
             app:layout_constraintTop_toBottomOf="@+id/listing">
 
             <ImageView
+                android:id="@+id/re_watch_image"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginStart="4dp"

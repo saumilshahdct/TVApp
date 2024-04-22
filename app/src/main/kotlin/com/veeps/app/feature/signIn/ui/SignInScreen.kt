@@ -14,6 +14,7 @@ import com.veeps.app.extension.convertToMilli
 import com.veeps.app.extension.goToScreen
 import com.veeps.app.extension.isGreaterThan
 import com.veeps.app.extension.loadImage
+import com.veeps.app.extension.setUserIdForAnalytics
 import com.veeps.app.feature.home.ui.HomeScreen
 import com.veeps.app.feature.signIn.viewModel.SignInViewModel
 import com.veeps.app.util.APIConstants
@@ -214,6 +215,7 @@ class SignInScreen : BaseActivity<SignInViewModel, ActivitySignInScreenBinding>(
 				userDetails.response?.let { userData ->
 					userData.data?.let { user ->
 						AppPreferences.set(AppConstants.userID, user.id)
+						setUserIdForAnalytics()
 						AppPreferences.set(
 							AppConstants.userSubscriptionStatus, user.subscriptionStatus
 						)
