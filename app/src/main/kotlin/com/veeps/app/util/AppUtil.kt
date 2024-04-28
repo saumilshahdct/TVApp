@@ -381,6 +381,8 @@ object AppUtil {
 			EventAccessType.PAID
 		} else if (entity.access.contains("free")) {
 			EventAccessType.FREE
+		} else if (entity.access.contains( "veeps_free")) {
+			EventAccessType.VEEPS_FREE
 		} else EventAccessType.NONE
 
 		if (entity.eventReWatchDuration.isNullOrBlank()) {
@@ -440,6 +442,8 @@ object AppUtil {
 			EventAccessType.PAID
 		} else if (entity.access.contains("free")) {
 			EventAccessType.FREE
+		} else if (entity.access.contains( "veeps_free")) {
+			EventAccessType.VEEPS_FREE
 		} else EventAccessType.NONE
 		val streamStartsAtDate =
 			DateTime(streamStartAt, DateTimeZone.UTC).withZone(DateTimeZone.getDefault())
@@ -482,8 +486,19 @@ object AppUtil {
 				}
 			}
 
-			"off_sale_livestream" -> ButtonLabels.UNAVAILABLE
-			"off_sale_ondemand" -> ButtonLabels.UNAVAILABLE
+			"off_sale_livestream" -> {
+				when (userEventAccess) {
+					EventAccessType.VEEPS_FREE -> ButtonLabels.JOIN
+					else -> ButtonLabels.UNAVAILABLE
+				}
+			}
+			"off_sale_ondemand" -> {
+				when (userEventAccess) {
+					EventAccessType.VEEPS_FREE -> ButtonLabels.PLAY
+					else -> ButtonLabels.UNAVAILABLE
+				}
+			}
+
 			"on_sale_livestream" -> {
 				if (screen == Screens.BROWSE) {
 					if (isEventStarted) {
@@ -510,17 +525,22 @@ object AppUtil {
 						}
 					}
 				} else {
-					if (isEventPurchased) {
-						if (isEventStarted) {
+					when (userEventAccess) {
+						EventAccessType.VEEPS_FREE -> if (isEventStarted)
 							ButtonLabels.JOIN_LIVE
+						else ButtonLabels.JOIN
+						else -> if (isEventPurchased) {
+							if (isEventStarted) {
+								ButtonLabels.JOIN_LIVE
+							} else {
+								ButtonLabels.JOIN
+							}
 						} else {
-							ButtonLabels.JOIN
-						}
-					} else {
-						if (userEventAccess == EventAccessType.PAID || userEventAccess == EventAccessType.VEEPS_PLUS_PAID) {
-							ButtonLabels.BUY_TICKET
-						} else {
-							ButtonLabels.UNAVAILABLE
+							if (userEventAccess == EventAccessType.PAID || userEventAccess == EventAccessType.VEEPS_PLUS_PAID) {
+								ButtonLabels.BUY_TICKET
+							} else {
+								ButtonLabels.UNAVAILABLE
+							}
 						}
 					}
 				}
@@ -539,7 +559,9 @@ object AppUtil {
 						else -> ButtonLabels.UNAVAILABLE
 					}
 				} else {
-					if (isEventPurchased) {
+					if (userEventAccess == EventAccessType.VEEPS_FREE)
+						ButtonLabels.PLAY
+					else if (isEventPurchased) {
 						if (isEventStarted) {
 							ButtonLabels.PLAY
 						} else {
@@ -581,7 +603,11 @@ object AppUtil {
 						}
 					}
 				} else {
-					if (isUserSubscribed || isEventPurchased) {
+					when (userEventAccess) {
+						EventAccessType.VEEPS_FREE -> if (isEventStarted)
+							ButtonLabels.JOIN_LIVE
+						else ButtonLabels.JOIN
+						else -> if (isUserSubscribed || isEventPurchased) {
 						if (isEventStarted) {
 							ButtonLabels.JOIN_LIVE
 						} else {
@@ -589,6 +615,7 @@ object AppUtil {
 						}
 					} else {
 						ButtonLabels.UNAVAILABLE
+					}
 					}
 				}
 			}
@@ -606,7 +633,9 @@ object AppUtil {
 						else -> ButtonLabels.UNAVAILABLE
 					}
 				} else {
-					if (isUserSubscribed || isEventPurchased) {
+					if (userEventAccess == EventAccessType.VEEPS_FREE)
+						ButtonLabels.PLAY
+					else if (isUserSubscribed || isEventPurchased) {
 						if (isEventStarted) {
 							ButtonLabels.PLAY
 						} else {
@@ -636,14 +665,19 @@ object AppUtil {
 						else ButtonLabels.UNAVAILABLE
 					}
 				} else {
-					if (isUserSubscribed) {
-						if (isEventStarted) {
+					when (userEventAccess) {
+						EventAccessType.VEEPS_FREE -> if (isEventStarted)
 							ButtonLabels.JOIN_LIVE
+						else ButtonLabels.JOIN
+						else -> if (isUserSubscribed) {
+							if (isEventStarted) {
+								ButtonLabels.JOIN_LIVE
+							} else {
+								ButtonLabels.JOIN
+							}
 						} else {
-							ButtonLabels.JOIN
+							ButtonLabels.UNAVAILABLE
 						}
-					} else {
-						ButtonLabels.UNAVAILABLE
 					}
 				}
 			}
@@ -657,7 +691,9 @@ object AppUtil {
 					}
 					else ButtonLabels.UNAVAILABLE
 				} else {
-					if (isUserSubscribed) {
+					if (userEventAccess == EventAccessType.VEEPS_FREE)
+						ButtonLabels.PLAY
+					else if (isUserSubscribed) {
 						if (isEventStarted) {
 							ButtonLabels.PLAY
 						} else {
@@ -695,17 +731,22 @@ object AppUtil {
 						}
 					}
 				} else {
-					if (isUserSubscribed || isEventPurchased) {
-						if (isEventStarted) {
+					when (userEventAccess) {
+						EventAccessType.VEEPS_FREE -> if (isEventStarted)
 							ButtonLabels.JOIN_LIVE
+						else ButtonLabels.JOIN
+						else -> if (isUserSubscribed || isEventPurchased) {
+							if (isEventStarted) {
+								ButtonLabels.JOIN_LIVE
+							} else {
+								ButtonLabels.JOIN
+							}
 						} else {
-							ButtonLabels.JOIN
-						}
-					} else {
-						if (userEventAccess == EventAccessType.PAID || userEventAccess == EventAccessType.VEEPS_PLUS_PAID) {
-							ButtonLabels.BUY_TICKET
-						} else {
-							ButtonLabels.UNAVAILABLE
+							if (userEventAccess == EventAccessType.PAID || userEventAccess == EventAccessType.VEEPS_PLUS_PAID) {
+								ButtonLabels.BUY_TICKET
+							} else {
+								ButtonLabels.UNAVAILABLE
+							}
 						}
 					}
 				}
@@ -724,7 +765,9 @@ object AppUtil {
 						else -> ButtonLabels.UNAVAILABLE
 					}
 				} else {
-					if (isUserSubscribed || isEventPurchased) {
+					if (userEventAccess == EventAccessType.VEEPS_FREE)
+						ButtonLabels.PLAY
+					else if (isUserSubscribed || isEventPurchased) {
 						if (isEventStarted) {
 							ButtonLabels.PLAY
 						} else {
@@ -753,7 +796,9 @@ object AppUtil {
 						else -> ButtonLabels.UNAVAILABLE
 					}
 				} else {
-					if (isUserSubscribed) {
+					if (userEventAccess == EventAccessType.VEEPS_FREE)
+						ButtonLabels.JOIN
+					else if (isUserSubscribed) {
 						if (isEventStarted) {
 							ButtonLabels.JOIN_LIVE
 						} else {
@@ -778,7 +823,9 @@ object AppUtil {
 						else -> ButtonLabels.UNAVAILABLE
 					}
 				} else {
-					if (isUserSubscribed) {
+					if (userEventAccess == EventAccessType.VEEPS_FREE)
+						ButtonLabels.PLAY
+					else if (isUserSubscribed) {
 						if (isEventStarted) {
 							ButtonLabels.PLAY
 						} else {
