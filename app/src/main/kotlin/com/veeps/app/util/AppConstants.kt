@@ -199,6 +199,7 @@ object EventAccessType {
 	const val VEEPS_PLUS = "VEEPS_PLUS"
 	const val PAID = "PAID"
 	const val FREE = "FREE"
+	const val VEEPS_FREE = "VEEPS_FREE"
 	const val NONE = ""
 }
 
