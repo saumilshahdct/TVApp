@@ -207,10 +207,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				val playbackStreamType: String =
 					if (player.isCurrentMediaItemLive) EventTypes.LIVE else EventTypes.ON_DEMAND
 				val platform: String = getString(R.string.app_platform)
-				val userType: String = if (AppPreferences.get(
-						AppConstants.userSubscriptionStatus, "none"
-					) != "none"
-				) "m" else "b"
+				val userType: String = AppUtil.getUserType()
 
 				viewModel.eventId.value?.let { eventId ->
 					if (eventId.isNotBlank()) {

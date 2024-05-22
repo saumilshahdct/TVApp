@@ -846,4 +846,13 @@ object AppUtil {
 			}
 		}
 	}
+	fun getUserType(): String {
+		return when (AppPreferences.get(
+			AppConstants.userSubscriptionStatus, "none"
+		)) {
+			SubscriptionType.VEEPS_FREE, SubscriptionType.PAID_VEEPS_FREE -> UserType.VEEPS_FREE_TIER
+			SubscriptionType.VEEPS_NONE -> UserType.VEEPS_TICKETS_HOLDER
+			else -> UserType.VEEPS_PAID_SUBSCRIBER
+		}
+	}
 }

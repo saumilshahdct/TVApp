@@ -222,3 +222,15 @@ object DateTimeCompareDifference {
 	const val EQUALS = "equals"
 	const val NOTHING = "NOTHING"
 }
+
+object UserType {
+	const val VEEPS_PAID_SUBSCRIBER = "m"
+	const val VEEPS_TICKETS_HOLDER = "b"
+	const val VEEPS_FREE_TIER = "f"
+}
+
+object SubscriptionType {
+	const val VEEPS_NONE = "none"
+	const val VEEPS_FREE = "free"
+	const val PAID_VEEPS_FREE = "veeps_free"
+}
