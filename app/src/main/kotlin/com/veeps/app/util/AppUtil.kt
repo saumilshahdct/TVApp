@@ -851,7 +851,7 @@ object AppUtil {
 			AppConstants.userSubscriptionStatus, "none"
 		)) {
 			EventAccessType.VEEPS_FREE.lowercase(), EventAccessType.VEEPS_FREE.lowercase() -> UserType.VEEPS_FREE_TIER
-			EventAccessType.VEEPS_NONE -> UserType.VEEPS_TICKETS_HOLDER
+			EventAccessType.NONE -> UserType.VEEPS_TICKETS_HOLDER
 			else -> UserType.VEEPS_PAID_SUBSCRIBER
 		}
 	}
