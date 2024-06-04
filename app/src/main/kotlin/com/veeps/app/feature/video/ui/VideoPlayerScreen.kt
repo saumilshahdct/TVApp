@@ -672,18 +672,21 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		binding.vodControls.setHorizontalBias(R.id.image_preview, positionInPercentage)
 		if (!viewModel.tiles.value.isNullOrEmpty() && isScrubVisible && binding.progress.hasFocus()) {
 			binding.imagePreview.clipToOutline = true
-			Glide.with(binding.imagePreview.context).asBitmap().load(viewModel.storyBoard ?: "")
-				.transform(
-					MultiTransformation(
-						GlideThumbnailTransformation(
-							scrubbedPosition,
-							viewModel.tileWidth.value ?: 0,
-							viewModel.tileHeight.value ?: 0,
-							viewModel.tiles.value ?: arrayListOf(),
-						), CenterInside(), RoundedCorners(IntValue.NUMBER_5)
-					)
-				).placeholder(binding.imagePreview.drawable).error(R.drawable.card_background_black)
-				.into(binding.imagePreview)
+			runOnUiThread {
+				Glide.with(binding.imagePreview.context).asBitmap().load(viewModel.storyBoard ?: "")
+					.transform(
+						MultiTransformation(
+							GlideThumbnailTransformation(
+								scrubbedPosition,
+								viewModel.tileWidth.value ?: 0,
+								viewModel.tileHeight.value ?: 0,
+								viewModel.tiles.value ?: arrayListOf(),
+							), CenterInside(), RoundedCorners(IntValue.NUMBER_5)
+						)
+					).placeholder(binding.imagePreview.drawable).error(R.drawable.card_background_black)
+					.into(binding.imagePreview)
+			}
+
 			binding.imagePreview.visibility = View.VISIBLE
 		} else {
 			binding.imagePreview.visibility = View.INVISIBLE
@@ -883,22 +886,24 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					storyBoardResponse.response?.let { storyBoardImages ->
 						if (storyBoardImages.tiles.isNotEmpty()) {
 							viewModel.storyBoardURL.postValue(storyBoardImages.url)
-							Glide.with(binding.imagePreview.context).asBitmap()
-								.load(storyBoardImages.url)
-								.placeholder(R.drawable.card_background_black)
-								.error(R.drawable.card_background_black)
-								.into(object : CustomTarget<Bitmap>() {
-									override fun onResourceReady(
-										resource: Bitmap, transition: Transition<in Bitmap>?
-									) {
-										viewModel.storyBoard = resource
-									}
+							runOnUiThread {
+								Glide.with(binding.imagePreview.context).asBitmap()
+									.load(storyBoardImages.url)
+									.placeholder(R.drawable.card_background_black)
+									.error(R.drawable.card_background_black)
+									.into(object : CustomTarget<Bitmap>() {
+										override fun onResourceReady(
+											resource: Bitmap, transition: Transition<in Bitmap>?
+										) {
+											viewModel.storyBoard = resource
+										}
 
-									override fun onLoadCleared(placeholder: Drawable?) {
+										override fun onLoadCleared(placeholder: Drawable?) {
 
-									}
+										}
 
-								})
+									})
+							}
 							viewModel.tileWidth.postValue(storyBoardImages.tileWidth)
 							viewModel.tileHeight.postValue(storyBoardImages.tileHeight)
 							viewModel.tiles.postValue(storyBoardImages.tiles)
