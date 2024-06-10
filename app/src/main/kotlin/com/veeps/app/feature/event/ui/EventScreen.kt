@@ -883,7 +883,11 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 					eventDetails.eventName?.ifBlank { DEFAULT.EMPTY_STRING } ?: DEFAULT.EMPTY_STRING
 				val streamStartsAt = eventDetails.eventStreamStartsAt ?: ""
 				val doorOpensAt = eventDetails.eventDoorsAt ?: ""
-				helper.goToWaitingRoom(eventId, eventLogo, eventTitle, doorOpensAt, streamStartsAt)
+				if (AppUtil.isEventStarted(streamStartsAt)) {
+					helper.goToVideoPlayer(viewModel.eventId)
+				} else {
+					helper.goToWaitingRoom(eventId, eventLogo, eventTitle, doorOpensAt, streamStartsAt)
+				}
 			}
 
 			ButtonLabels.CLAIM_FREE_TICKET -> {

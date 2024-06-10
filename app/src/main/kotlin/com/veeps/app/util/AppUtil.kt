@@ -846,4 +846,13 @@ object AppUtil {
 			}
 		}
 	}
+	fun isEventStarted(streamStartAt: String): Boolean {
+		val currentDate = DateTime.now()
+		val streamStartsAtDate =
+			DateTime(streamStartAt, DateTimeZone.UTC).withZone(DateTimeZone.getDefault())
+				.toDateTime()
+		val isEventStarted =
+			compare(streamStartsAtDate, currentDate) != DateTimeCompareDifference.GREATER_THAN
+		return isEventStarted
+	}
 }
