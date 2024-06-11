@@ -345,11 +345,13 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					binding.liveControls.visibility = View.VISIBLE
 					binding.standBy.visibility = View.GONE
 					binding.vodControls.visibility = View.GONE
+					binding.playPause.visibility = View.GONE
 				} else {
 					binding.topControls.visibility = View.VISIBLE
 					binding.vodControls.visibility = View.VISIBLE
 					binding.liveControls.visibility = View.GONE
 					binding.standBy.visibility = View.GONE
+					binding.playPause.visibility = View.VISIBLE
 				}
 			}
 
