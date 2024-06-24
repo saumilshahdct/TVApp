@@ -131,6 +131,10 @@
             </intent-filter>
         </receiver>
 
+        <!-- bitmovin license key -->
+        <meta-data
+            android:name="BITMOVIN_PLAYER_LICENSE_KEY"
+            android:value="45d90411-99bc-4949-9833-c828ac4a4a22"/>
     </application>
 
 </manifest>
