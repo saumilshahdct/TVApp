@@ -8,18 +8,16 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewOutlineProvider
-import android.widget.SeekBar
-import android.widget.SeekBar.OnSeekBarChangeListener
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.OptIn
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.ui.TimeBar
 import androidx.recyclerview.widget.PagerSnapHelper
 import com.bitmovin.analytics.api.AnalyticsConfig
 import com.bitmovin.player.PlayerView
@@ -82,8 +80,6 @@ import org.joda.time.Period
 import org.joda.time.format.PeriodFormatterBuilder
 import kotlin.math.roundToInt
 
-private const val SEEKING_OFFSET = 10
-private val TAG = VideoPlayerScreen::class.java.simpleName
 @OptIn(UnstableApi::class)
 class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayerScreenBinding>() {
 
@@ -91,7 +87,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private lateinit var statsManagement: Handler
 	private lateinit var timerTask: Runnable
 	private lateinit var addStatsTask: Runnable
-	//	private lateinit var player: Bitmovin Player
 	private lateinit var playerView: PlayerView
 	private lateinit var player: Player
 	private var timeout = Handler(Looper.getMainLooper())
@@ -118,7 +113,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private var previousTime: Long = 0
 	private val bufferingThreshold: Long = 1000 // Adjust this threshold as needed
 	private var playerProgressTime: Double = 0.0
-	private var cursor = 0.0
 
 	private fun getBackCallback(): OnBackPressedCallback {
 		val backPressedCallback = object : OnBackPressedCallback(true) {
@@ -155,8 +149,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			errorContainer.visibility = View.GONE
 			chatFromPhoneContainer.visibility = View.GONE
 			loader.visibility = View.GONE
-//			progress.hideScrubber(500)
-//			binding.progress.keyProgressIncrement = 10
+			progress.hideScrubber(500)
+			binding.progress.setKeyTimeIncrement(10)
 			imagePreview.visibility = View.VISIBLE
 			seekDuration.visibility = View.GONE
 			vodControls.visibility = View.GONE
@@ -454,36 +448,34 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				scrubbedPosition = player.currentTime.toLong() /// IntValue.NUMBER_1000
 				isScrubVisible = true
 				setImagePreview()
-//			binding.progress.showScrubber(500)
+				binding.progress.showScrubber(500)
 			} else {
 				scrubbedPosition = player.currentTime.toLong() // / IntValue.NUMBER_1000
 				isScrubVisible = false
 				setImagePreview()
 				getCurrentPlayerPosition()
 				player.play()
-//			binding.progress.hideScrubber(500)
+				binding.progress.hideScrubber(500)
 			}
 		}
 
-		binding.progress.setOnSeekBarChangeListener(object : OnSeekBarChangeListener {
-			override fun onStopTrackingTouch(seekBar: SeekBar?) {
-//			binding.progress.setProgress(seekBar?.get)
-				scrubbedPosition = playerProgressTime.toLong()
-				isScrubVisible = true
-				setImagePreview()	// TODO Auto-generated method stub
-			}
-
-			override fun onStartTrackingTouch(seekBar: SeekBar?) {
-				// TODO Auto-generated method stub
-				scrubbedPosition = playerProgressTime.toLong()
+		binding.progress.addListener(object : TimeBar.OnScrubListener {
+			override fun onScrubStart(timeBar: TimeBar, position: Long) {
+				scrubbedPosition = position
 				isScrubVisible = true
 				setImagePreview()
 				player.pause()
 			}
 
-			override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-				// TODO Auto-generated method stub
-				scrubbedPosition = progress.toLong()
+			override fun onScrubMove(timeBar: TimeBar, position: Long) {
+				scrubbedPosition = position
+				isScrubVisible = true
+				setImagePreview()
+			}
+
+			override fun onScrubStop(timeBar: TimeBar, position: Long, canceled: Boolean) {
+				binding.progress.setPosition(position)
+				scrubbedPosition = position
 				isScrubVisible = true
 				setImagePreview()
 			}
@@ -1327,7 +1319,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 								isScrubVisible = true
 								scrubbedPosition -= 10
 								if (scrubbedPosition < 0) scrubbedPosition = 0
-								binding.progress.setProgress(scrubbedPosition.toInt())
+								binding.progress.setPosition(scrubbedPosition)
 								setImagePreview()
 							}
 						}
@@ -1362,7 +1354,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 								scrubbedPosition += 10
 								if (scrubbedPosition > player.duration) scrubbedPosition =
 									player.duration.toLong()
-								binding.progress.setProgress(scrubbedPosition.toInt())
+								binding.progress.setPosition(scrubbedPosition)
 								setImagePreview()
 							}
 						}
@@ -1430,14 +1422,25 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		return buffering
 	}
+	private fun bufferingPosition(currentTime: Long): Long {
+		// Calculate the difference between the current time and the previous time
+		val timeDiff = currentTime - previousTime
+		// If the time difference is greater than the buffering threshold, consider it as buffering
+		val buffering = timeDiff > bufferingThreshold
+		// Update the previous time for the next comparison
+		previousTime = currentTime
+
+		return if (buffering) timeDiff else 0L
+	}
 	private fun getCurrentPlayerPosition() {
-//		val bufferedPosition = player.buffer / IntValue.NUMBER_1000
+		val bufferedPosition = bufferingPosition(player.currentTime.toLong())
 		val currentPosition = player.currentTime
 		val totalDuration = player.duration
 		if (player.isPlaying) scrubbedPosition = currentPosition.toLong()
 		setImagePreview()
-		binding.progress.setMax(player.duration.toInt())
-		binding.progress.setProgress(player.currentTime.toInt())
+		binding.progress.setDuration(totalDuration.toLong())
+		binding.progress.setBufferedPosition(bufferedPosition)
+		binding.progress.setPosition(currentPosition.toLong())
 		val currentDuration =
 			PeriodFormatterBuilder().printZeroAlways().minimumPrintedDigits(2).appendHours()
 				.appendSeparator(":").printZeroAlways().minimumPrintedDigits(2).appendMinutes()

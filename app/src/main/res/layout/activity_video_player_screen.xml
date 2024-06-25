@@ -413,7 +413,7 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:shapeAppearanceOverlay="@style/CornerSize10Percent" />
 
-                    <SeekBar
+                    <androidx.media3.ui.DefaultTimeBar
                         android:id="@+id/progress"
                         android:layout_width="0dp"
                         android:layout_height="10dp"
