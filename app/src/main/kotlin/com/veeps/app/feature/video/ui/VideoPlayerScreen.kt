@@ -31,11 +31,11 @@ import com.bitmovin.player.api.advertising.AdSourceType
 import com.bitmovin.player.api.advertising.AdvertisingConfig
 import com.bitmovin.player.api.deficiency.ErrorEvent
 import com.bitmovin.player.api.drm.WidevineConfig
-import com.bitmovin.player.api.event.EventListener
 import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.event.on
+import com.bitmovin.player.api.media.Track
+import com.bitmovin.player.api.source.Source
 import com.bitmovin.player.api.source.SourceConfig
-import com.bitmovin.player.api.source.SourceType
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.MultiTransformation
 import com.bumptech.glide.load.resource.bitmap.CenterInside
@@ -305,16 +305,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		viewModel.playbackURL.observe(this@VideoPlayerScreen) { playbackURL ->
 			if (!playbackURL.isNullOrBlank()) {
 				if (this::player.isInitialized) {
-					//https://mtoczko.github.io/hls-test-streams/test-vtt/playlist.m3u8 // VOD 10 mins
-					//https://cdn.bitmovin.com/content/assets/sintel/hls/playlist.m3u8 // VOD Full
-					//https://cdn.bitmovin.com/content/assets/sintel/sintel.mpd // VOD DASH
-					//https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8 // VOD 4 min Gap video
-					//https://mtoczko.github.io/hls-test-streams/test-group/playlist.m3u8 // VOD 1 min Quality changes
-					//https://mtoczko.github.io/hls-test-streams/test-vtt-ts-segments/playlist.m3u8 // vod 20 seconds timer
-					//https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8 // Live HLS
 
 					// Create a new source config
-					val sourceConfig = SourceConfig(playbackURL, SourceType.Hls)
+					val sourceConfig = SourceConfig(playbackURL)
 					// Attach DRM handling to the source config
 					if (isDrmAvailable){
 						sourceConfig.drmConfig = WidevineConfig(drmLicenseURL)
@@ -364,9 +357,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			binding.videoPlayer.isUiVisible = false
 			isPlaying = false
 		}
+		player.on<PlayerEvent.PlaybackFinished> { isAdPlaybackFinished ->
+			binding.playPause.isSelected = false
+		}
 
 		player.on<PlayerEvent.TimeChanged> { timeChanged ->
-			playerProgressTime = timeChanged.time
 			if (player.isLive) {
 				binding.topControls.visibility = View.VISIBLE
 				binding.liveControls.visibility = View.VISIBLE
@@ -414,6 +409,20 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 				binding.playPause.isSelected = false
 			}
+			val source: Source? = player.source
+			val subtitleTracks = source!!.availableSubtitleTracks
+
+			if (subtitleTracks.isEmpty()) {
+				Logger.doNothing()
+			} else {
+					val subtitles: ArrayList<Track> = arrayListOf()
+					for (track in subtitleTracks) {
+						if (!track.label.equals("Captions (CC1)", ignoreCase = true)) {
+							// Access information about each subtitle track
+							subtitles.add(track)
+						}
+				}
+			}
 			if (isBuffering(timeChanged.time.toLong())) {
 				binding.loader.visibility = View.VISIBLE
 			}
@@ -422,18 +431,14 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		player.on<PlayerEvent.AdStarted> { isAdStarted ->
 			playerView.isUiVisible = false
-			binding.vodControls.visibility = View.GONE
 			isAdVisible = true
 		}
 		player.on<PlayerEvent.AdFinished> { isAdFinished ->
 			playerView.isUiVisible = false
-			binding.vodControls.visibility = View.VISIBLE
-
 			isAdVisible = false
 		}
 		player.on<PlayerEvent.AdError> { isAdError ->
 			playerView.isUiVisible = false
-			binding.vodControls.visibility = View.VISIBLE
 			isAdVisible = false
 		}
 
@@ -474,12 +479,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				setImagePreview()
 			}
 		})
-//	player.setAudioAttributes(
-//		AudioAttributes.Builder().setUsage(C.USAGE_MEDIA)
-//			.setContentType(C.AUDIO_CONTENT_TYPE_MOVIE).build(), true
-//	)
-		binding.videoPlayer.player = player
-//	player.repeatMode = androidx.media3.common.Player.REPEAT_MODE_OFF
 
 		// In INACTIVITY_SECONDS seconds of inactivity hide the trickBar
 		timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
@@ -633,24 +632,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		}
 	}
 
-//	fun setSubtitles(needDisabled: Boolean, subtitle: Subtitle) {
-//		if (needDisabled) {
-//			player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
-//				.setTrackTypeDisabled(TRACK_TYPE_TEXT, /* disabled= */ true).build()
-//		} else {
-//			player.trackSelectionParameters =
-//				player.trackSelectionParameters.buildUpon().setTrackTypeDisabled(
-//					TRACK_TYPE_TEXT, /* disabled= */
-//					false
-//				).setOverrideForType(
-//					TrackSelectionOverride(
-//						subtitle.mediaGroup, /* trackIndex= */
-//						subtitle.trackPosition
-//					)
-//				).build()
-//		}
-//	}
-
 	private fun setImagePreview() {
 		val positionInPercentage =
 			scrubbedPosition / player.duration
@@ -726,6 +707,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					} ?: run {
 						playingPosition = 0
 					}
+					player.seek(playingPosition.toDouble())
 					fetchEventPlaybackDetails(eventId)
 				}
 			}
@@ -778,14 +760,13 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			?: DEFAULT.EMPTY_STRING
 		isDrmAvailable = eventDetails.playback.widevineUrl?.let { true } ?: false
 
-		if(eventDetails.playback.ads.isNotEmpty()){
-			eventDetails.playback.ads.let { ads ->
+		eventDetails.playback.ads.let { ads ->
 				for (ad in ads) {
-					val adSource = AdSource(AdSourceType.Bitmovin, ad.adUrl!!)
-					val adItem = AdItem(ad.adPosition?.let { it } ?: "pre", adSource);
-					adItems.add(adItem)
+					val adSource = ad.adUrl?.ifBlank { DEFAULT.EMPTY_STRING }
+						?.let { AdSource(AdSourceType.Bitmovin, it) }
+					val adItem = adSource?.let { AdItem(ad.adPosition ?: "pre", it) }
+					adItem?.let { adItems.add(it) }
 				}
-			}
 		}
 
 		if (isChatEnabled.and(
@@ -1390,7 +1371,12 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	}
 
 	private fun onErrorEvent(errorEvent: ErrorEvent) {
-		Logger.print("Ads Error occurred (${errorEvent.code}): ${errorEvent.message}")
+		binding.playPause.isSelected = false
+		showError(
+			Screens.PLAYER_ERROR,
+			"Sorry, Something went wrong.",
+			"We’re having trouble playing this video. Please try again or visit veeps.com/help for more information."
+		)
 	}
 
 	private fun createPlayerConfig(): PlayerConfig {
