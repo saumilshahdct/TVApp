@@ -356,20 +356,14 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		player.on<PlayerEvent.Error>(::onErrorEvent)
 
-		val playingEventListener: EventListener<PlayerEvent.Playing> =
-			EventListener<PlayerEvent.Playing> { playing: PlayerEvent.Playing? ->
-				binding.videoPlayer.isUiVisible = false
-				isPlaying = true
-			}
-		val pausedEventListener: EventListener<PlayerEvent.Paused> =
-			EventListener<PlayerEvent.Paused> { paused: PlayerEvent.Paused? ->
-				isPlaying = false
-			}
-
-		player.on<PlayerEvent.Playing>(PlayerEvent.Playing::class.java, playingEventListener)
-
-		player.on<PlayerEvent.Paused>(PlayerEvent.Paused::class.java, pausedEventListener)
-
+		player.on<PlayerEvent.Playing> { playing ->
+			binding.videoPlayer.isUiVisible = false
+			isPlaying = true
+		}
+		player.on<PlayerEvent.Paused> { isPaused ->
+			binding.videoPlayer.isUiVisible = false
+			isPlaying = false
+		}
 
 		player.on<PlayerEvent.TimeChanged> { timeChanged ->
 			playerProgressTime = timeChanged.time
