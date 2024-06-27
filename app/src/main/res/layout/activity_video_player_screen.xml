@@ -67,16 +67,6 @@
                 app:initialize_player="true"
                 />
 
-            <LinearLayout
-                android:id="@+id/playerRootLayout"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                xmlns:android="http://schemas.android.com/apk/res/android"
-                android:orientation="horizontal">
-
-                <!-- Here the PlayerView will be programmatically added -->
-            </LinearLayout>
-
             <ImageView
                 android:id="@+id/stand_by"
                 android:layout_width="0dp"

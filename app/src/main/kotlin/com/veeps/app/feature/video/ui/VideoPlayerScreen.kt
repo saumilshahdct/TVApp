@@ -29,12 +29,12 @@ import com.bitmovin.player.api.advertising.AdItem
 import com.bitmovin.player.api.advertising.AdSource
 import com.bitmovin.player.api.advertising.AdSourceType
 import com.bitmovin.player.api.advertising.AdvertisingConfig
+import com.bitmovin.player.api.buffer.BufferType
 import com.bitmovin.player.api.deficiency.ErrorEvent
 import com.bitmovin.player.api.drm.WidevineConfig
 import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.event.on
-import com.bitmovin.player.api.media.Track
-import com.bitmovin.player.api.source.Source
+import com.bitmovin.player.api.media.MediaType
 import com.bitmovin.player.api.source.SourceBuilder
 import com.bitmovin.player.api.source.SourceConfig
 import com.bumptech.glide.Glide
@@ -79,6 +79,7 @@ import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
 import org.joda.time.Period
 import org.joda.time.format.PeriodFormatterBuilder
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 @OptIn(UnstableApi::class)
@@ -106,14 +107,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private var playingPosition = 0L
 	private var isChatEnabled = false
 	lateinit var chatAdapter: ChatMessagesAdapter
-	private var pendingSeekTarget: Double? = null
 	private val adItems: MutableList<AdItem> = ArrayList()
 	private var isDrmAvailable = false
-	private var isPlaying = false
 	private var isAdVisible = false
 	private var previousTime: Long = 0
 	private val bufferingThreshold: Long = 1000 // Adjust this threshold as needed
-	private var playerProgressTime: Double = 0.0
 
 	private fun getBackCallback(): OnBackPressedCallback {
 		val backPressedCallback = object : OnBackPressedCallback(true) {
@@ -354,11 +352,42 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		player.on<PlayerEvent.Playing> { playing ->
 			playerView.isUiVisible = false
-			isPlaying = true
+			if (this@VideoPlayerScreen::statsManagement.isInitialized && this@VideoPlayerScreen::addStatsTask.isInitialized) {
+				statsManagement.removeCallbacks(addStatsTask)
+				statsManagement.removeCallbacksAndMessages(addStatsTask)
+				statsManagement.post(addStatsTask)
+			}
+			binding.loader.visibility = View.GONE
+			binding.playPause.isSelected = true
+			binding.videoPlayer.postDelayed(
+				this@VideoPlayerScreen::getPlayerProgress,
+				IntValue.NUMBER_1000.toLong()
+			)
+			if (player.isLive) {
+				binding.playPause.isFocusable = false
+				binding.playPause.isFocusableInTouchMode = false
+				binding.progress.isFocusable = false
+				binding.progress.isFocusableInTouchMode = false
+				binding.chatFromPhone.isFocusable = true
+				if (isChatEnabled) binding.chatToggle.isFocusable = true
+				if (!binding.chatFromPhone.isFocused && !binding.chatToggle.isFocused) binding.chatFromPhone.requestFocus()
+			} else {
+				binding.chatToggle.isFocusable = false
+				binding.chatToggle.isFocusableInTouchMode = false
+				binding.chatFromPhone.isFocusable = false
+				binding.chatFromPhone.isFocusableInTouchMode = false
+				binding.playPause.isFocusable = true
+				binding.progress.isFocusable = true
+				if (!binding.playPause.isFocused && !binding.progress.isFocused) binding.playPause.requestFocus()
+			}
 		}
 		player.on<PlayerEvent.Paused> { isPaused ->
 			playerView.isUiVisible = false
-			isPlaying = false
+			if (this@VideoPlayerScreen::statsManagement.isInitialized && this@VideoPlayerScreen::addStatsTask.isInitialized) {
+				statsManagement.removeCallbacks(addStatsTask)
+				statsManagement.removeCallbacksAndMessages(addStatsTask)
+			}
+			binding.playPause.isSelected = false
 		}
 		player.on<PlayerEvent.PlaybackFinished> { isAdPlaybackFinished ->
 			binding.playPause.isSelected = false
@@ -375,56 +404,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				binding.vodControls.visibility = View.VISIBLE
 				binding.liveControls.visibility = View.GONE
 				binding.standBy.visibility = View.GONE
-			}
-			if (isPlaying) {
-				if (this@VideoPlayerScreen::statsManagement.isInitialized && this@VideoPlayerScreen::addStatsTask.isInitialized) {
-					statsManagement.removeCallbacks(addStatsTask)
-					statsManagement.removeCallbacksAndMessages(addStatsTask)
-					statsManagement.post(addStatsTask)
-				}
-				binding.loader.visibility = View.GONE
-				binding.playPause.isSelected = true
-				binding.videoPlayer.postDelayed(
-					this@VideoPlayerScreen::getCurrentPlayerPosition,
-					IntValue.NUMBER_1000.toLong()
-				)
-				if (player.isLive) {
-					binding.playPause.isFocusable = false
-					binding.playPause.isFocusableInTouchMode = false
-					binding.progress.isFocusable = false
-					binding.progress.isFocusableInTouchMode = false
-					binding.chatFromPhone.isFocusable = true
-					if (isChatEnabled) binding.chatToggle.isFocusable = true
-					if (!binding.chatFromPhone.isFocused && !binding.chatToggle.isFocused) binding.chatFromPhone.requestFocus()
-				} else {
-					binding.chatToggle.isFocusable = false
-					binding.chatToggle.isFocusableInTouchMode = false
-					binding.chatFromPhone.isFocusable = false
-					binding.chatFromPhone.isFocusableInTouchMode = false
-					binding.playPause.isFocusable = true
-					binding.progress.isFocusable = true
-					if (!binding.playPause.isFocused && !binding.progress.isFocused) binding.playPause.requestFocus()
-				}
-			} else {
-				if (this@VideoPlayerScreen::statsManagement.isInitialized && this@VideoPlayerScreen::addStatsTask.isInitialized) {
-					statsManagement.removeCallbacks(addStatsTask)
-					statsManagement.removeCallbacksAndMessages(addStatsTask)
-				}
-				binding.playPause.isSelected = false
-			}
-			val source: Source? = player.source
-			val subtitleTracks = source!!.availableSubtitleTracks
-
-			if (subtitleTracks.isEmpty()) {
-				Logger.doNothing()
-			} else {
-					val subtitles: ArrayList<Track> = arrayListOf()
-					for (track in subtitleTracks) {
-						if (!track.label.equals("Captions (CC1)", ignoreCase = true)) {
-							// Access information about each subtitle track
-							subtitles.add(track)
-						}
-				}
 			}
 			if (isBuffering(timeChanged.time.toLong())) {
 				binding.loader.visibility = View.VISIBLE
@@ -446,6 +425,10 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			isAdVisible = false
 		}
 
+		player.on<PlayerEvent.AdError> { isAdError ->
+			playerView.isUiVisible = false
+			isAdVisible = false
+		}
 		binding.progress.setOnFocusChangeListener { _, hasFocus ->
 			if (hasFocus) {
 				scrubbedPosition = player.currentTime.toLong() /// IntValue.NUMBER_1000
@@ -456,7 +439,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				scrubbedPosition = player.currentTime.toLong() // / IntValue.NUMBER_1000
 				isScrubVisible = false
 				setImagePreview()
-				getCurrentPlayerPosition()
+				getPlayerProgress()
 				player.play()
 				binding.progress.hideScrubber(500)
 			}
@@ -762,8 +745,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		signalChannel = eventDetails.chat.chatChannels.signals ?: DEFAULT.EMPTY_STRING
 		playbackStream = eventDetails.playback.widevineUrl?.ifBlank { eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING }  }
 			?: DEFAULT.EMPTY_STRING
-		isDrmAvailable = eventDetails.playback.widevineUrl?.let { true } ?: false
-
+		eventDetails.playback.widevineUrl.isNullOrBlank()
+		if (!eventDetails.playback.widevineUrl.isNullOrBlank()) isDrmAvailable = true
 		eventDetails.playback.ads.let { ads ->
 				for (ad in ads) {
 					val adSource = ad.adUrl?.ifBlank { DEFAULT.EMPTY_STRING }
@@ -1378,8 +1361,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		binding.playPause.isSelected = false
 		showError(
 			Screens.PLAYER_ERROR,
-			"Sorry, Something went wrong.",
-			"We’re having trouble playing this video. Please try again or visit veeps.com/help for more information."
+			getString(R.string.error_message),
+			getString(R.string.error_description)
 		)
 	}
 
@@ -1414,8 +1397,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		return timeDiff
 	}
-	private fun getCurrentPlayerPosition() {
-		val bufferedPosition = bufferingPosition(player.currentTime.toLong())
+	private fun getPlayerProgress() {
+		val bufferedPosition = min(
+			player.buffer.getLevel(BufferType.ForwardDuration, MediaType.Video).level,
+			player.buffer.getLevel(BufferType.ForwardDuration, MediaType.Audio).level
+		).toLong()
 		val currentPosition = player.currentTime
 		val totalDuration = player.duration
 		if (player.isPlaying) scrubbedPosition = currentPosition.toLong()
@@ -1433,7 +1419,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		binding.currentDuration.text = currentDuration ?: "00:00:00"
 		if (player.isPlaying) {
 			binding.videoPlayer.postDelayed(
-				{ getCurrentPlayerPosition() }, IntValue.NUMBER_1000.toLong()
+				{ getPlayerProgress() }, IntValue.NUMBER_1000.toLong()
 			)
 		}
 	}

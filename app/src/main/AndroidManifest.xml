@@ -134,7 +134,7 @@
         <!-- bitmovin license key -->
         <meta-data
             android:name="BITMOVIN_PLAYER_LICENSE_KEY"
-            android:value="b41bb56d-b993-40ca-963f-ffa5b5d51e17"/>
+            android:value="${BitmovinKey}"/>
     </application>
 
 </manifest>
