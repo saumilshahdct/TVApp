@@ -868,6 +868,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			}
 
 			ButtonLabels.PLAY -> {
+				releaseVideoPlayer()
 				helper.goToVideoPlayer(viewModel.eventId)
 			}
 

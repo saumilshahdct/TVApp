@@ -414,7 +414,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		player.on<PlayerEvent.AdStarted> { isAdStarted ->
 			playerView.isUiVisible = false
 			isAdVisible = true
-			binding.vodControls.visibility = View.VISIBLE
 		}
 		player.on<PlayerEvent.AdFinished> { isAdFinished ->
 			playerView.isUiVisible = false
@@ -1389,25 +1388,12 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		return buffering
 	}
-	private fun bufferingPosition(currentTime: Long): Long {
-		// Calculate the difference between the current time and the previous time
-		val timeDiff = currentTime - previousTime
-		// Update the previous time for the next comparison
-		previousTime = currentTime
-
-		return timeDiff
-	}
 	private fun getPlayerProgress() {
-		val bufferedPosition = min(
-			player.buffer.getLevel(BufferType.ForwardDuration, MediaType.Video).level,
-			player.buffer.getLevel(BufferType.ForwardDuration, MediaType.Audio).level
-		).toLong()
 		val currentPosition = player.currentTime
 		val totalDuration = player.duration
 		if (player.isPlaying) scrubbedPosition = currentPosition.toLong()
 		setImagePreview()
 		binding.progress.setDuration(totalDuration.toLong())
-		binding.progress.setBufferedPosition(bufferedPosition)
 		binding.progress.setPosition(currentPosition.toLong())
 		val currentDuration =
 			PeriodFormatterBuilder().printZeroAlways().minimumPrintedDigits(2).appendHours()
