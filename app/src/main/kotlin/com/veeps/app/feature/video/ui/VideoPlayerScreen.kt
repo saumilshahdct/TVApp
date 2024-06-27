@@ -35,6 +35,7 @@ import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.event.on
 import com.bitmovin.player.api.media.Track
 import com.bitmovin.player.api.source.Source
+import com.bitmovin.player.api.source.SourceBuilder
 import com.bitmovin.player.api.source.SourceConfig
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.MultiTransformation
@@ -307,13 +308,15 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				if (this::player.isInitialized) {
 
 					// Create a new source config
-					val sourceConfig = SourceConfig(playbackURL)
+					val sourceConfig = SourceConfig.fromUrl(playbackURL)
 					// Attach DRM handling to the source config
 					if (isDrmAvailable){
 						sourceConfig.drmConfig = WidevineConfig(drmLicenseURL)
 					}
+					val source = SourceBuilder(sourceConfig)
+						.build()
 					// Load the source
-					player.load(sourceConfig)
+					player.load(source)
 
 				}
 			}
@@ -432,6 +435,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		player.on<PlayerEvent.AdStarted> { isAdStarted ->
 			playerView.isUiVisible = false
 			isAdVisible = true
+			binding.vodControls.visibility = View.VISIBLE
 		}
 		player.on<PlayerEvent.AdFinished> { isAdFinished ->
 			playerView.isUiVisible = false
@@ -1405,12 +1409,10 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private fun bufferingPosition(currentTime: Long): Long {
 		// Calculate the difference between the current time and the previous time
 		val timeDiff = currentTime - previousTime
-		// If the time difference is greater than the buffering threshold, consider it as buffering
-		val buffering = timeDiff > bufferingThreshold
 		// Update the previous time for the next comparison
 		previousTime = currentTime
 
-		return if (buffering) timeDiff else 0L
+		return timeDiff
 	}
 	private fun getCurrentPlayerPosition() {
 		val bufferedPosition = bufferingPosition(player.currentTime.toLong())
