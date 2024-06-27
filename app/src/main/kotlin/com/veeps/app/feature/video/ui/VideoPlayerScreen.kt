@@ -265,9 +265,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		binding.playPause.setOnClickListener { v ->
 			if (binding.playPause.isSelected) {
-				binding.videoPlayer.player?.pause().also { binding.playPause.isSelected = false }
+				player.pause().also { binding.playPause.isSelected = false }
 			} else {
-				binding.videoPlayer.player?.play().also { binding.playPause.isSelected = true }
+				player.play().also { binding.playPause.isSelected = true }
 			}
 		}
 
@@ -353,11 +353,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		player.on<PlayerEvent.Error>(::onErrorEvent)
 
 		player.on<PlayerEvent.Playing> { playing ->
-			binding.videoPlayer.isUiVisible = false
+			playerView.isUiVisible = false
 			isPlaying = true
 		}
 		player.on<PlayerEvent.Paused> { isPaused ->
-			binding.videoPlayer.isUiVisible = false
+			playerView.isUiVisible = false
 			isPlaying = false
 		}
 		player.on<PlayerEvent.PlaybackFinished> { isAdPlaybackFinished ->
@@ -521,7 +521,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			override fun signal(pubnub: PubNub, pnSignalResult: PNSignalResult) {
 				when (pnSignalResult.message.asJsonObject.get("ls").asString) {
 					LastSignalTypes.DISCONNECTED, LastSignalTypes.NO_SIGNAL -> {
-						binding.videoPlayer.player?.pause()
+						player.pause()
 						binding.standBy.visibility = View.VISIBLE
 						binding.topControls.visibility = View.VISIBLE
 						binding.liveControls.visibility = View.VISIBLE
@@ -530,7 +530,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					}
 
 					LastSignalTypes.CONNECTED -> {
-						binding.videoPlayer.player?.pause()
+						player.pause()
 						binding.standBy.visibility = View.VISIBLE
 						binding.topControls.visibility = View.VISIBLE
 						binding.liveControls.visibility = View.VISIBLE
@@ -543,7 +543,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					}
 
 					LastSignalTypes.IDLE -> {
-						binding.videoPlayer.player?.pause()
+						player.pause()
 						binding.standBy.visibility = View.VISIBLE
 						binding.topControls.visibility = View.VISIBLE
 						binding.liveControls.visibility = View.VISIBLE
@@ -1015,7 +1015,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		binding.negative.nextFocusForwardId =
 			if (binding.positive.isEnabled) binding.positive.id else binding.negative.id
 
-		binding.videoPlayer.player?.pause()
+		player.pause()
 		binding.errorContainer.visibility = View.VISIBLE
 		binding.errorContainer.apply {
 			alpha = 0f
@@ -1050,7 +1050,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	}
 
 	fun onChatFromPhoneClicked() {
-		binding.videoPlayer.player?.pause()
+		player.pause()
 		binding.chatFromPhoneContainer.visibility = View.VISIBLE
 		binding.chatFromPhoneContainer.apply {
 			alpha = 0f
@@ -1065,12 +1065,12 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	}
 
 	fun onAllDoneClicked() {
-		binding.videoPlayer.player?.play()
+		player.play()
 		binding.chatFromPhoneContainer.visibility = View.GONE
 	}
 
 	fun onCancelClicked() {
-		binding.videoPlayer.player?.play()
+		player.play()
 		binding.chatFromPhoneContainer.visibility = View.GONE
 	}
 
@@ -1175,7 +1175,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			}
 
 			else -> {
-				binding.videoPlayer.player?.play()
+				player.play()
 				binding.errorContainer.visibility = View.GONE
 			}
 		}
@@ -1258,17 +1258,17 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 
 				KeyEvent.KEYCODE_MEDIA_PLAY -> {
-					if (!player.isLive) binding.videoPlayer.player?.play()
+					if (!player.isLive) player.play()
 					true
 				}
 
 				KeyEvent.KEYCODE_MEDIA_PAUSE -> {
-					if (!player.isLive) binding.videoPlayer.player?.pause()
+					if (!player.isLive) player.pause()
 					true
 				}
 
 				KeyEvent.KEYCODE_MEDIA_STOP -> {
-					if (!player.isLive) binding.videoPlayer.player?.onStop()
+					if (!player.isLive) player.onStop()
 					true
 				}
 
