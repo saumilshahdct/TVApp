@@ -107,10 +107,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private val adItems: MutableList<AdItem> = ArrayList()
 	private var isDrmAvailable = false
 	private var isAdVisible = false
-	private var previousTime: Long = 0
 	private var currentTime: String = DEFAULT.EMPTY_STRING
 	private var duration: String = DEFAULT.EMPTY_STRING
-	private val bufferingThreshold: Long = 1000 // Adjust this threshold as needed
 
 	private fun getBackCallback(): OnBackPressedCallback {
 		val backPressedCallback = object : OnBackPressedCallback(true) {
@@ -201,10 +199,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		addStatsTask = Runnable {
 			if (this::player.isInitialized) {
-				if (player.currentTime != DEFAULT.DOUBLE_VALUE && player.duration != DEFAULT.DOUBLE_VALUE) {
-					currentTime = player.currentTime.roundToInt().toString()
+					currentTime = player.currentTime.toString()
 					duration = player.duration.toString()
-				}
 				val playerVersion =
 					"ntv"//"${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})"
 				val deviceModel: String = Build.MODEL
@@ -309,11 +305,10 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					// Create a new source config
 					val sourceConfig = SourceConfig.fromUrl(playbackURL)
 					// Attach DRM handling to the source config
-					if (isDrmAvailable){
+					if (isDrmAvailable) {
 						sourceConfig.drmConfig = WidevineConfig(drmLicenseURL)
 					}
-					val source = SourceBuilder(sourceConfig)
-						.build()
+					val source = SourceBuilder(sourceConfig).build()
 					// Load the source
 					player.load(source)
 
@@ -335,23 +330,22 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		binding.chatToggle.clipToOutline = true
 		binding.chatToggle.isSelected = true
 	}
+
 	private fun setupVideoPlayer() {
 		// Initialize PlayerView from layout and attach a new Player instance
 		val analyticsKey = bitmovinAnalyticsKey
 
-		playerView =  binding.videoPlayer
+		playerView = binding.videoPlayer
 		playerView.isUiVisible = false
 
-		player = PlayerBuilder(this)
-			.setPlayerConfig(createPlayerConfig())
-			.configureAnalytics(AnalyticsConfig(analyticsKey))
-			.build()
+		player = PlayerBuilder(this).setPlayerConfig(createPlayerConfig())
+			.configureAnalytics(AnalyticsConfig(analyticsKey)).build()
 		binding.videoPlayer.player = player
 		playerView.keepScreenOn = true
 
 		player.on<PlayerEvent.Error>(::onErrorEvent)
 
-		player.on<PlayerEvent.Playing> { playing ->
+		player.on<PlayerEvent.Playing> {
 			playerView.isUiVisible = false
 			if (this@VideoPlayerScreen::statsManagement.isInitialized && this@VideoPlayerScreen::addStatsTask.isInitialized) {
 				statsManagement.removeCallbacks(addStatsTask)
@@ -361,8 +355,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			binding.loader.visibility = View.GONE
 			binding.playPause.isSelected = true
 			binding.videoPlayer.postDelayed(
-				this@VideoPlayerScreen::getPlayerProgress,
-				IntValue.NUMBER_1000.toLong()
+				this@VideoPlayerScreen::getPlayerProgress, IntValue.NUMBER_1000.toLong()
 			)
 			if (player.isLive) {
 				binding.playPause.isFocusable = false
@@ -382,7 +375,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				if (!binding.playPause.isFocused && !binding.progress.isFocused) binding.playPause.requestFocus()
 			}
 		}
-		player.on<PlayerEvent.Paused> { isPaused ->
+		player.on<PlayerEvent.Paused> {
 			playerView.isUiVisible = false
 			if (this@VideoPlayerScreen::statsManagement.isInitialized && this@VideoPlayerScreen::addStatsTask.isInitialized) {
 				statsManagement.removeCallbacks(addStatsTask)
@@ -390,17 +383,17 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			}
 			binding.playPause.isSelected = false
 		}
-		player.on<PlayerEvent.PlaybackFinished> { isAdPlaybackFinished ->
+		player.on<PlayerEvent.PlaybackFinished> {
 			binding.playPause.isSelected = false
 		}
 
-		player.on<PlayerEvent.StallStarted> { isStallStarted ->
+		player.on<PlayerEvent.StallStarted> {
 			binding.loader.visibility = View.VISIBLE
 		}
-		player.on<PlayerEvent.StallEnded> { isStallEnded ->
+		player.on<PlayerEvent.StallEnded> {
 			binding.loader.visibility = View.GONE
 		}
-		player.on<PlayerEvent.TimeChanged> { timeChanged ->
+		player.on<PlayerEvent.TimeChanged> {
 			if (player.isLive) {
 				binding.topControls.visibility = View.VISIBLE
 				binding.liveControls.visibility = View.VISIBLE
@@ -415,32 +408,32 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		}
 
 
-		player.on<PlayerEvent.AdStarted> { isAdStarted ->
+		player.on<PlayerEvent.AdStarted> {
 			playerView.isUiVisible = false
 			isAdVisible = true
 		}
-		player.on<PlayerEvent.AdFinished> { isAdFinished ->
+		player.on<PlayerEvent.AdFinished> {
 			playerView.isUiVisible = false
 			isAdVisible = false
 			resumePlayer(playingPosition)
 		}
-		player.on<PlayerEvent.AdError> { isAdError ->
+		player.on<PlayerEvent.AdError> {
 			playerView.isUiVisible = false
 			isAdVisible = false
 		}
 
-		player.on<PlayerEvent.AdError> { isAdError ->
+		player.on<PlayerEvent.AdError> {
 			playerView.isUiVisible = false
 			isAdVisible = false
 		}
 		binding.progress.setOnFocusChangeListener { _, hasFocus ->
 			if (hasFocus) {
-				scrubbedPosition = player.currentTime.toLong() /// IntValue.NUMBER_1000
+				scrubbedPosition = player.currentTime.toLong()
 				isScrubVisible = true
 				setImagePreview()
 				binding.progress.showScrubber(500)
 			} else {
-				scrubbedPosition = player.currentTime.toLong() // / IntValue.NUMBER_1000
+				scrubbedPosition = player.currentTime.toLong()
 				isScrubVisible = false
 				setImagePreview()
 				getPlayerProgress()
@@ -473,7 +466,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		// In INACTIVITY_SECONDS seconds of inactivity hide the trickBar
 		timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
-
 	}
 
 	private fun resumePlayer(playingPosition: Long) {
@@ -591,9 +583,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		pubnub = PubNub(config)
 		pubnub.addListener(pubNubListener)
 		pubnub.configuration.retryConfiguration = RetryConfiguration.Exponential(
-			minDelayInSec = 3,
-			maxDelayInSec = 10,
-			maxRetryNumber = 5
+			minDelayInSec = 3, maxDelayInSec = 10, maxRetryNumber = 5
 		)
 
 		pubnub.subscribe(channels = listOf(signalChannel, artistChannel, subscribeChannel))
@@ -629,8 +619,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	}
 
 	private fun setImagePreview() {
-		val positionInPercentage =
-			scrubbedPosition / player.duration
+		val positionInPercentage = scrubbedPosition / player.duration
 		binding.vodControls.setHorizontalBias(R.id.image_preview, positionInPercentage.toFloat())
 		if (!viewModel.tiles.value.isNullOrEmpty() && isScrubVisible && binding.progress.hasFocus()) {
 			binding.imagePreview.clipToOutline = true
@@ -689,8 +678,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 							if (stats.size == 1) {
 								val currentStat = (stats[0].cursor / stats[0].duration)
 								if (currentStat < 95) {
-									stats[0].cursor.roundToInt()
-										.toLong()
+									stats[0].cursor.roundToInt().toLong()
 								} else {
 									0
 								}
@@ -752,17 +740,18 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		publishChannel = eventDetails.chat.chatChannels.mainPublish ?: DEFAULT.EMPTY_STRING
 		subscribeChannel = eventDetails.chat.chatChannels.mainSubscribe ?: DEFAULT.EMPTY_STRING
 		signalChannel = eventDetails.chat.chatChannels.signals ?: DEFAULT.EMPTY_STRING
-		playbackStream = eventDetails.playback.widevineUrl?.ifBlank { eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING }  }
-			?: DEFAULT.EMPTY_STRING
+		playbackStream =
+			eventDetails.playback.widevineUrl?.ifBlank { eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING } }
+				?: DEFAULT.EMPTY_STRING
 		eventDetails.playback.widevineUrl.isNullOrBlank()
 		if (!eventDetails.playback.widevineUrl.isNullOrBlank()) isDrmAvailable = true
 		eventDetails.playback.ads.let { ads ->
-				for (ad in ads) {
-					val adSource = ad.adUrl?.ifBlank { DEFAULT.EMPTY_STRING }
-						?.let { AdSource(AdSourceType.Bitmovin, it) }
-					val adItem = adSource?.let { AdItem(ad.adPosition ?: "pre", it) }
-					adItem?.let { adItems.add(it) }
-				}
+			for (ad in ads) {
+				val adSource = ad.adUrl?.ifBlank { DEFAULT.EMPTY_STRING }
+					?.let { AdSource(AdSourceType.Bitmovin, it) }
+				val adItem = adSource?.let { AdItem(ad.adPosition ?: "pre", it) }
+				adItem?.let { adItems.add(it) }
+			}
 		}
 
 		if (isChatEnabled.and(
