@@ -1384,18 +1384,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		playerConfig.advertisingConfig = advertisingConfig
 		return playerConfig
 	}
-	private fun isBuffering(currentTime: Long): Boolean {
-		// Calculate the difference between the current time and the previous time
-		val timeDiff = currentTime - previousTime
 
-		// If the time difference is greater than the buffering threshold, consider it as buffering
-		val buffering = timeDiff > bufferingThreshold
-
-		// Update the previous time for the next comparison
-		previousTime = currentTime
-
-		return buffering
-	}
 	private fun getPlayerProgress() {
 		val currentPosition = player.currentTime
 		val totalDuration = player.duration
