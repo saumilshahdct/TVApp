@@ -98,6 +98,7 @@ object PollingStatus {
 object DEFAULT {
 	const val EMPTY_STRING = ""
 	const val EMPTY_INT = 0
+	const val DOUBLE_VALUE = 0.0
 	const val SEPARATOR = " · "
 }
 

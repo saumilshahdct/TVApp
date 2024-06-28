@@ -29,12 +29,10 @@ import com.bitmovin.player.api.advertising.AdItem
 import com.bitmovin.player.api.advertising.AdSource
 import com.bitmovin.player.api.advertising.AdSourceType
 import com.bitmovin.player.api.advertising.AdvertisingConfig
-import com.bitmovin.player.api.buffer.BufferType
 import com.bitmovin.player.api.deficiency.ErrorEvent
 import com.bitmovin.player.api.drm.WidevineConfig
 import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.event.on
-import com.bitmovin.player.api.media.MediaType
 import com.bitmovin.player.api.source.SourceBuilder
 import com.bitmovin.player.api.source.SourceConfig
 import com.bumptech.glide.Glide
@@ -79,7 +77,6 @@ import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
 import org.joda.time.Period
 import org.joda.time.format.PeriodFormatterBuilder
-import kotlin.math.min
 import kotlin.math.roundToInt
 
 @OptIn(UnstableApi::class)
@@ -111,6 +108,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private var isDrmAvailable = false
 	private var isAdVisible = false
 	private var previousTime: Long = 0
+	private var currentTime: String = DEFAULT.EMPTY_STRING
+	private var duration: String = DEFAULT.EMPTY_STRING
 	private val bufferingThreshold: Long = 1000 // Adjust this threshold as needed
 
 	private fun getBackCallback(): OnBackPressedCallback {
@@ -202,8 +201,10 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		addStatsTask = Runnable {
 			if (this::player.isInitialized) {
-				val currentTime: String = player.currentTime.toString()
-				val duration: String = player.duration.toString()
+				if (player.currentTime != DEFAULT.DOUBLE_VALUE && player.duration != DEFAULT.DOUBLE_VALUE) {
+					currentTime = player.currentTime.roundToInt().toString()
+					duration = player.duration.toString()
+				}
 				val playerVersion =
 					"ntv"//"${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})"
 				val deviceModel: String = Build.MODEL
@@ -407,6 +408,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			}
 			if (isBuffering(timeChanged.time.toLong())) {
 				binding.loader.visibility = View.VISIBLE
+			} else {
+				binding.loader.visibility = View.GONE
 			}
 		}
 
@@ -418,6 +421,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		player.on<PlayerEvent.AdFinished> { isAdFinished ->
 			playerView.isUiVisible = false
 			isAdVisible = false
+			resumePlayer(playingPosition)
 		}
 		player.on<PlayerEvent.AdError> { isAdError ->
 			playerView.isUiVisible = false
@@ -471,6 +475,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 	}
 
+	private fun resumePlayer(playingPosition: Long) {
+		player.seek(playingPosition.toDouble())
+		player.play()
+		binding.playPause.requestFocus()
+	}
 
 	private fun initPubNub() {
 		if (this::pubnub.isInitialized && this::pubNubListener.isInitialized) pubnub.removeListener(
@@ -677,9 +686,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 						playingPosition = if (userStatsResponse.userStats.isNotEmpty()) {
 							val stats = userStatsResponse.userStats.filter { it.eventId == eventId }
 							if (stats.size == 1) {
-								val currentStat = (stats[0].cursor / stats[0].duration) * 100
+								val currentStat = (stats[0].cursor / stats[0].duration)
 								if (currentStat < 95) {
-									stats[0].cursor.roundToInt().times(IntValue.NUMBER_1000)
+									stats[0].cursor.roundToInt()
 										.toLong()
 								} else {
 									0
@@ -693,8 +702,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					} ?: run {
 						playingPosition = 0
 					}
-					player.seek(playingPosition.toDouble())
 					fetchEventPlaybackDetails(eventId)
+					resumePlayer(playingPosition)
 				}
 			}
 	}
@@ -1328,9 +1337,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					if (!player.isLive && binding.progress.hasFocus()) {
 						isScrubVisible = false
 						setImagePreview()
-						player.seek(scrubbedPosition.toDouble())
-						player.play()
-						binding.playPause.requestFocus()
+						resumePlayer(scrubbedPosition)
 						true
 					} else {
 						timeout.removeCallbacks(trickPlayRunnable)
