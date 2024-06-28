@@ -394,6 +394,12 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			binding.playPause.isSelected = false
 		}
 
+		player.on<PlayerEvent.StallStarted> { isStallStarted ->
+			binding.loader.visibility = View.VISIBLE
+		}
+		player.on<PlayerEvent.StallEnded> { isStallEnded ->
+			binding.loader.visibility = View.GONE
+		}
 		player.on<PlayerEvent.TimeChanged> { timeChanged ->
 			if (player.isLive) {
 				binding.topControls.visibility = View.VISIBLE
@@ -405,11 +411,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				binding.vodControls.visibility = View.VISIBLE
 				binding.liveControls.visibility = View.GONE
 				binding.standBy.visibility = View.GONE
-			}
-			if (isBuffering(timeChanged.time.toLong())) {
-				binding.loader.visibility = View.VISIBLE
-			} else {
-				binding.loader.visibility = View.GONE
 			}
 		}
 
@@ -1221,7 +1222,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	@SuppressLint("RestrictedApi")
 	override fun dispatchKeyEvent(event: KeyEvent): Boolean {
 		// This method is called on key down and key up, so avoid being called twice
-		if (event.action == KeyEvent.ACTION_DOWN) {
+		if (event.action == KeyEvent.ACTION_DOWN && !isAdVisible) {
 			if (handleUserInput(event.keyCode)) {
 				return true
 			}
