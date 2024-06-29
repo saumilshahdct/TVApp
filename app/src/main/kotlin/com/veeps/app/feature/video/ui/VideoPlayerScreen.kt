@@ -199,8 +199,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		addStatsTask = Runnable {
 			if (this::player.isInitialized) {
-					currentTime = player.currentTime.toString()
-					duration = player.duration.toString()
+				currentTime = player.currentTime.toString()
+				duration = player.duration.toString()
 				val playerVersion =
 					"ntv"//"${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})"
 				val deviceModel: String = Build.MODEL
@@ -311,7 +311,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					val source = SourceBuilder(sourceConfig).build()
 					// Load the source
 					player.load(source)
-
 				}
 			}
 		}
@@ -411,6 +410,13 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		player.on<PlayerEvent.AdStarted> {
 			playerView.isUiVisible = false
 			isAdVisible = true
+			timeout.removeCallbacks(trickPlayRunnable)
+			binding.topControls.visibility = View.GONE
+			if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
+				trickPlayVisible.value = true
+			}
+			binding.playPause.requestFocus()
+			binding.playPause.isSelected = false
 		}
 		player.on<PlayerEvent.AdFinished> {
 			playerView.isUiVisible = false
@@ -1211,7 +1217,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	@SuppressLint("RestrictedApi")
 	override fun dispatchKeyEvent(event: KeyEvent): Boolean {
 		// This method is called on key down and key up, so avoid being called twice
-		if (event.action == KeyEvent.ACTION_DOWN && !isAdVisible) {
+		if (event.action == KeyEvent.ACTION_DOWN) {
 			if (handleUserInput(event.keyCode)) {
 				return true
 			}
@@ -1254,82 +1260,109 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 
 				KeyEvent.KEYCODE_DPAD_LEFT -> {
-					timeout.removeCallbacks(trickPlayRunnable)
-					timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
-					if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
-						trickPlayVisible.value = true
-						if (!player.isLive) binding.progress.requestFocus() else binding.chatFromPhone.requestFocus()
-						true
-					} else return false
+					if (!isAdVisible) {
+						timeout.removeCallbacks(trickPlayRunnable)
+						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
+						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
+							trickPlayVisible.value = true
+							if (!player.isLive) binding.progress.requestFocus() else binding.chatFromPhone.requestFocus()
+							true
+						} else return false
+					} else true
 				}
 
 				KeyEvent.KEYCODE_MEDIA_REWIND, KeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD, KeyEvent.KEYCODE_MEDIA_STEP_BACKWARD -> {
-					timeout.removeCallbacks(trickPlayRunnable)
-					timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
-					if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
-						trickPlayVisible.value = true
-						if (!player.isLive) binding.progress.requestFocus() else binding.chatFromPhone.requestFocus()
-						true
-					} else {
-						if (!player.isLive) {
-							if (!binding.progress.isFocused) binding.progress.requestFocus() else {
-								if (this::player.isInitialized && player.isPlaying) {
-									player.pause()
+					if (!isAdVisible) {
+						timeout.removeCallbacks(trickPlayRunnable)
+						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
+						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
+							trickPlayVisible.value = true
+							if (!player.isLive) binding.progress.requestFocus() else binding.chatFromPhone.requestFocus()
+							true
+						} else {
+							if (!player.isLive) {
+								if (!binding.progress.isFocused) binding.progress.requestFocus() else {
+									if (this::player.isInitialized && player.isPlaying) {
+										player.pause()
+									}
+									isScrubVisible = true
+									scrubbedPosition -= 10
+									if (scrubbedPosition < 0) scrubbedPosition = 0
+									binding.progress.setPosition(scrubbedPosition)
+									setImagePreview()
 								}
-								isScrubVisible = true
-								scrubbedPosition -= 10
-								if (scrubbedPosition < 0) scrubbedPosition = 0
-								binding.progress.setPosition(scrubbedPosition)
-								setImagePreview()
 							}
+							return false
 						}
-						return false
+					} else {
+						true
 					}
 				}
 
 				KeyEvent.KEYCODE_DPAD_RIGHT -> {
-					timeout.removeCallbacks(trickPlayRunnable)
-					timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
-					if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
-						trickPlayVisible.value = true
-						if (!player.isLive) binding.progress.requestFocus() else binding.chatFromPhone.requestFocus()
-						true
-					} else return false
+					if(!isAdVisible) {
+						timeout.removeCallbacks(trickPlayRunnable)
+						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
+						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
+							trickPlayVisible.value = true
+							if (!player.isLive) binding.progress.requestFocus() else binding.chatFromPhone.requestFocus()
+							true
+						} else return false
+					} else true
 				}
 
 				KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD, KeyEvent.KEYCODE_MEDIA_STEP_FORWARD -> {
-					timeout.removeCallbacks(trickPlayRunnable)
-					timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
-					if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
-						trickPlayVisible.value = true
-						if (!player.isLive) binding.progress.requestFocus() else binding.chatFromPhone.requestFocus()
-						true
-					} else {
-						if (!player.isLive) {
-							if (!binding.progress.isFocused) binding.progress.requestFocus() else {
-								if (this::player.isInitialized && player.isPlaying) {
-									player.pause()
+					if(!isAdVisible) {
+						timeout.removeCallbacks(trickPlayRunnable)
+						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
+						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
+							trickPlayVisible.value = true
+							if (!player.isLive) binding.progress.requestFocus() else binding.chatFromPhone.requestFocus()
+							true
+						} else {
+							if (!player.isLive) {
+								if (!binding.progress.isFocused) binding.progress.requestFocus() else {
+									if (this::player.isInitialized && player.isPlaying) {
+										player.pause()
+									}
+									isScrubVisible = true
+									scrubbedPosition += 10
+									if (scrubbedPosition > player.duration) scrubbedPosition =
+										player.duration.toLong()
+									binding.progress.setPosition(scrubbedPosition)
+									setImagePreview()
 								}
-								isScrubVisible = true
-								scrubbedPosition += 10
-								if (scrubbedPosition > player.duration) scrubbedPosition =
-									player.duration.toLong()
-								binding.progress.setPosition(scrubbedPosition)
-								setImagePreview()
 							}
+							return false
 						}
-						return false
-					}
+					} else true
+
 				}
 
 				KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_SPACE -> {
-					// When a key is hit, cancel the timeout of hiding the trick bar and set it again
-					if (!player.isLive && binding.progress.hasFocus()) {
-						isScrubVisible = false
-						setImagePreview()
-						resumePlayer(scrubbedPosition)
-						true
-					} else {
+
+					if(!isAdVisible) {
+						// When a key is hit, cancel the timeout of hiding the trick bar and set it again
+						if (!player.isLive && binding.progress.hasFocus()) {
+							isScrubVisible = false
+							setImagePreview()
+							resumePlayer(scrubbedPosition)
+							true
+						} else {
+							timeout.removeCallbacks(trickPlayRunnable)
+							timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
+							if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
+								trickPlayVisible.value = true
+								if (player.isLive) binding.chatFromPhone.requestFocus() else binding.playPause.requestFocus()
+								true
+							} else return false
+						}
+					} else true
+
+				}
+
+				else -> {
+					if(!isAdVisible) {
 						timeout.removeCallbacks(trickPlayRunnable)
 						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
 						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
@@ -1337,17 +1370,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 							if (player.isLive) binding.chatFromPhone.requestFocus() else binding.playPause.requestFocus()
 							true
 						} else return false
-					}
-				}
-
-				else -> {
-					timeout.removeCallbacks(trickPlayRunnable)
-					timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
-					if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
-						trickPlayVisible.value = true
-						if (player.isLive) binding.chatFromPhone.requestFocus() else binding.playPause.requestFocus()
-						true
-					} else return false
+					} else true
 				}
 			}
 		}
