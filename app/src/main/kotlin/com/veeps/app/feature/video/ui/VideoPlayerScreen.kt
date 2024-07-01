@@ -416,7 +416,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				trickPlayVisible.value = true
 			}
 			binding.playPause.requestFocus()
-			binding.playPause.isSelected = false
+			binding.playPause.isSelected = true
 		}
 		player.on<PlayerEvent.AdFinished> {
 			playerView.isUiVisible = false
