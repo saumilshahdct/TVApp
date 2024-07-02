@@ -20,6 +20,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.TimeBar
 import androidx.recyclerview.widget.PagerSnapHelper
 import com.bitmovin.analytics.api.AnalyticsConfig
+import com.bitmovin.analytics.api.CustomData
+import com.bitmovin.analytics.api.SourceMetadata
 import com.bitmovin.player.PlayerView
 import com.bitmovin.player.api.PlaybackConfig
 import com.bitmovin.player.api.Player
@@ -109,6 +111,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private var isAdVisible = false
 	private var currentTime: String = DEFAULT.EMPTY_STRING
 	private var duration: String = DEFAULT.EMPTY_STRING
+	private var eventName: String? = DEFAULT.EMPTY_STRING
 
 	private fun getBackCallback(): OnBackPressedCallback {
 		val backPressedCallback = object : OnBackPressedCallback(true) {
@@ -287,6 +290,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				binding.controls.visibility = View.VISIBLE
 				binding.playPause.requestFocus()
 				binding.controls.animate().translationY(0F).alpha(1F)
+				if (isAdVisible) binding.controls.visibility = View.GONE else View.VISIBLE
 			} else {
 				binding.controls.animate().translationY(1F).alpha(0F)
 			}
@@ -308,7 +312,23 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					if (isDrmAvailable) {
 						sourceConfig.drmConfig = WidevineConfig(drmLicenseURL)
 					}
-					val source = SourceBuilder(sourceConfig).build()
+					val userType: String = if (AppPreferences.get(
+							AppConstants.userSubscriptionStatus, "none"
+						) != "none"
+					) "m" else "b"
+
+					val customData: CustomData =
+						CustomData.Builder().setCustomData1(userType).setCustomData2(Player.sdkVersion)
+							.setCustomData3(AppPreferences.get(AppConstants.userID, getString(R.string.app_platform)))
+							.setCustomData4(getString(R.string.event))
+							.setCustomData5(eventName).build()
+                   // create a source with a sourceMetadata for custom analytics tracking
+					val sourceMetadata: SourceMetadata =
+						SourceMetadata.Builder().setTitle(eventName).setIsLive(player.isLive).setCustomData(customData)
+							.setVideoId(viewModel.eventId.value ?: DEFAULT.EMPTY_STRING).build()
+					val source = SourceBuilder(sourceConfig)
+						.configureAnalytics(sourceMetadata)
+						.build()
 					// Load the source
 					player.load(source)
 				}
@@ -408,13 +428,13 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 
 		player.on<PlayerEvent.AdStarted> {
+			trickPlayVisible.value = true
+			getPlayerProgress()
+			player.play()
 			playerView.isUiVisible = false
 			isAdVisible = true
 			timeout.removeCallbacks(trickPlayRunnable)
 			binding.topControls.visibility = View.GONE
-			if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
-				trickPlayVisible.value = true
-			}
 			binding.playPause.requestFocus()
 			binding.playPause.isSelected = true
 		}
@@ -422,6 +442,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			playerView.isUiVisible = false
 			isAdVisible = false
 			resumePlayer(playingPosition)
+			player.play()
 		}
 		player.on<PlayerEvent.AdError> {
 			playerView.isUiVisible = false
@@ -726,6 +747,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 							binding.chatFromPhoneBackground.loadImage(posterImage, ImageTags.HERO)
 							fetchCompanions(eventId, organizationName, ticketId)
 							fetchStoryBoard(eventDetails.storyboards.json ?: "")
+							eventName = eventDetails.eventName ?: DEFAULT.EMPTY_STRING
 							binding.title.text =
 								if (eventDetails.lineup.isNotEmpty()) "${eventDetails.lineup[0].name} - ${eventDetails.eventName}" else "${eventDetails.eventName}"
 							binding.errorTitle.text =
