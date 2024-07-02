@@ -288,9 +288,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		trickPlayVisible.observe(this@VideoPlayerScreen) { visible: Boolean ->
 			if (visible) {
 				binding.controls.visibility = View.VISIBLE
+				if (isAdVisible) binding.topControls.visibility = View.GONE else View.VISIBLE
 				binding.playPause.requestFocus()
 				binding.controls.animate().translationY(0F).alpha(1F)
-				if (isAdVisible) binding.controls.visibility = View.GONE else View.VISIBLE
 			} else {
 				binding.controls.animate().translationY(1F).alpha(0F)
 			}
@@ -318,7 +318,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					) "m" else "b"
 
 					val customData: CustomData =
-						CustomData.Builder().setCustomData1(userType).setCustomData2(Player.sdkVersion)
+						CustomData.Builder()
+							.setCustomData1(userType)
+							.setCustomData2(Player.sdkVersion)
 							.setCustomData3(AppPreferences.get(AppConstants.userID, getString(R.string.app_platform)))
 							.setCustomData4(getString(R.string.event))
 							.setCustomData5(eventName).build()
