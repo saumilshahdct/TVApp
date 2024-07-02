@@ -333,6 +333,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 						.build()
 					// Load the source
 					player.load(source)
+					resumePlayer(playingPosition)
 				}
 			}
 		}
@@ -427,12 +428,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				binding.standBy.visibility = View.GONE
 			}
 		}
-
-
 		player.on<PlayerEvent.AdStarted> {
 			trickPlayVisible.value = true
 			getPlayerProgress()
-			player.play()
 			playerView.isUiVisible = false
 			isAdVisible = true
 			timeout.removeCallbacks(trickPlayRunnable)
@@ -444,7 +442,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			playerView.isUiVisible = false
 			isAdVisible = false
 			resumePlayer(playingPosition)
-			player.play()
 		}
 		player.on<PlayerEvent.AdError> {
 			playerView.isUiVisible = false
@@ -466,7 +463,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				isScrubVisible = false
 				setImagePreview()
 				getPlayerProgress()
-				player.play()
 				binding.progress.hideScrubber(500)
 			}
 		}
