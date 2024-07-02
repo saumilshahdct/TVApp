@@ -683,8 +683,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private fun releaseVideoPlayer() {
 		if (this::player.isInitialized) {
 			playerView.onPause()
-			playerView.onStop()
-			playerView.onDestroy()
 		}
 	}
 
@@ -1197,6 +1195,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			pubnub.removeListener(listener = pubNubListener)
 		}
 		releaseVideoPlayer()
+		playerView.onDestroy()
 		super.onDestroy()
 	}
 
@@ -1237,7 +1236,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		playerView.onStop()
 		super.onStop()
 	}
-
 	@SuppressLint("RestrictedApi")
 	override fun dispatchKeyEvent(event: KeyEvent): Boolean {
 		// This method is called on key down and key up, so avoid being called twice
