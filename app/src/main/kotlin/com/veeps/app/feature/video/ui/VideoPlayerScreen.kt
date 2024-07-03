@@ -109,6 +109,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private var isAdVisible = false
 	private var currentTime: String = DEFAULT.EMPTY_STRING
 	private var duration: String = DEFAULT.EMPTY_STRING
+	private var ticketId: String? = DEFAULT.EMPTY_STRING
 
 	private fun getBackCallback(): OnBackPressedCallback {
 		val backPressedCallback = object : OnBackPressedCallback(true) {
@@ -294,6 +295,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		viewModel.eventId.observe(this@VideoPlayerScreen) { eventId ->
 			if (!eventId.isNullOrBlank()) {
+				fetchAllPurchasedEvents(eventId)
 				fetchUserStats(eventId)
 			}
 		}
@@ -311,6 +313,26 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					val source = SourceBuilder(sourceConfig).build()
 					// Load the source
 					player.load(source)
+				}
+			}
+		}
+	}
+
+	private fun fetchAllPurchasedEvents(eventId: String) {
+		viewModel.fetchAllPurchasedEvents().observe(this@VideoPlayerScreen) { allPurchasedEvents ->
+			fetch(
+				allPurchasedEvents,
+				isLoaderEnabled = false,
+				canUserAccessScreen = true,
+				shouldBeInBackground = true,
+			) {
+				allPurchasedEvents.response?.let { railData ->
+					if (railData.data.isNotEmpty()) {
+						val eventData = railData.data.filter { it.eventId == eventId }
+						if (eventData.size == 1){
+							ticketId = eventData.get(0).id
+						}
+					}
 				}
 			}
 		}
@@ -717,14 +739,13 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 							val organizationName =
 								eventDetails.organizationName?.ifBlank { DEFAULT.EMPTY_STRING }
 									?: DEFAULT.EMPTY_STRING
-							val ticketId = eventDetails.id?.ifBlank { DEFAULT.EMPTY_STRING }
 								?: DEFAULT.EMPTY_STRING
 							val posterImage =
 								eventDetails.presentation.posterUrl?.ifBlank { DEFAULT.EMPTY_STRING }
 									?: DEFAULT.EMPTY_STRING
 							binding.heroImage.loadImage(posterImage, ImageTags.HERO)
 							binding.chatFromPhoneBackground.loadImage(posterImage, ImageTags.HERO)
-							fetchCompanions(eventId, organizationName, ticketId)
+							ticketId?.let { fetchCompanions(eventId, organizationName, it) }
 							fetchStoryBoard(eventDetails.storyboards.json ?: "")
 							binding.title.text =
 								if (eventDetails.lineup.isNotEmpty()) "${eventDetails.lineup[0].name} - ${eventDetails.eventName}" else "${eventDetails.eventName}"
