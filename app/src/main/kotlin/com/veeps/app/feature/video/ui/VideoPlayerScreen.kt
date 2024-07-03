@@ -285,6 +285,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		trickPlayVisible.observe(this@VideoPlayerScreen) { visible: Boolean ->
 			if (visible) {
 				binding.controls.visibility = View.VISIBLE
+				if (isAdVisible) binding.topControls.visibility = View.GONE else View.VISIBLE
 				binding.playPause.requestFocus()
 				binding.controls.animate().translationY(0F).alpha(1F)
 			} else {
@@ -308,9 +309,12 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					if (isDrmAvailable) {
 						sourceConfig.drmConfig = WidevineConfig(drmLicenseURL)
 					}
-					val source = SourceBuilder(sourceConfig).build()
+
+					val source = SourceBuilder(sourceConfig)
+						.build()
 					// Load the source
 					player.load(source)
+					playerView.isUiVisible = false
 				}
 			}
 		}
@@ -345,6 +349,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		player.on<PlayerEvent.Error>(::onErrorEvent)
 
 		player.on<PlayerEvent.Playing> {
+			resumePlayer(playingPosition)
 			playerView.isUiVisible = false
 			if (this@VideoPlayerScreen::statsManagement.isInitialized && this@VideoPlayerScreen::addStatsTask.isInitialized) {
 				statsManagement.removeCallbacks(addStatsTask)
@@ -354,7 +359,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			binding.loader.visibility = View.GONE
 			binding.playPause.isSelected = true
 			binding.videoPlayer.postDelayed(
-				this@VideoPlayerScreen::getPlayerProgress, IntValue.NUMBER_1000.toLong()
+				this@VideoPlayerScreen::getPlayerProgress, if (isAdVisible) IntValue.NUMBER_500.toLong() else IntValue.NUMBER_1000.toLong()
 			)
 			if (player.isLive) {
 				binding.playPause.isFocusable = false
@@ -393,7 +398,25 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			binding.loader.visibility = View.GONE
 		}
 		player.on<PlayerEvent.TimeChanged> {
-			if (player.isLive) {
+			if (player.isAd) {
+				playerView.isUiVisible = false
+				binding.topControls.visibility = View.GONE
+				binding.vodControls.visibility = View.VISIBLE
+				binding.liveControls.visibility = View.GONE
+				binding.standBy.visibility = View.GONE
+				trickPlayVisible.value = true
+				binding.chatToggle.isFocusable = false
+				binding.chatToggle.isFocusableInTouchMode = false
+				binding.chatFromPhone.isFocusable = false
+				binding.chatFromPhone.isFocusableInTouchMode = false
+				binding.playPause.isFocusable = true
+				binding.progress.isFocusable = true
+				if (!binding.playPause.isFocused && !binding.progress.isFocused) binding.playPause.requestFocus()
+				isAdVisible = true
+				binding.topControls.visibility = View.GONE
+				binding.playPause.requestFocus()
+				binding.playPause.isSelected = true
+			} else if (player.isLive) {
 				binding.topControls.visibility = View.VISIBLE
 				binding.liveControls.visibility = View.VISIBLE
 				binding.standBy.visibility = View.GONE
@@ -405,23 +428,13 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				binding.standBy.visibility = View.GONE
 			}
 		}
-
-
 		player.on<PlayerEvent.AdStarted> {
 			playerView.isUiVisible = false
-			isAdVisible = true
-			timeout.removeCallbacks(trickPlayRunnable)
-			binding.topControls.visibility = View.GONE
-			if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
-				trickPlayVisible.value = true
-			}
-			binding.playPause.requestFocus()
-			binding.playPause.isSelected = true
+			getPlayerProgress()
 		}
 		player.on<PlayerEvent.AdFinished> {
 			playerView.isUiVisible = false
 			isAdVisible = false
-			resumePlayer(playingPosition)
 		}
 		player.on<PlayerEvent.AdError> {
 			playerView.isUiVisible = false
@@ -443,7 +456,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				isScrubVisible = false
 				setImagePreview()
 				getPlayerProgress()
-				player.play()
 				binding.progress.hideScrubber(500)
 			}
 		}
@@ -660,8 +672,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private fun releaseVideoPlayer() {
 		if (this::player.isInitialized) {
 			playerView.onPause()
-			playerView.onStop()
-			playerView.onDestroy()
 		}
 	}
 
@@ -698,7 +708,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 						playingPosition = 0
 					}
 					fetchEventPlaybackDetails(eventId)
-					resumePlayer(playingPosition)
 				}
 			}
 	}
@@ -1173,6 +1182,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			pubnub.removeListener(listener = pubNubListener)
 		}
 		releaseVideoPlayer()
+		playerView.onDestroy()
 		super.onDestroy()
 	}
 
@@ -1204,16 +1214,10 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		)
 	}
 
-	override fun onStart() {
-		playerView.onStart()
-		super.onStart()
-	}
-
 	override fun onStop() {
 		playerView.onStop()
 		super.onStop()
 	}
-
 	@SuppressLint("RestrictedApi")
 	override fun dispatchKeyEvent(event: KeyEvent): Boolean {
 		// This method is called on key down and key up, so avoid being called twice
@@ -1341,23 +1345,22 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 				KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_SPACE -> {
 
-					if(!isAdVisible) {
-						// When a key is hit, cancel the timeout of hiding the trick bar and set it again
-						if (!player.isLive && binding.progress.hasFocus()) {
-							isScrubVisible = false
-							setImagePreview()
-							resumePlayer(scrubbedPosition)
+					// When a key is hit, cancel the timeout of hiding the trick bar and set it again
+					if (!player.isLive && binding.progress.hasFocus()) {
+						isScrubVisible = false
+						setImagePreview()
+						playingPosition = scrubbedPosition
+						resumePlayer(scrubbedPosition)
+						true
+					} else {
+						timeout.removeCallbacks(trickPlayRunnable)
+						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
+						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
+							trickPlayVisible.value = true
+							if (player.isLive) binding.chatFromPhone.requestFocus() else binding.playPause.requestFocus()
 							true
-						} else {
-							timeout.removeCallbacks(trickPlayRunnable)
-							timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
-							if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
-								trickPlayVisible.value = true
-								if (player.isLive) binding.chatFromPhone.requestFocus() else binding.playPause.requestFocus()
-								true
-							} else return false
-						}
-					} else true
+						} else return false
+					}
 
 				}
 
@@ -1414,7 +1417,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		binding.currentDuration.text = currentDuration ?: "00:00:00"
 		if (player.isPlaying) {
 			binding.videoPlayer.postDelayed(
-				{ getPlayerProgress() }, IntValue.NUMBER_1000.toLong()
+				{ getPlayerProgress() }, if (isAdVisible) IntValue.NUMBER_500.toLong() else IntValue.NUMBER_1000.toLong()
 			)
 		}
 	}
