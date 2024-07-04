@@ -441,10 +441,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			isAdVisible = false
 		}
 
-		player.on<PlayerEvent.AdError> {
-			playerView.isUiVisible = false
-			isAdVisible = false
-		}
 		binding.progress.setOnFocusChangeListener { _, hasFocus ->
 			if (hasFocus) {
 				scrubbedPosition = player.currentTime.toLong()
