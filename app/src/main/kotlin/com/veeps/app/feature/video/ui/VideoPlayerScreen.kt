@@ -70,6 +70,7 @@ import com.veeps.app.util.AppConstants.drmLicenseURL
 import com.veeps.app.util.AppPreferences
 import com.veeps.app.util.AppUtil
 import com.veeps.app.util.DEFAULT
+import com.veeps.app.util.EntityTypes
 import com.veeps.app.util.EventTypes
 import com.veeps.app.util.GlideThumbnailTransformation
 import com.veeps.app.util.ImageTags
@@ -318,7 +319,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 							.setCustomData1(userType)
 							.setCustomData2(Player.sdkVersion)
 							.setCustomData3(AppPreferences.get(AppConstants.userID, DEFAULT.EMPTY_STRING))
-							.setCustomData4(getString(R.string.event))
+							.setCustomData4(EntityTypes.EVENT)
 							.setCustomData5(eventName).build()
                    // create a source with a sourceMetadata for custom analytics tracking
 					val sourceMetadata: SourceMetadata =
