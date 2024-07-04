@@ -109,7 +109,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private var isAdVisible = false
 	private var currentTime: String = DEFAULT.EMPTY_STRING
 	private var duration: String = DEFAULT.EMPTY_STRING
-	private var ticketId: String? = DEFAULT.EMPTY_STRING
+	private var ticketId: String = DEFAULT.EMPTY_STRING
 
 	private fun getBackCallback(): OnBackPressedCallback {
 		val backPressedCallback = object : OnBackPressedCallback(true) {
@@ -296,7 +296,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		viewModel.eventId.observe(this@VideoPlayerScreen) { eventId ->
 			if (!eventId.isNullOrBlank()) {
 				fetchAllPurchasedEvents(eventId)
-				fetchUserStats(eventId)
 			}
 		}
 
@@ -330,10 +329,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					if (railData.data.isNotEmpty()) {
 						val eventData = railData.data.filter { it.eventId == eventId }
 						if (eventData.size == 1){
-							ticketId = eventData.get(0).id
+							ticketId = eventData.get(0).id.toString()
 						}
 					}
 				}
+				fetchUserStats(eventId, ticketId)
 			}
 		}
 	}
@@ -438,7 +438,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				trickPlayVisible.value = true
 			}
 			binding.playPause.requestFocus()
-			binding.playPause.isSelected = true
+			binding.playPause.isSelected = false
 		}
 		player.on<PlayerEvent.AdFinished> {
 			playerView.isUiVisible = false
@@ -687,7 +687,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		}
 	}
 
-	private fun fetchUserStats(eventId: String) {
+	private fun fetchUserStats(eventId: String, ticketId: String) {
 		val userStatsAPIURL = AppPreferences.get(
 			AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
 		) + APIConstants.fetchUserStats
@@ -719,13 +719,13 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					} ?: run {
 						playingPosition = 0
 					}
-					fetchEventPlaybackDetails(eventId)
+					fetchEventPlaybackDetails(eventId, ticketId)
 					resumePlayer(playingPosition)
 				}
 			}
 	}
 
-	private fun fetchEventPlaybackDetails(eventId: String) {
+	private fun fetchEventPlaybackDetails(eventId: String, ticketId: String) {
 		viewModel.fetchEventStreamDetails(eventId)
 			.observe(this@VideoPlayerScreen) { eventStreamResponse ->
 				fetch(
@@ -745,7 +745,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 									?: DEFAULT.EMPTY_STRING
 							binding.heroImage.loadImage(posterImage, ImageTags.HERO)
 							binding.chatFromPhoneBackground.loadImage(posterImage, ImageTags.HERO)
-							ticketId?.let { fetchCompanions(eventId, organizationName, it) }
+							fetchCompanions(eventId, organizationName, ticketId)
 							fetchStoryBoard(eventDetails.storyboards.json ?: "")
 							binding.title.text =
 								if (eventDetails.lineup.isNotEmpty()) "${eventDetails.lineup[0].name} - ${eventDetails.eventName}" else "${eventDetails.eventName}"
