@@ -340,17 +340,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		player.addListener(object : Player.Listener {
 			override fun onTimelineChanged(timeline: Timeline, reason: Int) {
 				super.onTimelineChanged(timeline, reason)
-				if (player.isCurrentMediaItemLive) {
-					binding.topControls.visibility = View.VISIBLE
-					binding.liveControls.visibility = View.VISIBLE
-					binding.standBy.visibility = View.GONE
-					binding.vodControls.visibility = View.GONE
-				} else {
-					binding.topControls.visibility = View.VISIBLE
-					binding.vodControls.visibility = View.VISIBLE
-					binding.liveControls.visibility = View.GONE
-					binding.standBy.visibility = View.GONE
-				}
 			}
 
 			override fun onCues(cueGroup: CueGroup) {
@@ -403,11 +392,28 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			}
 
 			override fun onPlaybackStateChanged(playbackState: Int) {
-				if (playbackState == Player.STATE_BUFFERING) {
-					binding.loader.visibility = View.VISIBLE
-				}
-				if (playbackState == Player.STATE_ENDED) {
-					binding.playPause.isSelected = false
+				when (playbackState) {
+					Player.STATE_BUFFERING -> {
+						binding.loader.visibility = View.VISIBLE
+					}
+					Player.STATE_READY -> {
+						if (player.isCurrentMediaItemLive) {
+							binding.topControls.visibility = View.VISIBLE
+							binding.liveControls.visibility = View.VISIBLE
+							binding.standBy.visibility = View.GONE
+							binding.vodControls.visibility = View.GONE
+							binding.playPause.visibility = View.GONE
+						} else {
+							binding.topControls.visibility = View.VISIBLE
+							binding.vodControls.visibility = View.VISIBLE
+							binding.liveControls.visibility = View.GONE
+							binding.standBy.visibility = View.GONE
+							binding.playPause.visibility = View.VISIBLE
+						}
+					}
+					Player.STATE_ENDED -> {
+						binding.playPause.isSelected = false
+					}
 				}
 				super.onPlaybackStateChanged(playbackState)
 			}
