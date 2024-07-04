@@ -199,7 +199,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private fun notifyAppEvents() {
 		getCurrentTimer = Handler(Looper.getMainLooper())
 		statsManagement = Handler(Looper.getMainLooper())
-
+		var userType : String? = DEFAULT.EMPTY_STRING
 		addStatsTask = Runnable {
 			if (this::player.isInitialized) {
 				currentTime = player.currentTime.toString()
@@ -211,7 +211,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				val playbackStreamType: String =
 					if (player.isLive) EventTypes.LIVE else EventTypes.ON_DEMAND
 				val platform: String = getString(R.string.app_platform)
-				val userType: String = if (AppPreferences.get(
+				userType = if (AppPreferences.get(
 						AppConstants.userSubscriptionStatus, "none"
 					) != "none"
 				) "m" else "b"
@@ -231,7 +231,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 							deviceVendor,
 							playbackStreamType,
 							platform,
-							userType
+							userType!!
 						)
 					}
 				}
@@ -312,16 +312,12 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					if (isDrmAvailable) {
 						sourceConfig.drmConfig = WidevineConfig(drmLicenseURL)
 					}
-					val userType: String = if (AppPreferences.get(
-							AppConstants.userSubscriptionStatus, "none"
-						) != "none"
-					) "m" else "b"
 
 					val customData: CustomData =
 						CustomData.Builder()
 							.setCustomData1(userType)
 							.setCustomData2(Player.sdkVersion)
-							.setCustomData3(AppPreferences.get(AppConstants.userID, getString(R.string.app_platform)))
+							.setCustomData3(AppPreferences.get(AppConstants.userID, DEFAULT.EMPTY_STRING))
 							.setCustomData4(getString(R.string.event))
 							.setCustomData5(eventName).build()
                    // create a source with a sourceMetadata for custom analytics tracking
@@ -333,7 +329,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 						.build()
 					// Load the source
 					player.load(source)
-					resumePlayer(playingPosition)
 				}
 			}
 		}
@@ -428,6 +423,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				binding.standBy.visibility = View.GONE
 			}
 		}
+
+
 		player.on<PlayerEvent.AdStarted> {
 			trickPlayVisible.value = true
 			getPlayerProgress()
