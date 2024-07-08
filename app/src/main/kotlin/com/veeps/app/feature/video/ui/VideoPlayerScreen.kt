@@ -333,7 +333,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 						}
 					}
 				}
-				fetchUserStats(eventId, ticketId)
+				fetchUserStats(eventId)
 			}
 		}
 	}
@@ -687,7 +687,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		}
 	}
 
-	private fun fetchUserStats(eventId: String, ticketId: String) {
+	private fun fetchUserStats(eventId: String) {
 		val userStatsAPIURL = AppPreferences.get(
 			AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
 		) + APIConstants.fetchUserStats
@@ -719,13 +719,13 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					} ?: run {
 						playingPosition = 0
 					}
-					fetchEventPlaybackDetails(eventId, ticketId)
+					fetchEventPlaybackDetails(eventId)
 					resumePlayer(playingPosition)
 				}
 			}
 	}
 
-	private fun fetchEventPlaybackDetails(eventId: String, ticketId: String) {
+	private fun fetchEventPlaybackDetails(eventId: String) {
 		viewModel.fetchEventStreamDetails(eventId)
 			.observe(this@VideoPlayerScreen) { eventStreamResponse ->
 				fetch(
