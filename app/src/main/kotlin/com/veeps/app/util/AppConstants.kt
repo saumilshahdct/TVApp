@@ -201,6 +201,7 @@ object EventAccessType {
 	const val FREE = "FREE"
 	const val VEEPS_FREE = "VEEPS_FREE"
 	const val NONE = "none"
+	const val VEEPS_PARTNER = "veeps_partner"
 }
 
 object ButtonLabels {

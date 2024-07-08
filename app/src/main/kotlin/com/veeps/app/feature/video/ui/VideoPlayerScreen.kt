@@ -194,48 +194,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		getCurrentTimer = Handler(Looper.getMainLooper())
 		statsManagement = Handler(Looper.getMainLooper())
 
-		addStatsTask = Runnable {
-			if (this::player.isInitialized) {
-				val currentTime: String =
-					(player.currentPosition / IntValue.NUMBER_1000).toDouble().toString()
-				val duration: String =
-					(player.duration / IntValue.NUMBER_1000).toDouble().toString()
-				val playerVersion =
-					"ntv"//"${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})"
-				val deviceModel: String = Build.MODEL
-				val deviceVendor: String = Build.MANUFACTURER
-				val playbackStreamType: String =
-					if (player.isCurrentMediaItemLive) EventTypes.LIVE else EventTypes.ON_DEMAND
-				val platform: String = getString(R.string.app_platform)
-				val userType: String = AppUtil.getUserType()
-
-				viewModel.eventId.value?.let { eventId ->
-					if (eventId.isNotBlank()) {
-						AppPreferences.set(AppConstants.generatedJWT, AppUtil.generateJWT(eventId))
-						val addStatsAPIURL = AppPreferences.get(
-							AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
-						) + APIConstants.addStats
-						addStats(
-							addStatsAPIURL.trim(),
-							currentTime,
-							duration,
-							playerVersion,
-							deviceModel,
-							deviceVendor,
-							playbackStreamType,
-							platform,
-							userType
-						)
-					}
-				}
-			}
-			if (this::statsManagement.isInitialized && this::addStatsTask.isInitialized) {
-				statsManagement.removeCallbacks(addStatsTask)
-				statsManagement.removeCallbacksAndMessages(addStatsTask)
-				statsManagement.postDelayed(addStatsTask, 30000)
-			}
-		}
-
 		binding.chatFromPhone.setOnFocusChangeListener { _, hasFocus ->
 			binding.chatFromPhoneLabel.setTextColor(
 				ContextCompat.getColor(
@@ -812,6 +770,48 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		signalChannel = eventDetails.chat.chatChannels.signals ?: DEFAULT.EMPTY_STRING
 		playbackStream = eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING }
 			?: DEFAULT.EMPTY_STRING
+
+		addStatsTask = Runnable {
+			if (this::player.isInitialized) {
+				val currentTime: String =
+					(player.currentPosition / IntValue.NUMBER_1000).toDouble().toString()
+				val duration: String =
+					(player.duration / IntValue.NUMBER_1000).toDouble().toString()
+				val playerVersion =
+					"ntv"//"${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})"
+				val deviceModel: String = Build.MODEL
+				val deviceVendor: String = Build.MANUFACTURER
+				val playbackStreamType: String =
+					if (player.isCurrentMediaItemLive) EventTypes.LIVE else EventTypes.ON_DEMAND
+				val platform: String = getString(R.string.app_platform)
+				val userType: String = AppUtil.getUserType(eventDetails)
+
+				viewModel.eventId.value?.let { eventId ->
+					if (eventId.isNotBlank()) {
+						AppPreferences.set(AppConstants.generatedJWT, AppUtil.generateJWT(eventId))
+						val addStatsAPIURL = AppPreferences.get(
+							AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
+						) + APIConstants.addStats
+						addStats(
+							addStatsAPIURL.trim(),
+							currentTime,
+							duration,
+							playerVersion,
+							deviceModel,
+							deviceVendor,
+							playbackStreamType,
+							platform,
+							userType
+						)
+					}
+				}
+			}
+			if (this::statsManagement.isInitialized && this::addStatsTask.isInitialized) {
+				statsManagement.removeCallbacks(addStatsTask)
+				statsManagement.removeCallbacksAndMessages(addStatsTask)
+				statsManagement.postDelayed(addStatsTask, 30000)
+			}
+		}
 
 		if (isChatEnabled.and(
 				status.contains(EventTypes.LIVE, true)

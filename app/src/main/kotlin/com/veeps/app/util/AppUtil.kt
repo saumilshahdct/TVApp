@@ -846,13 +846,20 @@ object AppUtil {
 			}
 		}
 	}
-	fun getUserType(): String {
+	fun getUserType(entity: Entities): String {
 		return when (AppPreferences.get(
 			AppConstants.userSubscriptionStatus, "none"
 		)) {
-			EventAccessType.VEEPS_FREE.lowercase(), EventAccessType.VEEPS_FREE.lowercase() -> UserType.VEEPS_FREE_TIER
-			EventAccessType.NONE -> UserType.VEEPS_TICKETS_HOLDER
-			else -> UserType.VEEPS_PAID_SUBSCRIBER
+			EventAccessType.VEEPS_PARTNER -> {
+				UserType.VEEPS_PAID_SUBSCRIBER
+			}
+			else -> {
+				if (entity.access.contains("veeps_free")) {
+					UserType.VEEPS_FREE_TIER
+				} else {
+					UserType.VEEPS_TICKETS_HOLDER
+				}
+			}
 		}
 	}
 }
