@@ -200,7 +200,10 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private fun notifyAppEvents() {
 		getCurrentTimer = Handler(Looper.getMainLooper())
 		statsManagement = Handler(Looper.getMainLooper())
-		var userType : String? = DEFAULT.EMPTY_STRING
+		var userType : String = if (AppPreferences.get(
+				AppConstants.userSubscriptionStatus, "none"
+			) != "none"
+		) "m" else "b"
 		addStatsTask = Runnable {
 			if (this::player.isInitialized) {
 				currentTime = player.currentTime.toString()
@@ -212,10 +215,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				val playbackStreamType: String =
 					if (player.isLive) EventTypes.LIVE else EventTypes.ON_DEMAND
 				val platform: String = getString(R.string.app_platform)
-				userType = if (AppPreferences.get(
-						AppConstants.userSubscriptionStatus, "none"
-					) != "none"
-				) "m" else "b"
 
 				viewModel.eventId.value?.let { eventId ->
 					if (eventId.isNotBlank()) {
@@ -232,7 +231,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 							deviceVendor,
 							playbackStreamType,
 							platform,
-							userType!!
+							userType
 						)
 					}
 				}
