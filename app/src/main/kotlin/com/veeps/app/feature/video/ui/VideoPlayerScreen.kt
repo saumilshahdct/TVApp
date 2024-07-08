@@ -285,7 +285,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		trickPlayVisible.observe(this@VideoPlayerScreen) { visible: Boolean ->
 			if (visible) {
 				binding.controls.visibility = View.VISIBLE
-				if (isAdVisible) binding.topControls.visibility = View.GONE else View.VISIBLE
 				binding.playPause.requestFocus()
 				binding.controls.animate().translationY(0F).alpha(1F)
 			} else {
@@ -398,25 +397,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			binding.loader.visibility = View.GONE
 		}
 		player.on<PlayerEvent.TimeChanged> {
-			if (player.isAd) {
-				playerView.isUiVisible = false
-				binding.topControls.visibility = View.GONE
-				binding.vodControls.visibility = View.VISIBLE
-				binding.liveControls.visibility = View.GONE
-				binding.standBy.visibility = View.GONE
-				trickPlayVisible.value = true
-				binding.chatToggle.isFocusable = false
-				binding.chatToggle.isFocusableInTouchMode = false
-				binding.chatFromPhone.isFocusable = false
-				binding.chatFromPhone.isFocusableInTouchMode = false
-				binding.playPause.isFocusable = true
-				binding.progress.isFocusable = true
-				if (!binding.playPause.isFocused && !binding.progress.isFocused) binding.playPause.requestFocus()
-				isAdVisible = true
-				binding.topControls.visibility = View.GONE
-				binding.playPause.requestFocus()
-				binding.playPause.isSelected = true
-			} else if (player.isLive) {
+			if (player.isLive) {
 				binding.topControls.visibility = View.VISIBLE
 				binding.liveControls.visibility = View.VISIBLE
 				binding.standBy.visibility = View.GONE
@@ -426,6 +407,21 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				binding.vodControls.visibility = View.VISIBLE
 				binding.liveControls.visibility = View.GONE
 				binding.standBy.visibility = View.GONE
+				if (player.isAd) {
+					playerView.isUiVisible = false
+					trickPlayVisible.value = true
+					binding.chatToggle.isFocusable = false
+					binding.chatToggle.isFocusableInTouchMode = false
+					binding.chatFromPhone.isFocusable = false
+					binding.chatFromPhone.isFocusableInTouchMode = false
+					binding.playPause.isFocusable = true
+					binding.progress.isFocusable = true
+					if (!binding.playPause.isFocused && !binding.progress.isFocused) binding.playPause.requestFocus()
+					isAdVisible = true
+					binding.topControls.visibility = View.GONE
+					binding.playPause.requestFocus()
+					binding.playPause.isSelected = true
+				}
 			}
 		}
 		player.on<PlayerEvent.AdStarted> {
@@ -1340,7 +1336,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 
 				KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_SPACE -> {
-
 					// When a key is hit, cancel the timeout of hiding the trick bar and set it again
 					if (!player.isLive && binding.progress.hasFocus()) {
 						isScrubVisible = false
