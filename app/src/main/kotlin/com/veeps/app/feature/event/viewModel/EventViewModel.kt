@@ -5,6 +5,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.veeps.app.data.common.APIRepository
+import com.veeps.app.util.AppConstants
 
 class EventViewModel : ViewModel(), DefaultLifecycleObserver {
 	var isVisible = MutableLiveData(false)
@@ -33,4 +34,5 @@ class EventViewModel : ViewModel(), DefaultLifecycleObserver {
 	fun createOrder(orderDetails: HashMap<String, Any>) = APIRepository().createOrder(orderDetails)
 	fun fetchUserStats(userStatsAPIURL: String, eventIds: String) =
 		APIRepository().fetchUserStats(userStatsAPIURL, eventIds)
+	fun fetchRecommendedContent() = APIRepository().fetchRecommendedData(AppConstants.event+eventId)
 }

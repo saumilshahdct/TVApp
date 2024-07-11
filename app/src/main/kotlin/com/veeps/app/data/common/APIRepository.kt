@@ -215,4 +215,10 @@ class APIRepository : BaseDataSource() {
 		}
 	}
 
+	fun fetchRecommendedData(eventId: String) =
+		performOperation(APIConstants.fetchRecommendedEvent) {
+			getResult(APIConstants.fetchRecommendedEvent) {
+				APIUtil.service.fetchRecommendedEvent(eventId)
+			}
+		}
 }

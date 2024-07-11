@@ -213,5 +213,7 @@ object APIUtil {
 			@Query("s") userType: String
 		): Response<BaseResponseGeneric<Any>>
 
+		@GET(APIConstants.fetchRecommendedEvent)
+		suspend fun fetchRecommendedEvent(@Query("scope") scope: String): Response<RailResponse>
 	}
 }

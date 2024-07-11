@@ -65,6 +65,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 	private var eventDetails: Entities = Entities()
 	private var isEventPurchased: Boolean = false
 	private var rail: ArrayList<RailData> = arrayListOf()
+	private var recommendedRailData: ArrayList<RailData> = arrayListOf()
 	private val action by lazy {
 		object : AppAction {
 			override fun onAction() {
@@ -454,7 +455,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				eventStreamResponse.response?.let { eventStreamData ->
 					eventStreamData.data?.let { eventDetails ->
 						isEventPurchased = true
-						setEventDetails(eventDetails)
+						fetchRecommendedContent(eventDetails)
 					} ?: fetchEventDetails()
 				} ?: fetchEventDetails()
 			}
@@ -471,13 +472,28 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			) {
 				eventResponse.response?.let { eventStreamData ->
 					eventStreamData.data?.let { eventDetails ->
-						setEventDetails(eventDetails)
+						fetchRecommendedContent(eventDetails)
 					} ?: helper.goBack()
 				} ?: helper.goBack()
 			}
 		}
 	}
 
+	private fun fetchRecommendedContent(eventDetails: Entities) {
+		viewModel.fetchRecommendedContent().observe(viewLifecycleOwner) { recommendedContent ->
+			fetch(
+				recommendedContent,
+				isLoaderEnabled = false,
+				canUserAccessScreen = true,
+				shouldBeInBackground = true,
+			) {
+				recommendedContent.response?.let { recommendedRailResponse ->
+					recommendedRailData = recommendedRailResponse.railData
+				}
+				setEventDetails(eventDetails)
+			}
+		}
+	}
 	private fun setEventDetails(eventDetails: Entities) {
 		binding.logo.requestFocus()
 		this.eventDetails = eventDetails
@@ -637,12 +653,24 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			)
 			rail.add(venueRail)
 		}
+
+		if (recommendedRailData.isNotEmpty()) {
+			recommendedRailData.removeIf { recommendedRail ->
+				val recommendedRail = RailData(
+					name = recommendedRail.name,
+					entities = recommendedRail.entities,
+					cardType = CardTypes.PORTRAIT,
+					entitiesType = EntityTypes.EVENT
+				)
+				rail.add(recommendedRail)
+			}
+		}
 		if (rail.none { it.entities.isNotEmpty() }) {
 			binding.listing.visibility = View.GONE
 		} else {
 			binding.listing.apply {
 				layoutParams.height =
-					if (rail.size == 2) context.resources.getDimensionPixelSize(R.dimen.row_height_rail_circle_without_follow) else context.resources.getDimensionPixelSize(
+					if (rail.size == 2 || rail.size == 3) context.resources.getDimensionPixelSize(R.dimen.row_height_rail_circle_without_follow) else context.resources.getDimensionPixelSize(
 						R.dimen.row_height_default
 					)
 				itemAnimator = null
