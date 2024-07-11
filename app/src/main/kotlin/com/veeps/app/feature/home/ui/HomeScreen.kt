@@ -1,6 +1,8 @@
 package com.veeps.app.feature.home.ui
 
+import android.content.Intent
 import android.content.res.Resources
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -17,6 +19,7 @@ import com.amazon.device.iap.model.ProductDataResponse
 import com.amazon.device.iap.model.PurchaseResponse
 import com.amazon.device.iap.model.PurchaseUpdatesResponse
 import com.amazon.device.iap.model.UserDataResponse
+import com.veeps.app.BuildConfig
 import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
 import com.veeps.app.databinding.ActivityHomeScreenBinding
@@ -127,6 +130,15 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 				viewModel.isErrorNegativeApplicable.postValue(true)
 			}
 
+			APIConstants.validateAppVersions -> {
+				viewModel.errorMessage.postValue("You are using older version please " +message)
+				binding.errorContainer.visibility = View.VISIBLE
+				viewModel.errorPositiveLabel.postValue(getString(R.string.yes_label))
+				viewModel.errorNegativeLabel.postValue(getString(R.string.no_label))
+				viewModel.isErrorPositiveApplicable.postValue(true)
+				viewModel.isErrorNegativeApplicable.postValue(true)
+			}
+
 			Screens.EXIT_APP -> {
 				viewModel.errorPositiveLabel.postValue(getString(R.string.yes_label))
 				viewModel.errorNegativeLabel.postValue(getString(R.string.no_label))
@@ -197,6 +209,13 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 			APIConstants.removeWatchListEvents -> {
 				binding.errorContainer.visibility = View.GONE
 				addRemoveWatchListEvent(binding.errorDescription.text.toString())
+			}
+			APIConstants.validateAppVersions -> {
+				binding.errorContainer.visibility = View.GONE
+				val amazonUrl = AppConstants.amazon_app_update_url + BuildConfig.APPLICATION_ID
+				val intent = Intent(Intent.ACTION_VIEW)
+				intent.setData(Uri.parse(amazonUrl))
+				startActivity(intent)
 			}
 
 			Screens.EXIT_APP -> {

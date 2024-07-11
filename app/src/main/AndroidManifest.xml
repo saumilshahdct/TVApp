@@ -84,17 +84,17 @@
         <!-- enable automatic breadcrumbs for user interactions (clicks, swipes, scrolls) -->
         <meta-data
             android:name="io.sentry.traces.user-interaction.enable"
-            android:value="true" />
+            android:value="false" />
         <!-- enable screenshot for crashes (could contain sensitive/PII data) -->
 
         <meta-data
             android:name="io.sentry.attach-screenshot"
-            android:value="true" />
+            android:value="false" />
 
         <!-- enable view hierarchy for crashes -->
         <meta-data
             android:name="io.sentry.attach-view-hierarchy"
-            android:value="true" />
+            android:value="false" />
 
         <!-- enable the performance API by setting a sample-rate, adjust in production env -->
         <meta-data
@@ -103,19 +103,19 @@
 
         <meta-data
             android:name="io.sentry.session-tracking.enable"
-            android:value="true" />
+            android:value="false" />
         <meta-data
             android:name="io.sentry.auto-init"
-            android:value="true" />
+            android:value="false" />
         <meta-data
             android:name="io.sentry.anr.enable"
-            android:value="true" />
+            android:value="false" />
         <meta-data
             android:name="io.sentry.anr.timeout-interval-millis"
             android:value="2000" />
         <meta-data
             android:name="io.sentry.send-default-pii"
-            android:value="true" />
+            android:value="false" />
 
         <!-- enable profiling when starting transactions, adjust in production env -->
         <meta-data

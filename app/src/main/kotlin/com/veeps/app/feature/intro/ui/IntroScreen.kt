@@ -11,6 +11,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.RawResourceDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import com.veeps.app.BuildConfig
 import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
 import com.veeps.app.core.BaseDataSource
@@ -21,8 +22,9 @@ import com.veeps.app.feature.intro.viewModel.IntroViewModel
 import com.veeps.app.feature.signIn.ui.SignInScreen
 import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppConstants
-import com.veeps.app.util.AppPreferences
-import com.veeps.app.util.DEFAULT
+import com.veeps.app.util.AppConstants.amazon_app_update_url
+import com.veeps.app.util.AppConstants.app_envirnment
+import com.veeps.app.util.AppConstants.deviceType
 import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
 import com.veeps.app.util.Screens.APP_UPDATE
@@ -63,14 +65,21 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 		when (tag) {
 			APIConstants.validateAppVersions -> {
 				Logger.print("APP_UPDATE")
-
+				binding.positive.requestFocus()
+				player.pause()
 				viewModel.isErrorVisible.postValue(true)
 				viewModel.contentHasLoaded.postValue(true)
-				viewModel.errorMessage.postValue(message)
-				binding.errorDescription.text = description
+				viewModel.errorMessage.postValue("You are using older version please " +message)
 
-				viewModel.errorPositiveLabel.postValue(getString(R.string.app_update))
-				viewModel.errorNegativeLabel.postValue(getString(R.string.skip_update))
+				viewModel.errorPositiveLabel.postValue(getString(R.string.ok_label))
+				viewModel.errorNegativeLabel.postValue(getString(R.string.cancel_label))
+				viewModel.isErrorPositiveApplicable.postValue(true)
+				viewModel.isErrorNegativeApplicable.postValue(true)
+
+				binding.errorDescription.visibility = View.INVISIBLE
+				binding.errorDescription.text = description
+				viewModel.errorPositiveLabel.postValue(getString(R.string.yes_label))
+				viewModel.errorNegativeLabel.postValue(getString(R.string.cancel_label))
 				viewModel.isErrorPositiveApplicable.postValue(true)
 				viewModel.isErrorNegativeApplicable.postValue(true)
 			}
@@ -109,9 +118,9 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 		super.onResume()
 		validateAppVersion(
 			APIConstants.validateAppVersions,
-			"firetv",
-			"prd",
-			"1.4.0"
+			deviceType,
+			app_envirnment,
+			"1.3.0"
 		)
 		setupVideoPlayer()
 	}
@@ -162,31 +171,24 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 				when (appVersionResponse.callStatus) {
 					BaseDataSource.Resource.CallStatus.SUCCESS -> {
 						Logger.print("App_update=SUCCESS")
+						Logger.doNothing()
 					}
-
-					BaseDataSource.Resource.CallStatus.ERROR -> {
-						Logger.print("App_update=ERROR")
-
-						val errorMessage = appVersionResponse.message
-						if (errorMessage != null) {
-							showError(APP_UPDATE, errorMessage, "")
-						}
-					}
-
 					else -> Logger.doNothing()
 				}
 			}
 		}
 	}
 
-	fun onErrorPositive(tag: Any?) {
-		val amazonUrl = "amzn://apps/android?p=com.veeps.app"
+	fun onErrorPositive() {
+		val amazonUrl = amazon_app_update_url+BuildConfig.APPLICATION_ID
 		val intent = Intent(Intent.ACTION_VIEW)
 		intent.setData(Uri.parse(amazonUrl))
 		startActivity(intent)
 	}
 
-	fun onErrorNegative(tag: Any?) {
-		binding.errorContainer.visibility = View.GONE
+	fun onErrorNegative() {
+		player.play()
+		binding.errorLayoutContainer.visibility = View.GONE
+		binding.signIn.requestFocus()
 	}
 }

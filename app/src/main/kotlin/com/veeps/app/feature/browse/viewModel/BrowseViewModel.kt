@@ -11,6 +11,7 @@ class BrowseViewModel : ViewModel(), DefaultLifecycleObserver {
 	var isVisible = MutableLiveData(false)
 	var railData = MutableLiveData(ArrayList<RailData>())
 	var eventId: String = ""
+	var isAppUpdateCall: Boolean = false
 
 	override fun onResume(owner: LifecycleOwner) {
 		super.onResume(owner)
@@ -31,4 +32,16 @@ class BrowseViewModel : ViewModel(), DefaultLifecycleObserver {
 
 	fun addRemoveWatchListEvent(eventId: HashMap<String, Any>, isRemoveFromWatchList: Boolean) =
 		APIRepository().addRemoveWatchListEvent(eventId, isRemoveFromWatchList)
+
+	fun validateAppVersion(
+		appVersionAPIURL: String,
+		platform: String,
+		stage: String,
+		appVersion: String,
+	) = APIRepository().validateAppVersion(
+		appVersionAPIURL,
+		platform,
+		stage,
+		appVersion
+	)
 }

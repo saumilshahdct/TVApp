@@ -80,6 +80,4 @@
     <string name="turn_chat_off">Turn Chat Off</string>
     <string name="all_done_label">All Done</string>
     <string name="error_label">Error Code: 001</string>
-    <string name="app_update">Update App</string>
-    <string name="skip_update">skip Update</string>
 </resources>

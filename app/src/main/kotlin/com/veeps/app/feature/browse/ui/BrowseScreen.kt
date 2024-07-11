@@ -6,6 +6,7 @@ import android.view.ViewOutlineProvider
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.leanback.widget.BaseGridView
+import androidx.lifecycle.ViewModel
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE
 import androidx.media3.common.C.USAGE_MEDIA
@@ -17,6 +18,7 @@ import androidx.media3.exoplayer.util.EventLogger
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
 import com.veeps.app.R
+import com.veeps.app.core.BaseDataSource
 import com.veeps.app.core.BaseFragment
 import com.veeps.app.databinding.FragmentBrowseScreenBinding
 import com.veeps.app.extension.fadeInNow
@@ -101,6 +103,16 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		notifyAppEvents()
 	}
 
+	override fun onResume() {
+		super.onResume()
+		if (viewModel.isAppUpdateCall)
+		validateAppVersion(
+			APIConstants.validateAppVersions,
+			AppConstants.deviceType,
+			AppConstants.app_envirnment,
+			"1.3.0"
+		)
+	}
 	private fun setupVideoPlayer() {
 		releaseVideoPlayer()
 		player = context?.let { context -> ExoPlayer.Builder(context).build() }!!
@@ -655,4 +667,41 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			fetchOnDemandRails()
 		}
 	}
+	private fun validateAppVersion(
+		appVersionAPIURL: String,
+		platform: String,
+		stage: String,
+		appVersion: String,
+	) {
+		viewModel.isAppUpdateCall = true
+		viewModel.validateAppVersion(
+			appVersionAPIURL,
+			platform,
+			stage,
+			appVersion
+		).observe(this@BrowseScreen) { appVersionResponse ->
+			fetch(
+				appVersionResponse,
+				isLoaderEnabled = false,
+				canUserAccessScreen = false,
+				shouldBeInBackground = false
+			) {
+
+				when (appVersionResponse.callStatus) {
+					BaseDataSource.Resource.CallStatus.SUCCESS -> {
+						Logger.print("App_update=SUCCESS")
+						Logger.doNothing()
+					}
+					BaseDataSource.Resource.CallStatus.ERROR -> {
+					}
+					else -> Logger.doNothing()
+				}
+//				appVersionResponse.response?.let {
+//					Logger.doNothing()
+//				} ?: helper.showErrorOnScreen(APIConstants.validateAppVersions, getString(R.string.unknown_error))
+			}
+		}
+	}
+
+
 }

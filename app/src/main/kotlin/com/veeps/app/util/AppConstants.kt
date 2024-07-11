@@ -5,7 +5,8 @@ import com.veeps.app.BuildConfig
 object AppConstants {
 	const val PREFS_FILENAME: String = "veeps"
 	const val TAG: String = "VeepsAppTag"
-	const val deviceType: String = "fireTv"
+	const val deviceType: String = "firetv"
+	const val app_envirnment: String = "prd"
 	const val deviceName: String = "Amazon Fire TV"
 
 	const val clientId: String = "40a3903ae06585f0c114464750d605bba618afd01159f4eefef68c255c746a89"
@@ -37,6 +38,7 @@ object AppConstants {
 	const val userDisplayName: String = "user_display_name"
 	const val userAvatar: String = "user_avatar"
 	const val userTimeZoneAbbr: String = "user_time_zone_abbr"
+	const val amazon_app_update_url: String = "amzn://apps/android?p="
 }
 
 object Image {
