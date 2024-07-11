@@ -131,10 +131,10 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 			}
 
 			APIConstants.validateAppVersions -> {
-				viewModel.errorMessage.postValue("You are using older version please " +message)
+				viewModel.errorMessage.postValue(message +getString(R.string.app_update_message))
 				binding.errorContainer.visibility = View.VISIBLE
-				viewModel.errorPositiveLabel.postValue(getString(R.string.yes_label))
-				viewModel.errorNegativeLabel.postValue(getString(R.string.no_label))
+				viewModel.errorPositiveLabel.postValue(getString(R.string.ok_label))
+				binding.negative.visibility = View.GONE
 				viewModel.isErrorPositiveApplicable.postValue(true)
 				viewModel.isErrorNegativeApplicable.postValue(true)
 			}
@@ -212,10 +212,6 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 			}
 			APIConstants.validateAppVersions -> {
 				binding.errorContainer.visibility = View.GONE
-				val amazonUrl = AppConstants.amazon_app_update_url + BuildConfig.APPLICATION_ID
-				val intent = Intent(Intent.ACTION_VIEW)
-				intent.setData(Uri.parse(amazonUrl))
-				startActivity(intent)
 			}
 
 			Screens.EXIT_APP -> {

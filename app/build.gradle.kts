@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Properties
 
 val mainVersionCode = 4
-val mainVersionName = ".3"
+val mainVersionName = ".4.0"
 val releaseLabel = "release"
 val debugLabel = "debug"
 

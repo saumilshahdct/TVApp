@@ -17,6 +17,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
+import com.veeps.app.BuildConfig
 import com.veeps.app.R
 import com.veeps.app.core.BaseDataSource
 import com.veeps.app.core.BaseFragment
@@ -105,13 +106,14 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 
 	override fun onResume() {
 		super.onResume()
-		if (viewModel.isAppUpdateCall)
-		validateAppVersion(
-			APIConstants.validateAppVersions,
-			AppConstants.deviceType,
-			AppConstants.app_envirnment,
-			"1.3.0"
-		)
+		if (!viewModel.isAppUpdateCall) {
+			validateAppVersion(
+				APIConstants.validateAppVersions,
+				AppConstants.deviceType,
+				AppConstants.app_envirnment,
+				BuildConfig.VERSION_NAME
+			)
+		}
 	}
 	private fun setupVideoPlayer() {
 		releaseVideoPlayer()
@@ -689,16 +691,12 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 
 				when (appVersionResponse.callStatus) {
 					BaseDataSource.Resource.CallStatus.SUCCESS -> {
-						Logger.print("App_update=SUCCESS")
 						Logger.doNothing()
 					}
 					BaseDataSource.Resource.CallStatus.ERROR -> {
 					}
 					else -> Logger.doNothing()
 				}
-//				appVersionResponse.response?.let {
-//					Logger.doNothing()
-//				} ?: helper.showErrorOnScreen(APIConstants.validateAppVersions, getString(R.string.unknown_error))
 			}
 		}
 	}
