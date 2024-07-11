@@ -213,5 +213,12 @@ object APIUtil {
 			@Query("s") userType: String
 		): Response<BaseResponseGeneric<Any>>
 
+		@GET
+		suspend fun validateAppVersion(
+			@Url addStatsAPIURL: String,
+			@Query("platform") platform: String,
+			@Query("stage") stage: String,
+			@Query("version") appVersion: String,
+		): Response<BaseResponseGeneric<Any>>
 	}
 }

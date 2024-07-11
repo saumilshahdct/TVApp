@@ -153,6 +153,7 @@ object Screens {
 	const val EXIT_APP = "EXIT_APP"
 	const val PLAYER_ERROR = "PLAYER_ERROR"
 	const val STREAM_END = "STREAM_END"
+	const val APP_UPDATE = "APP_UPDATE"
 }
 
 object EntityTypes {

@@ -8,6 +8,7 @@ import com.veeps.app.R
 import com.veeps.app.application.Veeps
 import com.veeps.app.data.network.NoConnectivityException
 import com.veeps.app.util.APIConstants
+import com.veeps.app.util.Logger
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -68,6 +69,7 @@ abstract class BaseDataSource {
 									var error = Veeps.appContext.getString(R.string.unknown_error)
 									response.errorBody()?.let { errorBody ->
 										val errorObject = JSONObject(errorBody.string())
+
 										if (errorObject.has("error_description")) {
 											error = Html.fromHtml(
 												errorObject.getString("error"),
@@ -78,17 +80,38 @@ abstract class BaseDataSource {
 												errorObject.getString("error"),
 												HtmlCompat.FROM_HTML_MODE_LEGACY
 											).toString()
+
 										}
 									}
 									return Resource.error(tag, error)
 								}
 
+								APIConstants.validateAppVersions -> {
+										var errorMessage: String =
+											Veeps.appContext.getString(R.string.unknown_error)
+
+										response.errorBody()?.let { errorBody ->
+											val errorObject = JSONObject(errorBody.string())
+											if (errorObject.has("errors")) {
+												val errorObjectData = errorObject.getString("errors")
+												val errorObject = JSONObject(errorObjectData)
+												if (errorObject.has("message")){
+													errorMessage = errorObject.getString("message")
+												}
+
+											}
+										}
+									return Resource.error(tag, errorMessage)
+									}
+
 								else -> {
 									var error: String =
 										Veeps.appContext.getString(R.string.unknown_error)
+
 									response.errorBody()?.let { errorBody ->
 										val errorObject = JSONObject(errorBody.string())
 										if (errorObject.has("message")) {
+
 											error = Html.fromHtml(
 												errorObject.getString("message"),
 												HtmlCompat.FROM_HTML_MODE_LEGACY

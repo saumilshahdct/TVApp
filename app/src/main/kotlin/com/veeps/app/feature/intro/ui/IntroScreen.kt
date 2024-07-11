@@ -1,6 +1,8 @@
 package com.veeps.app.feature.intro.ui
 
 import android.content.Intent
+import android.net.Uri
+import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -11,13 +13,19 @@ import androidx.media3.datasource.RawResourceDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
+import com.veeps.app.core.BaseDataSource
 import com.veeps.app.databinding.ActivityIntroScreenBinding
 import com.veeps.app.extension.goToScreen
+import com.veeps.app.feature.browse.ui.BrowseScreen
 import com.veeps.app.feature.intro.viewModel.IntroViewModel
 import com.veeps.app.feature.signIn.ui.SignInScreen
+import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppConstants
+import com.veeps.app.util.AppPreferences
+import com.veeps.app.util.DEFAULT
 import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
+import com.veeps.app.util.Screens.APP_UPDATE
 import kotlin.system.exitProcess
 
 
@@ -50,7 +58,25 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 		ActivityIntroScreenBinding.inflate(layoutInflater)
 
 	override fun showError(tag: String, message: String, description: String) {
-		viewModel.contentHasLoaded.postValue(true)
+		Logger.print("showError"+tag)
+
+		when (tag) {
+			APIConstants.validateAppVersions -> {
+				Logger.print("APP_UPDATE")
+
+				viewModel.isErrorVisible.postValue(true)
+				viewModel.contentHasLoaded.postValue(true)
+				viewModel.errorMessage.postValue(message)
+				binding.errorDescription.text = description
+
+				viewModel.errorPositiveLabel.postValue(getString(R.string.app_update))
+				viewModel.errorNegativeLabel.postValue(getString(R.string.skip_update))
+				viewModel.isErrorPositiveApplicable.postValue(true)
+				viewModel.isErrorNegativeApplicable.postValue(true)
+			}
+
+			else -> viewModel.contentHasLoaded.postValue(true)
+		}
 	}
 
 	override fun onRendered(viewModel: IntroViewModel, binding: ActivityIntroScreenBinding) {
@@ -81,6 +107,12 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 
 	override fun onResume() {
 		super.onResume()
+		validateAppVersion(
+			APIConstants.validateAppVersions,
+			"firetv",
+			"prd",
+			"1.4.0"
+		)
 		setupVideoPlayer()
 	}
 
@@ -108,4 +140,53 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 		)
 	}
 
+	private fun validateAppVersion(
+		appVersionAPIURL: String,
+		platform: String,
+		stage: String,
+		appVersion: String,
+	) {
+		viewModel.validateAppVersion(
+			appVersionAPIURL,
+			platform,
+			stage,
+			appVersion
+		).observe(this@IntroScreen) { appVersionResponse ->
+			fetch(
+				appVersionResponse,
+				isLoaderEnabled = false,
+				canUserAccessScreen = false,
+				shouldBeInBackground = false
+			) {
+
+				when (appVersionResponse.callStatus) {
+					BaseDataSource.Resource.CallStatus.SUCCESS -> {
+						Logger.print("App_update=SUCCESS")
+					}
+
+					BaseDataSource.Resource.CallStatus.ERROR -> {
+						Logger.print("App_update=ERROR")
+
+						val errorMessage = appVersionResponse.message
+						if (errorMessage != null) {
+							showError(APP_UPDATE, errorMessage, "")
+						}
+					}
+
+					else -> Logger.doNothing()
+				}
+			}
+		}
+	}
+
+	fun onErrorPositive(tag: Any?) {
+		val amazonUrl = "amzn://apps/android?p=com.veeps.app"
+		val intent = Intent(Intent.ACTION_VIEW)
+		intent.setData(Uri.parse(amazonUrl))
+		startActivity(intent)
+	}
+
+	fun onErrorNegative(tag: Any?) {
+		binding.errorContainer.visibility = View.GONE
+	}
 }

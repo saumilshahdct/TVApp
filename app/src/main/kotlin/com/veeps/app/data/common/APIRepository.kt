@@ -215,4 +215,19 @@ class APIRepository : BaseDataSource() {
 		}
 	}
 
+	fun validateAppVersion(
+		appVersionAPIURL: String,
+		platform: String,
+		stage: String,
+		appVersion: String,
+	) = performOperation(APIConstants.validateAppVersions) {
+		getResult(APIConstants.validateAppVersions) {
+			APIUtil.service.validateAppVersion(
+				appVersionAPIURL,
+				platform,
+				stage,
+				appVersion
+			)
+		}
+	}
 }
