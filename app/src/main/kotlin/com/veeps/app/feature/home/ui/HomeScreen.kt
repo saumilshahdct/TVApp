@@ -128,7 +128,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 			}
 
 			APIConstants.validateAppVersions -> {
-				viewModel.errorMessage.postValue(message +getString(R.string.app_update_message))
+				viewModel.errorMessage.postValue(getString(R.string.app_update_message))
 				binding.errorContainer.visibility = View.VISIBLE
 				viewModel.errorPositiveLabel.postValue(getString(R.string.ok_label))
 				binding.negative.visibility = View.GONE

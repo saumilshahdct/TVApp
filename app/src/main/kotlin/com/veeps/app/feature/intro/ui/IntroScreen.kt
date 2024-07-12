@@ -62,7 +62,7 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
                 binding.errorActionContainer.visibility = View.VISIBLE
                 viewModel.isErrorVisible.postValue(true)
                 viewModel.contentHasLoaded.postValue(true)
-                viewModel.errorMessage.postValue(message + getString(R.string.app_update_message))
+                viewModel.errorMessage.postValue(getString(R.string.app_update_message))
                 viewModel.errorPositiveLabel.postValue(getString(R.string.ok_label))
                 viewModel.errorNegativeLabel.postValue(getString(R.string.cancel_label))
                 viewModel.isErrorPositiveApplicable.postValue(true)
