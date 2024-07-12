@@ -49,5 +49,5 @@ object APIConstants {
 	const val addStats: String = "/addstat"
 	const val fetchCompanions: String = API_VERSION + "me/companion"
 	const val fetchFeaturedContent: String = API_VERSION + "features?scope=search"
-	const val fetchRecommendedEvent: String = API_VERSION + "features"
+	const val fetchRecommendedContent: String = API_VERSION + "features"
 }

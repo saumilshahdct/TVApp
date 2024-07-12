@@ -488,7 +488,9 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				shouldBeInBackground = true,
 			) {
 				recommendedContent.response?.let { recommendedRailResponse ->
-					recommendedRailData = recommendedRailResponse.railData
+					if (recommendedRailResponse.railData.isNotEmpty()) {
+						recommendedRailData = recommendedRailResponse.railData
+					}
 				}
 				setEventDetails(eventDetails)
 			}
@@ -655,10 +657,11 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		}
 
 		if (recommendedRailData.isNotEmpty()) {
-			recommendedRailData.removeIf { recommendedRail ->
+			recommendedRailData.let { recommendedData ->
+				val recommendedRailData = recommendedData.get(0)
 				val recommendedRail = RailData(
-					name = recommendedRail.name,
-					entities = recommendedRail.entities,
+					name = recommendedRailData.name,
+					entities = recommendedRailData.entities,
 					cardType = CardTypes.PORTRAIT,
 					entitiesType = EntityTypes.EVENT
 				)

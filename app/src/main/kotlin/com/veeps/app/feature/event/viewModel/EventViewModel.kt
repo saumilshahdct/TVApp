@@ -34,5 +34,7 @@ class EventViewModel : ViewModel(), DefaultLifecycleObserver {
 	fun createOrder(orderDetails: HashMap<String, Any>) = APIRepository().createOrder(orderDetails)
 	fun fetchUserStats(userStatsAPIURL: String, eventIds: String) =
 		APIRepository().fetchUserStats(userStatsAPIURL, eventIds)
-	fun fetchRecommendedContent() = APIRepository().fetchRecommendedData(AppConstants.event+eventId)
+
+	fun fetchRecommendedContent() =
+		APIRepository().fetchRecommendedData(AppConstants.event.plus(eventId))
 }
