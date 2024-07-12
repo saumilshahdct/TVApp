@@ -6,7 +6,6 @@ import android.view.ViewOutlineProvider
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.leanback.widget.BaseGridView
-import androidx.lifecycle.ViewModel
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE
 import androidx.media3.common.C.USAGE_MEDIA

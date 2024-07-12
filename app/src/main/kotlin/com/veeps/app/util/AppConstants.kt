@@ -38,7 +38,6 @@ object AppConstants {
 	const val userDisplayName: String = "user_display_name"
 	const val userAvatar: String = "user_avatar"
 	const val userTimeZoneAbbr: String = "user_time_zone_abbr"
-	const val amazon_app_update_url: String = "amzn://apps/android?p="
 }
 
 object Image {

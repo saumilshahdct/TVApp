@@ -1,7 +1,6 @@
 package com.veeps.app.feature.intro.ui
 
 import android.content.Intent
-import android.net.Uri
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.media3.common.AudioAttributes
@@ -17,17 +16,14 @@ import com.veeps.app.core.BaseActivity
 import com.veeps.app.core.BaseDataSource
 import com.veeps.app.databinding.ActivityIntroScreenBinding
 import com.veeps.app.extension.goToScreen
-import com.veeps.app.feature.browse.ui.BrowseScreen
 import com.veeps.app.feature.intro.viewModel.IntroViewModel
 import com.veeps.app.feature.signIn.ui.SignInScreen
 import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppConstants
-import com.veeps.app.util.AppConstants.amazon_app_update_url
 import com.veeps.app.util.AppConstants.app_envirnment
 import com.veeps.app.util.AppConstants.deviceType
 import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
-import com.veeps.app.util.Screens.APP_UPDATE
 import kotlin.system.exitProcess
 
 
