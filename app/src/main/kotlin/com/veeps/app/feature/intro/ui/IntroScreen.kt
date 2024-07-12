@@ -59,20 +59,15 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
             APIConstants.validateAppVersions -> {
                 binding.positive.requestFocus()
                 player.pause()
-                binding.errorActionContainer.visibility = View.VISIBLE
+                binding.errorLayoutContainer.visibility = View.VISIBLE
                 viewModel.isErrorVisible.postValue(true)
                 viewModel.contentHasLoaded.postValue(true)
                 viewModel.errorMessage.postValue(getString(R.string.app_update_message))
                 viewModel.errorPositiveLabel.postValue(getString(R.string.ok_label))
-                viewModel.errorNegativeLabel.postValue(getString(R.string.cancel_label))
                 viewModel.isErrorPositiveApplicable.postValue(true)
-                viewModel.isErrorNegativeApplicable.postValue(true)
-
+                viewModel.isErrorNegativeApplicable.postValue(false)
                 binding.errorDescription.visibility = View.INVISIBLE
                 binding.errorDescription.text = description
-                viewModel.errorPositiveLabel.postValue(getString(R.string.ok_label))
-                viewModel.isErrorPositiveApplicable.postValue(true)
-                viewModel.isErrorNegativeApplicable.postValue(true)
             }
 
             else -> viewModel.contentHasLoaded.postValue(true)
