@@ -112,6 +112,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private var isAdVisible = false
 	private var currentTime: String = DEFAULT.EMPTY_STRING
 	private var duration: String = DEFAULT.EMPTY_STRING
+	private var ticketId: String = DEFAULT.EMPTY_STRING
 	private var eventName: String? = DEFAULT.EMPTY_STRING
 
 	private fun getBackCallback(): OnBackPressedCallback {
@@ -288,7 +289,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		trickPlayVisible.observe(this@VideoPlayerScreen) { visible: Boolean ->
 			if (visible) {
 				binding.controls.visibility = View.VISIBLE
-				if (isAdVisible) binding.topControls.visibility = View.GONE else View.VISIBLE
 				binding.playPause.requestFocus()
 				binding.controls.animate().translationY(0F).alpha(1F)
 			} else {
@@ -298,7 +298,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		viewModel.eventId.observe(this@VideoPlayerScreen) { eventId ->
 			if (!eventId.isNullOrBlank()) {
-				fetchUserStats(eventId)
+				fetchAllPurchasedEvents(eventId)
 			}
 		}
 
@@ -330,6 +330,27 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					// Load the source
 					player.load(source)
 				}
+			}
+		}
+	}
+
+	private fun fetchAllPurchasedEvents(eventId: String) {
+		viewModel.fetchAllPurchasedEvents().observe(this@VideoPlayerScreen) { allPurchasedEvents ->
+			fetch(
+				allPurchasedEvents,
+				isLoaderEnabled = false,
+				canUserAccessScreen = true,
+				shouldBeInBackground = true,
+			) {
+				allPurchasedEvents.response?.let { railData ->
+					if (railData.data.isNotEmpty()) {
+						val eventData = railData.data.filter { it.eventId == eventId }
+						if (eventData.size == 1){
+							ticketId = eventData.get(0).id.toString()
+						}
+					}
+				}
+				fetchUserStats(eventId)
 			}
 		}
 	}
@@ -731,7 +752,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 							val organizationName =
 								eventDetails.organizationName?.ifBlank { DEFAULT.EMPTY_STRING }
 									?: DEFAULT.EMPTY_STRING
-							val ticketId = eventDetails.id?.ifBlank { DEFAULT.EMPTY_STRING }
 								?: DEFAULT.EMPTY_STRING
 							val posterImage =
 								eventDetails.presentation.posterUrl?.ifBlank { DEFAULT.EMPTY_STRING }
