@@ -206,7 +206,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			) != "none"
 		) "m" else "b"
 		addStatsTask = Runnable {
-			if (this::player.isInitialized) {
+			if (player.isPlaying) {
 				currentTime = player.currentTime.toString()
 				duration = player.duration.toString()
 				val playerVersion =
