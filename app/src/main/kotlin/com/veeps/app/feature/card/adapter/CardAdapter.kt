@@ -110,6 +110,9 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 				} else if (screen == Screens.EVENT && railCount == 2 && adapterPosition == 1 && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
 					helper.focusItem()
 					true
+				} else if (screen == Screens.EVENT && railCount == 3 && adapterPosition == 2 && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+					helper.focusItem()
+					true
 				} else {
 					false
 				}
