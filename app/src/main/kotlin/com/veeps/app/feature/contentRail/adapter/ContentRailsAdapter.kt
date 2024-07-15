@@ -39,14 +39,14 @@ class ContentRailsAdapter(
 	}
 
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-		holder.binding.title.text = rails[position].name
+		holder.binding?.title?.text = rails[position].name
 		if (screen == Screens.BROWSE || screen == Screens.SHOWS || screen == Screens.ARTIST || screen == Screens.VENUE || screen == Screens.EVENT) {
-			val params = holder.binding.title.layoutParams as ConstraintLayout.LayoutParams
+			val params = holder.binding?.title?.layoutParams as ConstraintLayout.LayoutParams
 			params.marginStart = context.resources.getDimensionPixelSize(R.dimen.dp75)
 			params.marginEnd = context.resources.getDimensionPixelSize(R.dimen.dp75)
 			holder.binding.title.layoutParams = params
 		}
-		holder.binding.listing.apply {
+		holder.binding?.listing?.apply {
 			itemAnimator = null
 			setNumRows(1)
 			setHasFixedSize(true)
@@ -112,7 +112,7 @@ class ContentRailsAdapter(
 		notifyDataSetChanged()
 	}
 
-	inner class ViewHolder(val binding: RowContentRailBinding) :
-		RecyclerView.ViewHolder(binding.root)
+	inner class ViewHolder(val binding: RowContentRailBinding?) :
+		RecyclerView.ViewHolder(binding?.root!!)
 
 }
