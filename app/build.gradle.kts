@@ -9,6 +9,12 @@ val mainVersionCode = 4
 val mainVersionName = ".3"
 val releaseLabel = "release"
 val debugLabel = "debug"
+val sentryDSN = "https://4d2a4f85354a3244e5c81694a27ffc55@o94174.ingest.sentry.io/4505771878973440"
+val sentryAuthToken = "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"
+val bitmovinStagingKey = "45d90411-99bc-4949-9833-c828ac4a4a22"
+val bitmovinProductionKey = "b41bb56d-b993-40ca-963f-ffa5b5d51e17"
+val bitmovinAnalyticsStagingKey = "\"cd9858a8-f93d-48b9-86b3-23cdc5c4625c\""
+val bitmovinAnalyticsProductionKey = "\"776636a5-66f6-4159-b612-207866230262\""
 
 plugins {
 	id("com.android.application")
@@ -90,12 +96,18 @@ android {
 			versionCode = mainVersionCode
 			signingConfig = signingConfigs.getByName(debugLabel)
 			buildConfigField("Boolean", "isProduction", "false")
+			manifestPlaceholders["SentryDSN"] = sentryDSN
+			manifestPlaceholders["BitmovinKey"] = bitmovinStagingKey
+			buildConfigField("String", "bitmovinAnalyticsKey", bitmovinAnalyticsStagingKey)
 		}
 		create("production") {
 			dimension = "environment"
 			versionCode = mainVersionCode
 			signingConfig = signingConfigs.getByName(releaseLabel)
 			buildConfigField("Boolean", "isProduction", "true")
+			manifestPlaceholders["SentryDSN"] = sentryDSN
+			manifestPlaceholders["BitmovinKey"] = bitmovinProductionKey
+			buildConfigField("String", "bitmovinAnalyticsKey", bitmovinAnalyticsProductionKey)
 		}
 	}
 }
@@ -141,14 +153,14 @@ dependencies {
 	implementation(libs.android.joda)
 
 	/* ExoPlayer */
-	implementation(libs.androidx.media3.exoplayer)
+	/*implementation(libs.androidx.media3.exoplayer)
 	implementation(libs.androidx.media3.exoplayer.dash)
 	implementation(libs.androidx.media3.exoplayer.hls)
 	implementation(libs.androidx.media3.datasource.okhttp)
 	implementation(libs.androidx.media3.ui.leanback)
 	implementation(libs.androidx.media3.ui)
 	implementation(libs.androidx.media3.extractor)
-	implementation(libs.androidx.media3.transformer)
+	implementation(libs.androidx.media3.transformer)*/
 
 	/* Blur */
 	implementation(libs.blurView)
@@ -162,8 +174,13 @@ dependencies {
 	/* Markdown Parser */
 	implementation(libs.markwon.core)
 
+	/* Firebase */
 	implementation(platform(libs.firebase.bom))
 	implementation(libs.firebase.analytics)
+
+	/* Bitmovin */
+	implementation(libs.bitmovin.player)
+	implementation(libs.bitmovin.collector.media3.exoplayer)
 
 	/* Glide */
 	implementation(libs.glide)
@@ -182,7 +199,7 @@ sentry {
 	projectName.set("firetv")
 	includeProguardMapping.set(true)
 	autoUploadProguardMapping.set(true)
-	authToken.set("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")
+	authToken.set(sentryAuthToken)
 	includeSourceContext.set(true)
 	tracingInstrumentation {
 		enabled.set(true)

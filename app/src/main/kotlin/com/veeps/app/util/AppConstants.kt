@@ -37,6 +37,8 @@ object AppConstants {
 	const val userDisplayName: String = "user_display_name"
 	const val userAvatar: String = "user_avatar"
 	const val userTimeZoneAbbr: String = "user_time_zone_abbr"
+	const val drmLicenseURL = "https://widevine-dash.ezdrm.com/proxy?pX=72D27A"
+
 }
 
 object Image {
@@ -97,6 +99,7 @@ object PollingStatus {
 object DEFAULT {
 	const val EMPTY_STRING = ""
 	const val EMPTY_INT = 0
+	const val DOUBLE_VALUE = 0.0
 	const val SEPARATOR = " · "
 }
 

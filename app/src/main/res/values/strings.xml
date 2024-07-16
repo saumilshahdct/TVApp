@@ -7,6 +7,8 @@
 
     <string name="unknown_error">Something went wrong at our end. Please try again later.</string>
     <string name="no_connectivity_error">You are not connected to the internet.</string>
+    <string name="error_message">You are not connected to the internet.</string>
+    <string name="error_description">We’re having trouble playing this video. Please try again or visit veeps.com/help for more information.</string>
 
     <string name="ok_label">OK</string>
     <string name="try_again_label">Try Again</string>

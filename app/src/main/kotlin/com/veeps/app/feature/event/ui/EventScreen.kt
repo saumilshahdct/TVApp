@@ -725,7 +725,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 							val stats =
 								userStatsResponse.userStats.filter { it.eventId == viewModel.eventId }
 							if (stats.size == 1) {
-								val currentStat = (stats[0].cursor / stats[0].duration) * 100
+								val currentStat = (stats[0].cursor / stats[0].duration)
 								if (currentStat < 95 && currentStat > 0) {
 									binding.primaryLabel.text = ButtonLabels.RESUME
 									binding.resumeProgress.visibility = View.VISIBLE
@@ -930,6 +930,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			}
 
 			ButtonLabels.PLAY -> {
+				releaseVideoPlayer()
 				helper.goToVideoPlayer(viewModel.eventId)
 			}
 
