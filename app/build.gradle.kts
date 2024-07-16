@@ -5,8 +5,8 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Properties
 
-val mainVersionCode = 4
-val mainVersionName = ".3"
+val mainVersionCode = 6
+val mainVersionName = ".0.0"
 val releaseLabel = "release"
 val debugLabel = "debug"
 val sentryDSN = "https://4d2a4f85354a3244e5c81694a27ffc55@o94174.ingest.sentry.io/4505771878973440"
@@ -51,7 +51,7 @@ android {
 		minSdk = 24
 		targetSdk = 34
 		versionCode = mainVersionCode
-		versionName = "1"
+		versionName = "2"
 		signingConfig = signingConfigs.getByName(releaseLabel)
 		testFunctionalTest = true
 		testHandleProfiling = true
