@@ -65,6 +65,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 	private var eventDetails: Entities = Entities()
 	private var isEventPurchased: Boolean = false
 	private var rail: ArrayList<RailData> = arrayListOf()
+	private var recommendedRailList: ArrayList<RailData> = arrayListOf()
 	private var recommendedRailData: ArrayList<RailData> = arrayListOf()
 	private val action by lazy {
 		object : AppAction {
@@ -289,6 +290,11 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 							}
 						}
 					}
+				} else if (!rail.none { it.entities.isNotEmpty() } && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+					binding.listing.visibility = View.GONE
+					binding.description.visibility = View.GONE
+					binding.optionsContainer.visibility = View.GONE
+					binding.recommendationListing.requestFocus()
 				}
 			}
 			return@setOnKeyListener false
@@ -296,6 +302,8 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 
 		homeViewModel.focusItem.observe(viewLifecycleOwner) { hasFocus ->
 			if (hasFocus && !binding.description.text.isNullOrBlank()) {
+				binding.description.visibility = View.VISIBLE
+				binding.optionsContainer.visibility = View.VISIBLE
 				binding.description.requestFocus()
 				if (!rail.none { it.entities.isNotEmpty() }) {
 					binding.listing.visibility = View.GONE
@@ -480,6 +488,8 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 	}
 
 	private fun fetchRecommendedContent(eventDetails: Entities) {
+		recommendedRailData = arrayListOf()
+		recommendedRailList = arrayListOf()
 		viewModel.fetchRecommendedContent().observe(viewLifecycleOwner) { recommendedContent ->
 			fetch(
 				recommendedContent,
@@ -665,7 +675,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 					cardType = CardTypes.PORTRAIT,
 					entitiesType = EntityTypes.EVENT
 				)
-				rail.add(recommendedRail)
+				recommendedRailList.add(recommendedRail)
 			}
 		}
 		if (rail.none { it.entities.isNotEmpty() }) {
@@ -673,7 +683,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		} else {
 			binding.listing.apply {
 				layoutParams.height =
-					if (rail.size == 2 || rail.size == 3) context.resources.getDimensionPixelSize(R.dimen.row_height_rail_circle_without_follow) else context.resources.getDimensionPixelSize(
+					if (rail.size == 2) context.resources.getDimensionPixelSize(R.dimen.row_height_rail_circle_without_follow) else context.resources.getDimensionPixelSize(
 						R.dimen.row_height_default
 					)
 				itemAnimator = null
@@ -687,6 +697,23 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				onFlingListener = PagerSnapHelper()
 			}
 			binding.listing.visibility = View.VISIBLE
+		}
+		if (recommendedRailList.none { it.entities.isNotEmpty() }) {
+			binding.recommendationListing.visibility = View.GONE
+		} else {
+			binding.recommendationListing.apply {
+				layoutParams.height = context.resources.getDimensionPixelSize(R.dimen.row_height_rail)
+				itemAnimator = null
+				setNumColumns(1)
+				setHasFixedSize(true)
+				windowAlignment = BaseGridView.WINDOW_ALIGN_HIGH_EDGE
+				windowAlignmentOffsetPercent = 0f
+				isItemAlignmentOffsetWithPadding = true
+				itemAlignmentOffsetPercent = 0f
+				adapter = ContentRailsAdapter(rails = recommendedRailList, helper, Screens.EVENT, action, true)
+				onFlingListener = PagerSnapHelper()
+			}
+			binding.recommendationListing.visibility = View.VISIBLE
 		}
 	}
 

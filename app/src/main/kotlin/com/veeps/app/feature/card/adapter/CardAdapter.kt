@@ -52,6 +52,7 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 	private var isWatchList: Boolean = false
 	private var railCount: Int = 0
 	private var isExpired: Boolean = false
+	private var isRecommended: Boolean = false
 	private var userStats: ArrayList<UserStats> = arrayListOf()
 	private var loopingLimit = 7
 	override fun onCreateViewHolder(
@@ -96,7 +97,10 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 //							else -> false
 //						}
 //				}
-				else if (adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+				else if (isRecommended && adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+					helper.focusItem()
+					true
+				} else if (adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_UP) {
 					helper.translateCarouselToBottom(true)
 					true
 				} else if (adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
@@ -108,9 +112,6 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 						true
 					} else false
 				} else if (screen == Screens.EVENT && railCount == 2 && adapterPosition == 1 && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-					helper.focusItem()
-					true
-				} else if (screen == Screens.EVENT && railCount == 3 && adapterPosition == 2 && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
 					helper.focusItem()
 					true
 				} else {
@@ -403,6 +404,10 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 
 	fun setUserStats(userStats: ArrayList<UserStats>) {
 		this.userStats = userStats
+	}
+
+	fun setIsRecommended(isRecommended: Boolean) {
+		this.isRecommended = isRecommended
 	}
 
 	inner class ViewHolder(val binding: RowCardBinding) : RecyclerView.ViewHolder(binding.root)
