@@ -214,5 +214,9 @@ class APIRepository : BaseDataSource() {
 			)
 		}
 	}
-
+	fun subscriptionMapping(subscriptionMappingRequest: HashMap<String, Any>) = performOperation(APIConstants.subscriptionMapping) {
+		getResult(APIConstants.subscriptionMapping) {
+			APIUtil.service.subscriptionMapping(subscriptionMappingRequest)
+		}
+	}
 }

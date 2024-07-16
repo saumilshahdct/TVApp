@@ -39,6 +39,7 @@ import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.HTTP
+import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -213,5 +214,7 @@ object APIUtil {
 			@Query("s") userType: String
 		): Response<BaseResponseGeneric<Any>>
 
+		@POST(APIConstants.subscriptionMapping)
+		suspend fun subscriptionMapping(@Body hashMap: HashMap<String, Any>): Response<BaseResponseGeneric<Any>>
 	}
 }

@@ -3,6 +3,7 @@ package com.veeps.app.feature.home.viewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.veeps.app.data.common.APIRepository
+import com.veeps.app.feature.contentRail.model.Products
 import com.veeps.app.util.DEFAULT
 
 class HomeViewModel : ViewModel() {
@@ -21,8 +22,10 @@ class HomeViewModel : ViewModel() {
 	val focusItem = MutableLiveData(false)
 	val updateUserStat = MutableLiveData(false)
 	val purchaseAction = MutableLiveData("")
+	var isSubscription : Boolean = false
 
 	var watchlistIds = listOf<String>()
+	var productsList = ArrayList<Products>()
 	var reservedId = ""
 	var receiptId = ""
 	var orderId = ""

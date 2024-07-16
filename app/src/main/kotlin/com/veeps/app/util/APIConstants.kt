@@ -49,4 +49,5 @@ object APIConstants {
 	const val addStats: String = "/addstat"
 	const val fetchCompanions: String = API_VERSION + "me/companion"
 	const val fetchFeaturedContent: String = API_VERSION + "features?scope=search"
+	const val subscriptionMapping: String = API_VERSION + "partner_subscriptions/firetv/mapping"
 }

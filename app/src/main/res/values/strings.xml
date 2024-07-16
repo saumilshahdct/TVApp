@@ -80,5 +80,11 @@
     <string name="turn_chat_off">Turn Chat Off</string>
     <string name="all_done_label">All Done</string>
     <string name="error_label">Error Code: 001</string>
+    <string name="free_for_subscriber">Free For Subscribers</string>
+    <string name="choose_plan">Choose your plan</string>
+    <string name="switch_or_cancel">Switch or cancel anytime</string>
+    <string name="payment_failed">"Payment Failed. Please Try Again."</string>
+    <string name="feature_not_available">This feature is not available</string>
+    <string name="product_not_available">Product Data not Available</string>
 
 </resources>

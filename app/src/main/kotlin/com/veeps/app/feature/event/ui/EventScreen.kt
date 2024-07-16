@@ -6,6 +6,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.ViewOutlineProvider
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.leanback.widget.BaseGridView
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE
@@ -32,6 +33,7 @@ import com.veeps.app.feature.contentRail.model.Entities
 import com.veeps.app.feature.contentRail.model.Products
 import com.veeps.app.feature.contentRail.model.RailData
 import com.veeps.app.feature.event.viewModel.EventViewModel
+import com.veeps.app.feature.subscription.ui.SubscriptionScreen
 import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppAction
 import com.veeps.app.util.AppConstants
@@ -164,6 +166,11 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		binding.primary.clipToOutline = true
 		binding.primary.setBlurEnabled(true)
 
+		binding.subscribe.setupWith(binding.layoutContainer).setBlurRadius(12.5f)
+		binding.subscribe.outlineProvider = ViewOutlineProvider.BACKGROUND
+		binding.subscribe.clipToOutline = true
+		binding.subscribe.setBlurEnabled(true)
+
 		binding.myShows.setupWith(binding.layoutContainer).setBlurRadius(12.5f)
 		binding.myShows.outlineProvider = ViewOutlineProvider.BACKGROUND
 		binding.myShows.clipToOutline = true
@@ -203,6 +210,17 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 						if (hasFocus) R.color.dark_black else if (binding.primaryLabel.isSelected) R.color.white_30 else R.color.white
 					)
 				)
+
+			}
+		}
+		binding.subscribe.setOnFocusChangeListener { _, hasFocus ->
+			context?.let { context ->
+				binding.subscribeLabel.setTextColor(
+					ContextCompat.getColor(
+						context,
+						if (hasFocus) R.color.dark_black else if (binding.subscribeLabel.isSelected) R.color.white_30 else R.color.white
+					)
+				)
 			}
 		}
 		binding.myShows.setOnFocusChangeListener { _, hasFocus ->
@@ -230,6 +248,24 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		}
 
 		binding.primary.setOnKeyListener { _, keyCode, keyEvent ->
+			if (keyEvent.action == KeyEvent.ACTION_DOWN) {
+				if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+					if (rail.none { it.entities.isNotEmpty() }) {
+						if (!binding.description.text.isNullOrBlank()) {
+							if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && player.isPlaying) {
+								player.pause()
+							}
+							binding.description.requestFocus()
+							binding.darkBackground.visibility = View.VISIBLE
+							binding.carousel.visibility = View.GONE
+						}
+					}
+				}
+			}
+			return@setOnKeyListener false
+		}
+
+		binding.subscribe.setOnKeyListener { _, keyCode, keyEvent ->
 			if (keyEvent.action == KeyEvent.ACTION_DOWN) {
 				if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
 					if (rail.none { it.entities.isNotEmpty() }) {
@@ -369,6 +405,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			} else {
 				when (it) {
 					"PURCHASED" -> {
+						if (!homeViewModel.isSubscription)
 						createOrder()
 					}
 
@@ -517,6 +554,15 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				AppConstants.userSubscriptionStatus, "none"
 			) != "none"
 		) View.VISIBLE else View.GONE
+		binding.subscribe.alpha = 1.0f
+		binding.subscribeLabel.text = getString(
+			R.string.free_for_subscriber
+		)
+		binding.subscribe.visibility = if (AppPreferences.get(
+				AppConstants.userSubscriptionStatus, "none"
+			) == "none"
+		) View.VISIBLE else View.GONE
+
 		setupMyShows(isAdded = homeViewModel.watchlistIds.contains(eventDetails.id))
 
 		val currentDate = DateTime.now()
@@ -720,6 +766,16 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 							)
 						}
 					}
+					context?.let { context ->
+						binding.subscribeLabel.compoundDrawables.forEach { drawable ->
+							drawable?.setTint(
+								ContextCompat.getColor(
+									context,
+									if ((binding.subscribe.isFocused).or(binding.subscribe.hasFocus())) R.color.dark_black else R.color.white
+								)
+							)
+						}
+					}
 				}
 			}
 	}
@@ -856,6 +912,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			) {
 				createOrder.response?.let {
 					it.data?.let {
+						homeViewModel.purchaseAction.postValue(null)
 						fetchEventStreamDetails()
 						binding.paymentLoader.visibility = View.GONE
 					} ?: run { binding.paymentLoader.visibility = View.GONE }
@@ -867,6 +924,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 	fun onPrimaryClicked(tag: Any?) {
 		when (tag) {
 			ButtonLabels.BUY_TICKET -> {
+				homeViewModel.isSubscription = false
 				binding.paymentLoader.visibility = View.VISIBLE
 				clearAllReservations()
 			}
@@ -898,5 +956,11 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				claimFreeTicketForEvent()
 			}
 		}
+	}
+	fun onSubscribe() {
+		homeViewModel.isSubscription = true
+		helper.setupPageChange(
+			true, SubscriptionScreen::class.java, bundleOf(), Screens.SUBSCRIPTION, true
+		)
 	}
 }
