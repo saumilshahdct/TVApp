@@ -551,7 +551,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 			override fun signal(pubnub: PubNub, pnSignalResult: PNSignalResult) {
 				when (pnSignalResult.message.asJsonObject.get("ls").asString) {
-					LastSignalTypes.DISCONNECTED, LastSignalTypes.NO_SIGNAL -> {
+					LastSignalTypes.DISCONNECTED -> {
 						binding.videoPlayer.player?.pause()
 						binding.standBy.visibility = View.VISIBLE
 						binding.topControls.visibility = View.VISIBLE
