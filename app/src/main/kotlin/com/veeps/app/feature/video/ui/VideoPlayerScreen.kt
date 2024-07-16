@@ -376,7 +376,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		playerView = binding.videoPlayer
 		playerView.isUiVisible = false
-
 		player = PlayerBuilder(this).setPlayerConfig(createPlayerConfig())
 			.configureAnalytics(AnalyticsConfig(analyticsKey)).build()
 		binding.videoPlayer.player = player
@@ -421,6 +420,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				statsManagement.removeCallbacks(addStatsTask)
 				statsManagement.removeCallbacksAndMessages(addStatsTask)
 			}
+
 			binding.playPause.isSelected = false
 		}
 		player.on<PlayerEvent.PlaybackFinished> {
@@ -551,7 +551,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 			override fun signal(pubnub: PubNub, pnSignalResult: PNSignalResult) {
 				when (pnSignalResult.message.asJsonObject.get("ls").asString) {
-					LastSignalTypes.DISCONNECTED -> {
+					LastSignalTypes.DISCONNECTED, LastSignalTypes.NO_SIGNAL -> {
 						binding.videoPlayer.player?.pause()
 						binding.standBy.visibility = View.VISIBLE
 						binding.topControls.visibility = View.VISIBLE
