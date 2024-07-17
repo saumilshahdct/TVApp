@@ -521,7 +521,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		binding.playPause.requestFocus()
 	}
 
-	private fun initPubNub() {
+	private fun initPubNub(eventDetails: Entities) {
 		if (this::pubnub.isInitialized && this::pubNubListener.isInitialized) pubnub.removeListener(
 			pubNubListener
 		)
@@ -609,6 +609,31 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 					LastSignalTypes.CHAT_MESSAGE_DELETED -> {
 
+					}
+
+					LastSignalTypes.STREAM_ENDED -> {
+						binding.standBy.visibility = View.GONE
+
+						if (eventDetails.eventReWatchDuration.isNullOrBlank()) {
+							binding.reWatch.text = getString(R.string.re_watch_not_available)
+						} else {
+							val reWatchDuration =
+								eventDetails.eventReWatchDuration!!.ifBlank { "0" }.toInt()
+							if (reWatchDuration == 0) {
+								binding.reWatch.text = getString(R.string.re_watch_not_available)
+							} else {
+								val reWatchDurationString =
+									AppUtil.calculateReWatchTime(reWatchDuration)
+								binding.reWatch.text = getString(
+									R.string.re_watch_available_for_time, reWatchDurationString
+								)
+							}
+						}
+						showError(
+							Screens.STREAM_END,
+							"Thanks for watching the show!",
+							"Hang tight, rewatch available soon"
+						)
 					}
 				}
 			}
@@ -807,7 +832,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					.or(status.contains(EventTypes.ENDED, true))
 			)
 		) {
-			initPubNub()
+			initPubNub(eventDetails)
 			binding.chat.visibility =
 				if (isChatEnabled && binding.chatToggle.isSelected) View.VISIBLE else View.GONE
 		}
@@ -848,7 +873,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					}
 					showError(
 						Screens.STREAM_END,
-						"Thanks for watching the show!",
+						getString(R.string.event_ended),
 						"Hang tight, rewatch available soon"
 					)
 				}
