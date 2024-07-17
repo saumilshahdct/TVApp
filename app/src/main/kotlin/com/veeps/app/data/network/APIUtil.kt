@@ -215,5 +215,8 @@ object APIUtil {
 
 		@GET(APIConstants.fetchRecommendedContent)
 		suspend fun fetchRecommendedContent(@Query("scope") scope: String): Response<RailResponse>
+
+		@POST(APIConstants.subscriptionMapping)
+		suspend fun subscriptionMapping(@Body hashMap: HashMap<String, Any>): Response<BaseResponseGeneric<Any>>
 	}
 }

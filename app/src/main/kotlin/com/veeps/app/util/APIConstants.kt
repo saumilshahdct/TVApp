@@ -50,4 +50,5 @@ object APIConstants {
 	const val fetchCompanions: String = API_VERSION + "me/companion"
 	const val fetchFeaturedContent: String = API_VERSION + "features?scope=search"
 	const val fetchRecommendedContent: String = API_VERSION + "features"
+	const val subscriptionMapping: String = API_VERSION + "partner_subscriptions/firetv/mapping"
 }

@@ -221,4 +221,11 @@ class APIRepository : BaseDataSource() {
 				APIUtil.service.fetchRecommendedContent(scope)
 			}
 		}
+
+	fun subscriptionMapping(subscriptionMappingRequest: HashMap<String, Any>) =
+		performOperation(APIConstants.subscriptionMapping) {
+			getResult(APIConstants.subscriptionMapping) {
+				APIUtil.service.subscriptionMapping(subscriptionMappingRequest)
+			}
+		}
 }
