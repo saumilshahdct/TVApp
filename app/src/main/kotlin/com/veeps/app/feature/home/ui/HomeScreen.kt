@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import com.amazon.device.iap.PurchasingListener
 import com.amazon.device.iap.PurchasingService
 import com.amazon.device.iap.model.FulfillmentResult
+import com.amazon.device.iap.model.Product
 import com.amazon.device.iap.model.ProductDataResponse
 import com.amazon.device.iap.model.PurchaseResponse
 import com.amazon.device.iap.model.PurchaseUpdatesResponse
@@ -27,6 +28,7 @@ import com.veeps.app.extension.showToast
 import com.veeps.app.extension.transformWidth
 import com.veeps.app.feature.artist.ui.ArtistScreen
 import com.veeps.app.feature.browse.ui.BrowseScreen
+import com.veeps.app.feature.contentRail.model.Products
 import com.veeps.app.feature.event.ui.EventScreen
 import com.veeps.app.feature.home.viewModel.HomeViewModel
 import com.veeps.app.feature.intro.ui.IntroScreen
@@ -41,16 +43,18 @@ import com.veeps.app.util.AppHelper
 import com.veeps.app.util.AppPreferences
 import com.veeps.app.util.DEFAULT
 import com.veeps.app.util.Logger
+import com.veeps.app.util.PurchaseType
 import com.veeps.app.util.Screens
+import com.veeps.app.util.SubscriptionPlanDetails
+import com.veeps.app.util.SubscriptionPlanSKUs
 import com.veeps.app.widget.navigationMenu.NavigationItem
 import com.veeps.app.widget.navigationMenu.NavigationItems
 import kotlin.system.exitProcess
 
 
 class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), NavigationItem,
-	AppHelper, PurchasingListener {
+	AppHelper {
 
-	private var currentUserId: String = DEFAULT.EMPTY_STRING
 	private var currentMarketplace: String = DEFAULT.EMPTY_STRING
 
 	private fun getBackCallback(): OnBackPressedCallback {
@@ -142,6 +146,13 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 			}
 
 			Screens.BROWSE -> {
+				viewModel.errorPositiveLabel.postValue(getString(R.string.ok_label))
+				viewModel.errorNegativeLabel.postValue(getString(R.string.cancel_label))
+				viewModel.isErrorPositiveApplicable.postValue(true)
+				viewModel.isErrorNegativeApplicable.postValue(false)
+			}
+
+			Screens.SUBSCRIPTION -> {
 				viewModel.errorPositiveLabel.postValue(getString(R.string.ok_label))
 				viewModel.errorNegativeLabel.postValue(getString(R.string.cancel_label))
 				viewModel.isErrorPositiveApplicable.postValue(true)
@@ -593,69 +604,116 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	private fun initiateIAP() {
-		PurchasingService.registerListener(this@HomeScreen, this@HomeScreen)
+		PurchasingService.registerListener(this@HomeScreen, object: PurchasingListener {
+			override fun onUserDataResponse(response: UserDataResponse?) {
+				when (response?.requestStatus) {
+					UserDataResponse.RequestStatus.SUCCESSFUL -> {
+						currentMarketplace = response.userData.marketplace
+					}
+
+					UserDataResponse.RequestStatus.FAILED, UserDataResponse.RequestStatus.NOT_SUPPORTED, null -> {
+					}
+				}
+			}
+
+			override fun onProductDataResponse(productDataResponse: ProductDataResponse?) {
+				when (productDataResponse?.requestStatus) {
+					ProductDataResponse.RequestStatus.SUCCESSFUL -> {
+						productDataResponse.let {
+							val productData: List<String> = productDataResponse.productData.keys.toList()
+							productData.forEach { productKey ->
+								val product: Product? = productDataResponse.productData?.get(productKey)
+								if (product?.productType.toString() == PurchaseType.SUBSCRIPTION) {
+									val planTitle = product?.title
+									val planPrice =  product?.price ?: if (product?.sku == SubscriptionPlanSKUs.MONTHLY_SUBSCRIPTION) SubscriptionPlanDetails.MONTHLY_PLAN_PRICE else SubscriptionPlanDetails.YEARLY_PLAN_PRICE
+									val planSKUId = product?.sku
+									val planDescription = product?.description
+									if (!viewModel.productsList.contains(Products(
+											id = planSKUId
+										))){
+										viewModel.productsList.add(
+											Products(
+												id = planSKUId,
+												name = planTitle,
+												description = planDescription,
+												price = planPrice
+											)
+										)
+									}
+								}
+							}
+						}
+					}
+
+					ProductDataResponse.RequestStatus.FAILED, ProductDataResponse.RequestStatus.NOT_SUPPORTED, null -> {
+						Logger.print(
+							"product data not available"
+						)
+					}
+				}
+
+			}
+
+			override fun onPurchaseResponse(purchaseResponse: PurchaseResponse?) {
+				when (purchaseResponse?.requestStatus) {
+					PurchaseResponse.RequestStatus.SUCCESSFUL -> {
+						viewModel.receiptId = purchaseResponse.receipt.receiptId
+						viewModel.purchaseAction.postValue("PURCHASED")
+						if (!viewModel.isSubscription) {
+							PurchasingService.notifyFulfillment(
+								viewModel.receiptId, FulfillmentResult.FULFILLED
+							)
+						}
+					}
+
+					PurchaseResponse.RequestStatus.FAILED -> {
+						viewModel.purchaseAction.postValue("FAILED")
+					}
+
+					else -> {
+						viewModel.purchaseAction.postValue("FAILED")
+					}
+				}
+			}
+
+			override fun onPurchaseUpdatesResponse(response: PurchaseUpdatesResponse?) {
+				when (response?.requestStatus) {
+					PurchaseUpdatesResponse.RequestStatus.SUCCESSFUL -> {
+						for (receipt in response.getReceipts()) {
+							if (!receipt.isCanceled) {
+								viewModel.receiptId = receipt.receiptId
+							}
+						}
+						if (response.hasMore()) {
+							PurchasingService.getPurchaseUpdates(true)
+						}
+					}
+
+					PurchaseUpdatesResponse.RequestStatus.FAILED -> {
+					}
+
+					else -> {
+					}
+				}
+			}
+
+		})
 		PurchasingService.enablePendingPurchases()
+		fetchProduct()
 		PurchasingService.getUserData()
 		PurchasingService.getPurchaseUpdates(true)
 	}
 
-	fun fetchProduct() {
-		val productSkus = hashSetOf("parentSKU")
-		PurchasingService.getProductData(productSkus)
+	private fun fetchProduct() {
+		val productSKUs =
+			hashSetOf(SubscriptionPlanSKUs.MONTHLY_SUBSCRIPTION, SubscriptionPlanSKUs.YEARLY_SUBSCRIPTION)
+		if (isFireTV) {
+			PurchasingService.getProductData(productSKUs)
+		}
 	}
 
 	fun purchaseProduct() {
 		PurchasingService.purchase("parentSKU")
-	}
-
-	override fun onUserDataResponse(response: UserDataResponse?) {
-		when (response?.requestStatus) {
-			UserDataResponse.RequestStatus.SUCCESSFUL -> {
-				currentUserId = response.userData.userId
-				currentMarketplace = response.userData.marketplace
-			}
-
-			UserDataResponse.RequestStatus.FAILED, UserDataResponse.RequestStatus.NOT_SUPPORTED, null -> {
-			}
-		}
-	}
-
-	override fun onProductDataResponse(productDataResponse: ProductDataResponse?) {}
-
-	override fun onPurchaseResponse(purchaseResponse: PurchaseResponse?) {
-		when (purchaseResponse?.requestStatus) {
-			PurchaseResponse.RequestStatus.SUCCESSFUL -> {
-				viewModel.receiptId = purchaseResponse.receipt.receiptId
-				viewModel.purchaseAction.postValue("PURCHASED")
-				PurchasingService.notifyFulfillment(
-					purchaseResponse.receipt.receiptId, FulfillmentResult.FULFILLED
-				)
-			}
-
-			PurchaseResponse.RequestStatus.FAILED -> {
-				viewModel.purchaseAction.postValue("FAILED")
-			}
-
-			else -> {
-				viewModel.purchaseAction.postValue("FAILED")
-			}
-		}
-	}
-
-	override fun onPurchaseUpdatesResponse(response: PurchaseUpdatesResponse?) {
-		when (response?.requestStatus) {
-			PurchaseUpdatesResponse.RequestStatus.SUCCESSFUL -> {
-				if (response.hasMore()) {
-					PurchasingService.getPurchaseUpdates(true)
-				}
-			}
-
-			PurchaseUpdatesResponse.RequestStatus.FAILED -> {
-			}
-
-			else -> {
-			}
-		}
 	}
 
 	override fun onResume() {

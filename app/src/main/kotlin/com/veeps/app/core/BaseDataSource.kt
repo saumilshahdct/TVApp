@@ -37,13 +37,12 @@ abstract class BaseDataSource {
 										return Resource.success(tag, response.body()!!)
 									}
 								}
-							} ?: return Resource.error(
-								tag, Veeps.appContext.getString(R.string.unknown_error)
-							)
+							} ?: return Resource.error(tag, Veeps.appContext.getString(R.string.unknown_error))
 						}
-
 						else -> {
-							if (tag == APIConstants.removeWatchListEvents) {
+							if (response.code() == 201 && tag == APIConstants.subscriptionMapping) {
+								return Resource.successWithNullResponse(tag, response.body())
+							} else if (tag == APIConstants.removeWatchListEvents) {
 								return Resource.successWithNullResponse(tag, response.body())
 							} else {
 								response.body()?.let {
@@ -81,9 +80,7 @@ abstract class BaseDataSource {
 										}
 									}
 									return Resource.error(tag, error)
-								}
-
-								else -> {
+								} else -> {
 									var error: String =
 										Veeps.appContext.getString(R.string.unknown_error)
 									response.errorBody()?.let { errorBody ->

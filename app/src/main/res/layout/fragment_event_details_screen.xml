@@ -156,13 +156,57 @@
                     android:paddingBottom="8dp"
                     app:blurOverlayColor="@color/white_10"
                     app:layout_constraintBottom_toTopOf="@id/resumeProgress"
-                    app:layout_constraintEnd_toStartOf="@+id/my_shows"
+                    app:layout_constraintEnd_toStartOf="@+id/subscribe"
                     app:layout_constraintHorizontal_chainStyle="packed"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent">
 
                     <TextView
                         android:id="@+id/primary_label"
+                        fontPath="fonts/SaansMedium.ttf"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:includeFontPadding="false"
+                        android:letterSpacing="0.03"
+                        android:lines="1"
+                        android:paddingBottom="1dp"
+                        android:textAlignment="gravity"
+                        android:textAllCaps="false"
+                        android:textColor="@color/selector_button_label_carousel"
+                        android:textIsSelectable="false"
+                        android:textSize="13sp"
+                        tools:ignore="MissingPrefix" />
+
+                </eightbitlab.com.blurview.BlurView>
+
+                <eightbitlab.com.blurview.BlurView
+                    android:id="@+id/subscribe"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/selector_browse_button_background"
+                    android:elevation="2dp"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:onClick="@{(v)-> eventScreen.onSubscribe()}"
+                    android:paddingStart="20dp"
+                    android:paddingTop="8dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="8dp"
+                    app:blurOverlayColor="@color/white_10"
+                    app:layout_constraintBottom_toTopOf="@id/resumeProgress"
+                    app:layout_constraintEnd_toStartOf="@+id/my_shows"
+                    app:layout_constraintHorizontal_chainStyle="packed"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <TextView
+                        android:id="@+id/subscribe_label"
                         fontPath="fonts/SaansMedium.ttf"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
@@ -223,7 +267,7 @@
                     app:blurOverlayColor="@color/white_10"
                     app:layout_constraintBottom_toTopOf="@id/resumeProgress"
                     app:layout_constraintEnd_toStartOf="@+id/date"
-                    app:layout_constraintStart_toEndOf="@+id/primary"
+                    app:layout_constraintStart_toEndOf="@+id/subscribe"
                     app:layout_constraintTop_toTopOf="parent">
 
                     <TextView

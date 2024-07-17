@@ -89,7 +89,7 @@
 
         <meta-data
             android:name="io.sentry.attach-screenshot"
-            android:value="true" />
+            android:value="false" />
 
         <!-- enable view hierarchy for crashes -->
         <meta-data
@@ -131,6 +131,10 @@
             </intent-filter>
         </receiver>
 
+        <!-- bitmovin license key -->
+        <meta-data
+            android:name="BITMOVIN_PLAYER_LICENSE_KEY"
+            android:value="${BitmovinKey}"/>
     </application>
 
 </manifest>

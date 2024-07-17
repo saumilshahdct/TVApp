@@ -7,6 +7,8 @@
 
     <string name="unknown_error">Something went wrong at our end. Please try again later.</string>
     <string name="no_connectivity_error">You are not connected to the internet.</string>
+    <string name="error_message">You are not connected to the internet.</string>
+    <string name="error_description">We’re having trouble playing this video. Please try again or visit veeps.com/help for more information.</string>
 
     <string name="ok_label">OK</string>
     <string name="try_again_label">Try Again</string>
@@ -80,5 +82,11 @@
     <string name="turn_chat_off">Turn Chat Off</string>
     <string name="all_done_label">All Done</string>
     <string name="error_label">Error Code: 001</string>
+    <string name="free_for_subscriber">Free For Subscribers</string>
+    <string name="choose_plan">Choose your plan</string>
+    <string name="switch_or_cancel">Switch or cancel anytime</string>
+    <string name="payment_failed">"Payment Failed. Please Try Again."</string>
+    <string name="feature_not_available">This feature is not available</string>
+    <string name="product_not_available">Product Data not Available</string>
 
 </resources>
