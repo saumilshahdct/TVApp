@@ -7,7 +7,6 @@ object AppConstants {
 	const val TAG: String = "VeepsAppTag"
 	const val deviceType: String = "fireTv"
 	const val deviceName: String = "Amazon Fire TV"
-	const val event: String = "event_"
 	const val clientId: String = "40a3903ae06585f0c114464750d605bba618afd01159f4eefef68c255c746a89"
 	const val clientSecret: String =
 		"0db660fe553f3fe5fba3f0c7270a7a20c31ef49f27167bbde9ce905777a5aaac"

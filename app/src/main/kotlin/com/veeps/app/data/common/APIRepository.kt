@@ -215,7 +215,7 @@ class APIRepository : BaseDataSource() {
 		}
 	}
 
-	fun fetchRecommendedData(scope: String) =
+	fun fetchRecommendedContent(scope: String) =
 		performOperation(APIConstants.fetchRecommendedContent) {
 			getResult(APIConstants.fetchRecommendedContent) {
 				APIUtil.service.fetchRecommendedContent(scope)

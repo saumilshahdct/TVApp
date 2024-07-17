@@ -290,7 +290,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 							}
 						}
 					}
-				} else if (!rail.none { it.entities.isNotEmpty() } && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+				} else if (!recommendedRailList.none { it.entities.isNotEmpty() } && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
 					binding.listing.visibility = View.GONE
 					binding.description.visibility = View.GONE
 					binding.optionsContainer.visibility = View.GONE
@@ -668,10 +668,10 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 
 		if (recommendedRailData.isNotEmpty()) {
 			recommendedRailData.let { recommendedData ->
-				val recommendedRailData = recommendedData.get(0)
+				val railData = recommendedData.first()
 				val recommendedRail = RailData(
-					name = recommendedRailData.name,
-					entities = recommendedRailData.entities,
+					name = railData.name,
+					entities = railData.entities,
 					cardType = CardTypes.PORTRAIT,
 					entitiesType = EntityTypes.EVENT
 				)
