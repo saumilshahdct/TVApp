@@ -787,8 +787,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		signalChannel = eventDetails.chat.chatChannels.signals ?: DEFAULT.EMPTY_STRING
 		playbackStream =
 			eventDetails.playback.widevineUrl?.ifBlank { eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING } }
-				?: DEFAULT.EMPTY_STRING
-		eventDetails.playback.widevineUrl.isNullOrBlank()
+				?: eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING }
+						?: DEFAULT.EMPTY_STRING
 		if (!eventDetails.playback.widevineUrl.isNullOrBlank()) isDrmAvailable = true
 		eventDetails.playback.ads.let { ads ->
 			for (ad in ads) {
