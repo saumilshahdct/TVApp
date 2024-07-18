@@ -453,9 +453,7 @@ object AppUtil {
 		return when (onSaleStatus) {
 			"free_livestream" -> {
 				if (screen == Screens.BROWSE) {
-					if (isEventStarted) ButtonLabels.GET_TICKETS
-					else if (isUserSubscribed) ButtonLabels.GO_TO_EVENT
-					else ButtonLabels.GET_TICKETS
+					ButtonLabels.GO_TO_EVENT
 				} else {
 					if (isUserSubscribed || isEventPurchased) {
 						if (isEventStarted) {
@@ -471,8 +469,7 @@ object AppUtil {
 
 			"free_ondemand" -> {
 				if (screen == Screens.BROWSE) {
-					if (isUserSubscribed) ButtonLabels.GO_TO_EVENT
-					else ButtonLabels.GET_TICKETS
+					ButtonLabels.GO_TO_EVENT
 				} else {
 					if (isUserSubscribed || isEventPurchased) {
 						if (isEventStarted) {
@@ -514,12 +511,11 @@ object AppUtil {
 						}
 					} else {
 						if (isUserSubscribed) when (userEventAccess) {
-							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
-							EventAccessType.PAID -> ButtonLabels.GET_TICKETS
+							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE, EventAccessType.PAID -> ButtonLabels.GO_TO_EVENT
 							else -> ButtonLabels.UNAVAILABLE
 						}
 						else when (userEventAccess) {
-							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.PAID, EventAccessType.FREE -> ButtonLabels.GET_TICKETS
+							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.PAID, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
 							EventAccessType.VEEPS_PLUS -> ButtonLabels.UNAVAILABLE
 							else -> ButtonLabels.UNAVAILABLE
 						}
@@ -549,12 +545,11 @@ object AppUtil {
 			"on_sale_ondemand" -> {
 				if (screen == Screens.BROWSE) {
 					if (isUserSubscribed) when (userEventAccess) {
-						EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
-						EventAccessType.PAID -> ButtonLabels.GET_TICKETS
+						EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE, EventAccessType.PAID -> ButtonLabels.GO_TO_EVENT
 						else -> ButtonLabels.UNAVAILABLE
 					}
 					else when (userEventAccess) {
-						EventAccessType.VEEPS_PLUS_PAID, EventAccessType.PAID, EventAccessType.FREE -> ButtonLabels.GET_TICKETS
+						EventAccessType.VEEPS_PLUS_PAID, EventAccessType.PAID, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
 						EventAccessType.VEEPS_PLUS -> ButtonLabels.UNAVAILABLE
 						else -> ButtonLabels.UNAVAILABLE
 					}
@@ -581,23 +576,21 @@ object AppUtil {
 				if (screen == Screens.BROWSE) {
 					if (isEventStarted) {
 						if (isUserSubscribed) when (userEventAccess) {
-							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
-							EventAccessType.PAID -> ButtonLabels.GET_TICKETS
+							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE, EventAccessType.PAID  -> ButtonLabels.GO_TO_EVENT
 							else -> ButtonLabels.UNAVAILABLE
 						}
 						else when (userEventAccess) {
-							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.PAID, EventAccessType.FREE -> ButtonLabels.GET_TICKETS
+							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.PAID, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
 							EventAccessType.VEEPS_PLUS -> ButtonLabels.UNAVAILABLE
 							else -> ButtonLabels.UNAVAILABLE
 						}
 					} else {
 						if (isUserSubscribed) when (userEventAccess) {
-							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
-							EventAccessType.PAID -> ButtonLabels.GET_TICKETS
+							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE, EventAccessType.PAID -> ButtonLabels.GO_TO_EVENT
 							else -> ButtonLabels.UNAVAILABLE
 						}
 						else when (userEventAccess) {
-							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.PAID, EventAccessType.FREE -> ButtonLabels.GET_TICKETS
+							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.PAID, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
 							EventAccessType.VEEPS_PLUS -> ButtonLabels.UNAVAILABLE
 							else -> ButtonLabels.UNAVAILABLE
 						}
@@ -623,12 +616,11 @@ object AppUtil {
 			"protected_ondemand" -> {
 				if (screen == Screens.BROWSE) {
 					if (isUserSubscribed) when (userEventAccess) {
-						EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
-						EventAccessType.PAID -> ButtonLabels.GET_TICKETS
+						EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE, EventAccessType.PAID -> ButtonLabels.GO_TO_EVENT
 						else -> ButtonLabels.UNAVAILABLE
 					}
 					else when (userEventAccess) {
-						EventAccessType.VEEPS_PLUS_PAID, EventAccessType.PAID, EventAccessType.FREE -> ButtonLabels.GET_TICKETS
+						EventAccessType.VEEPS_PLUS_PAID, EventAccessType.PAID, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
 						EventAccessType.VEEPS_PLUS -> ButtonLabels.UNAVAILABLE
 						else -> ButtonLabels.UNAVAILABLE
 					}
@@ -709,8 +701,7 @@ object AppUtil {
 				if (screen == Screens.BROWSE) {
 					if (isEventStarted) {
 						if (isUserSubscribed) when (userEventAccess) {
-							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
-							EventAccessType.PAID -> ButtonLabels.GET_TICKETS
+							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE, EventAccessType.PAID -> ButtonLabels.GO_TO_EVENT
 							else -> ButtonLabels.UNAVAILABLE
 						}
 						else when (userEventAccess) {
@@ -720,12 +711,11 @@ object AppUtil {
 						}
 					} else {
 						if (isUserSubscribed) when (userEventAccess) {
-							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
-							EventAccessType.PAID -> ButtonLabels.GET_TICKETS
+							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE, EventAccessType.PAID -> ButtonLabels.GO_TO_EVENT
 							else -> ButtonLabels.UNAVAILABLE
 						}
 						else when (userEventAccess) {
-							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.PAID, EventAccessType.FREE -> ButtonLabels.GET_TICKETS
+							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.PAID, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
 							EventAccessType.VEEPS_PLUS -> ButtonLabels.UNAVAILABLE
 							else -> ButtonLabels.UNAVAILABLE
 						}
@@ -755,8 +745,7 @@ object AppUtil {
 			"sub_ondemand" -> {
 				if (screen == Screens.BROWSE) {
 					if (isUserSubscribed) when (userEventAccess) {
-						EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE -> ButtonLabels.GO_TO_EVENT
-						EventAccessType.PAID -> ButtonLabels.GET_TICKETS
+						EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE, EventAccessType.PAID -> ButtonLabels.GO_TO_EVENT
 						else -> ButtonLabels.UNAVAILABLE
 					}
 					else when (userEventAccess) {
@@ -839,7 +828,7 @@ object AppUtil {
 
 			else -> {
 				if (screen == Screens.BROWSE) {
-					ButtonLabels.GET_TICKETS
+					ButtonLabels.GO_TO_EVENT
 				} else {
 					ButtonLabels.UNAVAILABLE
 				}
@@ -861,5 +850,14 @@ object AppUtil {
 				}
 			}
 		}
+	}
+	fun isEventStarted(streamStartAt: String): Boolean {
+		val currentDate = DateTime.now()
+		val streamStartsAtDate =
+			DateTime(streamStartAt, DateTimeZone.UTC).withZone(DateTimeZone.getDefault())
+				.toDateTime()
+		val isEventStarted =
+			compare(streamStartsAtDate, currentDate) != DateTimeCompareDifference.GREATER_THAN
+		return isEventStarted
 	}
 }

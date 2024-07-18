@@ -7,7 +7,6 @@ object AppConstants {
 	const val TAG: String = "VeepsAppTag"
 	const val deviceType: String = "fireTv"
 	const val deviceName: String = "Amazon Fire TV"
-
 	const val clientId: String = "40a3903ae06585f0c114464750d605bba618afd01159f4eefef68c255c746a89"
 	const val clientSecret: String =
 		"0db660fe553f3fe5fba3f0c7270a7a20c31ef49f27167bbde9ce905777a5aaac"
@@ -37,6 +36,8 @@ object AppConstants {
 	const val userDisplayName: String = "user_display_name"
 	const val userAvatar: String = "user_avatar"
 	const val userTimeZoneAbbr: String = "user_time_zone_abbr"
+	const val drmLicenseURL = "https://widevine-dash.ezdrm.com/proxy?pX=72D27A"
+
 }
 
 object Image {
@@ -85,6 +86,7 @@ object IntValue {
 	const val NUMBER_1000 = 1000
 	const val NUMBER_2000 = 2000
 	const val NUMBER_5000 = 5000
+	const val NUMBER_15000 = 15000
 }
 
 object PollingStatus {
@@ -96,6 +98,7 @@ object PollingStatus {
 object DEFAULT {
 	const val EMPTY_STRING = ""
 	const val EMPTY_INT = 0
+	const val DOUBLE_VALUE = 0.0
 	const val SEPARATOR = " · "
 }
 
@@ -153,6 +156,7 @@ object Screens {
 	const val EXIT_APP = "EXIT_APP"
 	const val PLAYER_ERROR = "PLAYER_ERROR"
 	const val STREAM_END = "STREAM_END"
+	const val SUBSCRIPTION = "SUBSCRIPTION"
 }
 
 object EntityTypes {
@@ -228,4 +232,24 @@ object UserType {
 	const val VEEPS_PAID_SUBSCRIBER = "m"
 	const val VEEPS_TICKETS_HOLDER = "b"
 	const val VEEPS_FREE_TIER = "f"
+}
+
+object SubscriptionPlanSKUs {
+	const val MONTHLY_SUBSCRIPTION = "VP-M-77-US"
+	const val YEARLY_SUBSCRIPTION = "VP-Y-89-US"
+}
+
+object PurchaseType {
+	const val SUBSCRIPTION = "SUBSCRIPTION"
+	const val ONE_TIME_PURCHASE = "ONE_TIME_PURCHASE"
+}
+object SubscriptionPlanDetails {
+	const val MONTHLY_PLAN_NAME = "Monthly"
+	const val YEARLY_PLAN_NAME = "Yearly"
+	const val MONTHLY_PLAN_PRICE = "11.99"
+	const val YEARLY_PLAN_PRICE = "120"
+	const val PLAN_BENEFIT_ONE = "See every live show and rewatch for longer"
+	const val PLAN_BENEFIT_TWO = "Enjoy 3000 hours of on-demand shows"
+	const val PLAN_BENEFIT_THREE = "Unlock exclusive content from your favorite artists"
+	const val PLAN_BENEFIT_FOURE = "Stream on your Fire TV"
 }
