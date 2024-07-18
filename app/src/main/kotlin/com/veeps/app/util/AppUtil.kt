@@ -369,7 +369,8 @@ object AppUtil {
 				entity.subscriberAccessEndsAt, DateTimeZone.UTC
 			).withZone(DateTimeZone.getDefault()).toDateTime()
 		val subscriberAccessEndsAtString = subscriberAccessEndsAt.toString("MMM d yyyy")
-		val reWatchDuration = entity.eventReWatchDuration!!.ifBlank { "0" }.toInt()
+		val reWatchDuration = (entity.eventReWatchDuration?.ifBlank { DEFAULT.DEFAULT_INT_STRING }
+			?: DEFAULT.DEFAULT_INT_STRING).toInt()
 		val reWatchDurationString = calculateReWatchTime(reWatchDuration)
 
 		entity.access.replaceAll(String::lowercase)

@@ -101,6 +101,7 @@ object DEFAULT {
 	const val EMPTY_INT = 0
 	const val DOUBLE_VALUE = 0.0
 	const val SEPARATOR = " · "
+	const val DEFAULT_INT_STRING = "0"
 }
 
 object ContentBadgeValues {
