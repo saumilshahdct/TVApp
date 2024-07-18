@@ -214,9 +214,18 @@ class APIRepository : BaseDataSource() {
 			)
 		}
 	}
-	fun subscriptionMapping(subscriptionMappingRequest: HashMap<String, Any>) = performOperation(APIConstants.subscriptionMapping) {
-		getResult(APIConstants.subscriptionMapping) {
-			APIUtil.service.subscriptionMapping(subscriptionMappingRequest)
+
+	fun fetchRecommendedContent(scope: String) =
+		performOperation(APIConstants.fetchRecommendedContent) {
+			getResult(APIConstants.fetchRecommendedContent) {
+				APIUtil.service.fetchRecommendedContent(scope)
+			}
 		}
-	}
+
+	fun subscriptionMapping(subscriptionMappingRequest: HashMap<String, Any>) =
+		performOperation(APIConstants.subscriptionMapping) {
+			getResult(APIConstants.subscriptionMapping) {
+				APIUtil.service.subscriptionMapping(subscriptionMappingRequest)
+			}
+		}
 }

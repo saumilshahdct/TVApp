@@ -24,6 +24,7 @@ class ContentRailsAdapter(
 	private val helper: AppHelper,
 	private val screen: String,
 	private val action: AppAction,
+	private val isRecommended: Boolean = false,
 ) : RecyclerView.Adapter<ContentRailsAdapter.ViewHolder>() {
 
 	lateinit var context: Context
@@ -69,6 +70,7 @@ class ContentRailsAdapter(
 			cardAdapter.setHelper(helper)
 			cardAdapter.setAdapterPosition(position)
 			cardAdapter.setScreen(screen)
+			cardAdapter.setIsRecommended(isRecommended)
 			cardAdapter.setContinueWatching(rails[position].isContinueWatching)
 			cardAdapter.setWatchList(rails[position].isWatchList)
 			cardAdapter.setRailCount(rails.size)
