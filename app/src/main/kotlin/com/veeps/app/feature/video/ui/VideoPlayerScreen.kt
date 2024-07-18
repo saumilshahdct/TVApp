@@ -114,6 +114,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private var duration: String = DEFAULT.EMPTY_STRING
 	private var ticketId: String = DEFAULT.EMPTY_STRING
 	private var eventName: String? = DEFAULT.EMPTY_STRING
+	private var userType: String = DEFAULT.EMPTY_STRING
 
 	private fun getBackCallback(): OnBackPressedCallback {
 		val backPressedCallback = object : OnBackPressedCallback(true) {
@@ -201,48 +202,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private fun notifyAppEvents() {
 		getCurrentTimer = Handler(Looper.getMainLooper())
 		statsManagement = Handler(Looper.getMainLooper())
-		var userType : String = if (AppPreferences.get(
-				AppConstants.userSubscriptionStatus, "none"
-			) != "none"
-		) "m" else "b"
-		addStatsTask = Runnable {
-			if (player.isPlaying) {
-				currentTime = player.currentTime.toString()
-				duration = player.duration.toString()
-				val playerVersion =
-					"ntv"//"${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})"
-				val deviceModel: String = Build.MODEL
-				val deviceVendor: String = Build.MANUFACTURER
-				val playbackStreamType: String =
-					if (player.isLive) EventTypes.LIVE else EventTypes.ON_DEMAND
-				val platform: String = getString(R.string.app_platform)
-
-				viewModel.eventId.value?.let { eventId ->
-					if (eventId.isNotBlank()) {
-						AppPreferences.set(AppConstants.generatedJWT, AppUtil.generateJWT(eventId))
-						val addStatsAPIURL = AppPreferences.get(
-							AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
-						) + APIConstants.addStats
-						addStats(
-							addStatsAPIURL.trim(),
-							currentTime,
-							duration,
-							playerVersion,
-							deviceModel,
-							deviceVendor,
-							playbackStreamType,
-							platform,
-							userType
-						)
-					}
-				}
-			}
-			if (this::statsManagement.isInitialized && this::addStatsTask.isInitialized) {
-				statsManagement.removeCallbacks(addStatsTask)
-				statsManagement.removeCallbacksAndMessages(addStatsTask)
-				statsManagement.postDelayed(addStatsTask, 30000)
-			}
-		}
 
 		binding.chatFromPhone.setOnFocusChangeListener { _, hasFocus ->
 			binding.chatFromPhoneLabel.setTextColor(
@@ -823,6 +782,46 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					?.let { AdSource(AdSourceType.Bitmovin, it) }
 				val adItem = adSource?.let { AdItem(ad.adPosition ?: "pre", it) }
 				adItem?.let { adItems.add(it) }
+			}
+		}
+
+		userType = AppUtil.getUserType(eventDetails)
+		addStatsTask = Runnable {
+			if (player.isPlaying) {
+				currentTime = player.currentTime.toString()
+				duration = player.duration.toString()
+				val playerVersion =
+					"ntv"//"${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})"
+				val deviceModel: String = Build.MODEL
+				val deviceVendor: String = Build.MANUFACTURER
+				val playbackStreamType: String =
+					if (player.isLive) EventTypes.LIVE else EventTypes.ON_DEMAND
+				val platform: String = getString(R.string.app_platform)
+
+				viewModel.eventId.value?.let { eventId ->
+					if (eventId.isNotBlank()) {
+						AppPreferences.set(AppConstants.generatedJWT, AppUtil.generateJWT(eventId))
+						val addStatsAPIURL = AppPreferences.get(
+							AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
+						) + APIConstants.addStats
+						addStats(
+							addStatsAPIURL.trim(),
+							currentTime,
+							duration,
+							playerVersion,
+							deviceModel,
+							deviceVendor,
+							playbackStreamType,
+							platform,
+							userType
+						)
+					}
+				}
+			}
+			if (this::statsManagement.isInitialized && this::addStatsTask.isInitialized) {
+				statsManagement.removeCallbacks(addStatsTask)
+				statsManagement.removeCallbacksAndMessages(addStatsTask)
+				statsManagement.postDelayed(addStatsTask, 30000)
 			}
 		}
 
