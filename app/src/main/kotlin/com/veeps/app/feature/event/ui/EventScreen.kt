@@ -578,10 +578,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			) == "none" && primaryLabelText == ButtonLabels.UNAVAILABLE && eventDetails.access.containsAll(arrayListOf("veeps_plus"))
 		) View.GONE else View.VISIBLE
 		binding.primary.alpha = 1.0f
-		binding.myShows.visibility = if (AppPreferences.get(
-				AppConstants.userSubscriptionStatus, "none"
-			) != "none"
-		) View.VISIBLE else View.GONE
+		binding.myShows.visibility = View.VISIBLE
 		binding.subscribe.alpha = 1.0f
 		binding.subscribeLabel.text = getString(
 			R.string.free_for_subscriber
