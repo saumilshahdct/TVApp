@@ -835,6 +835,22 @@ object AppUtil {
 			}
 		}
 	}
+	fun getUserType(entity: Entities): String {
+		return when (AppPreferences.get(
+			AppConstants.userSubscriptionStatus, "none"
+		)) {
+			EventAccessType.VEEPS_PARTNER -> {
+				UserType.VEEPS_PAID_SUBSCRIBER
+			}
+			else -> {
+				if (entity.access.contains("veeps_free")) {
+					UserType.VEEPS_FREE_TIER
+				} else {
+					UserType.VEEPS_TICKETS_HOLDER
+				}
+			}
+		}
+	}
 	fun isEventStarted(streamStartAt: String): Boolean {
 		val currentDate = DateTime.now()
 		val streamStartsAtDate =

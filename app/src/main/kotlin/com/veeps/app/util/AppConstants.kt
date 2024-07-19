@@ -204,7 +204,8 @@ object EventAccessType {
 	const val PAID = "PAID"
 	const val FREE = "FREE"
 	const val VEEPS_FREE = "VEEPS_FREE"
-	const val NONE = ""
+	const val NONE = "none"
+	const val VEEPS_PARTNER = "veeps_partner"
 }
 
 object ButtonLabels {
@@ -225,6 +226,12 @@ object DateTimeCompareDifference {
 	const val LESS_THAN = "less than"
 	const val EQUALS = "equals"
 	const val NOTHING = "NOTHING"
+}
+
+object UserType {
+	const val VEEPS_PAID_SUBSCRIBER = "m"
+	const val VEEPS_TICKETS_HOLDER = "b"
+	const val VEEPS_FREE_TIER = "f"
 }
 
 object SubscriptionPlanSKUs {
