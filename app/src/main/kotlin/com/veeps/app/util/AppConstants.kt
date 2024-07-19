@@ -7,7 +7,6 @@ object AppConstants {
 	const val TAG: String = "VeepsAppTag"
 	const val deviceType: String = "fireTv"
 	const val deviceName: String = "Amazon Fire TV"
-
 	const val clientId: String = "40a3903ae06585f0c114464750d605bba618afd01159f4eefef68c255c746a89"
 	const val clientSecret: String =
 		"0db660fe553f3fe5fba3f0c7270a7a20c31ef49f27167bbde9ce905777a5aaac"
@@ -206,7 +205,8 @@ object EventAccessType {
 	const val PAID = "PAID"
 	const val FREE = "FREE"
 	const val VEEPS_FREE = "VEEPS_FREE"
-	const val NONE = ""
+	const val NONE = "none"
+	const val VEEPS_PARTNER = "veeps_partner"
 }
 
 object ButtonLabels {
@@ -227,6 +227,12 @@ object DateTimeCompareDifference {
 	const val LESS_THAN = "less than"
 	const val EQUALS = "equals"
 	const val NOTHING = "NOTHING"
+}
+
+object UserType {
+	const val VEEPS_PAID_SUBSCRIBER = "m"
+	const val VEEPS_TICKETS_HOLDER = "b"
+	const val VEEPS_FREE_TIER = "f"
 }
 
 object SubscriptionPlanSKUs {

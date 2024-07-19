@@ -67,6 +67,8 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 	private var eventDetails: Entities = Entities()
 	private var isEventPurchased: Boolean = false
 	private var rail: ArrayList<RailData> = arrayListOf()
+	private var recommendedRailList: ArrayList<RailData> = arrayListOf()
+	private var recommendedRailData: ArrayList<RailData> = arrayListOf()
 	private val action by lazy {
 		object : AppAction {
 			override fun onAction() {
@@ -324,6 +326,11 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 							}
 						}
 					}
+				} else if (!recommendedRailList.none { it.entities.isNotEmpty() } && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+					binding.listing.visibility = View.GONE
+					binding.description.visibility = View.GONE
+					binding.optionsContainer.visibility = View.GONE
+					binding.recommendationListing.requestFocus()
 				}
 			}
 			return@setOnKeyListener false
@@ -331,6 +338,8 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 
 		homeViewModel.focusItem.observe(viewLifecycleOwner) { hasFocus ->
 			if (hasFocus && !binding.description.text.isNullOrBlank()) {
+				binding.description.visibility = View.VISIBLE
+				binding.optionsContainer.visibility = View.VISIBLE
 				binding.description.requestFocus()
 				if (!rail.none { it.entities.isNotEmpty() }) {
 					binding.listing.visibility = View.GONE
@@ -491,7 +500,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				eventStreamResponse.response?.let { eventStreamData ->
 					eventStreamData.data?.let { eventDetails ->
 						isEventPurchased = true
-						setEventDetails(eventDetails)
+						fetchRecommendedContent(eventDetails)
 					} ?: fetchEventDetails()
 				} ?: fetchEventDetails()
 			}
@@ -508,13 +517,32 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			) {
 				eventResponse.response?.let { eventStreamData ->
 					eventStreamData.data?.let { eventDetails ->
-						setEventDetails(eventDetails)
+						fetchRecommendedContent(eventDetails)
 					} ?: helper.goBack()
 				} ?: helper.goBack()
 			}
 		}
 	}
 
+	private fun fetchRecommendedContent(eventDetails: Entities) {
+		recommendedRailData = arrayListOf()
+		recommendedRailList = arrayListOf()
+		viewModel.fetchRecommendedContent().observe(viewLifecycleOwner) { recommendedContent ->
+			fetch(
+				recommendedContent,
+				isLoaderEnabled = false,
+				canUserAccessScreen = true,
+				shouldBeInBackground = true,
+			) {
+				recommendedContent.response?.let { recommendedRailResponse ->
+					if (recommendedRailResponse.railData.isNotEmpty()) {
+						recommendedRailData = recommendedRailResponse.railData
+					}
+				}
+				setEventDetails(eventDetails)
+			}
+		}
+	}
 	private fun setEventDetails(eventDetails: Entities) {
 		binding.logo.requestFocus()
 		this.eventDetails = eventDetails
@@ -550,10 +578,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			) == "none" && primaryLabelText == ButtonLabels.UNAVAILABLE && eventDetails.access.containsAll(arrayListOf("veeps_plus"))
 		) View.GONE else View.VISIBLE
 		binding.primary.alpha = 1.0f
-		binding.myShows.visibility = if (AppPreferences.get(
-				AppConstants.userSubscriptionStatus, "none"
-			) != "none"
-		) View.VISIBLE else View.GONE
+		binding.myShows.visibility = View.VISIBLE
 		binding.subscribe.alpha = 1.0f
 		binding.subscribeLabel.text = getString(
 			R.string.free_for_subscriber
@@ -683,6 +708,19 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			)
 			rail.add(venueRail)
 		}
+
+		if (recommendedRailData.isNotEmpty()) {
+			recommendedRailData.let { recommendedData ->
+				val railData = recommendedData.first()
+				val recommendedRail = RailData(
+					name = railData.name,
+					entities = railData.entities,
+					cardType = CardTypes.PORTRAIT,
+					entitiesType = EntityTypes.EVENT
+				)
+				recommendedRailList.add(recommendedRail)
+			}
+		}
 		if (rail.none { it.entities.isNotEmpty() }) {
 			binding.listing.visibility = View.GONE
 		} else {
@@ -702,6 +740,23 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				onFlingListener = PagerSnapHelper()
 			}
 			binding.listing.visibility = View.VISIBLE
+		}
+		if (recommendedRailList.none { it.entities.isNotEmpty() }) {
+			binding.recommendationListing.visibility = View.GONE
+		} else {
+			binding.recommendationListing.apply {
+				layoutParams.height = context.resources.getDimensionPixelSize(R.dimen.row_height_rail)
+				itemAnimator = null
+				setNumColumns(1)
+				setHasFixedSize(true)
+				windowAlignment = BaseGridView.WINDOW_ALIGN_HIGH_EDGE
+				windowAlignmentOffsetPercent = 0f
+				isItemAlignmentOffsetWithPadding = true
+				itemAlignmentOffsetPercent = 0f
+				adapter = ContentRailsAdapter(rails = recommendedRailList, helper, Screens.EVENT, action, true)
+				onFlingListener = PagerSnapHelper()
+			}
+			binding.recommendationListing.visibility = View.VISIBLE
 		}
 	}
 

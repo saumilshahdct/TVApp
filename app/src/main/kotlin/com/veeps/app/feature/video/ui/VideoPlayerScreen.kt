@@ -114,6 +114,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private var duration: String = DEFAULT.EMPTY_STRING
 	private var ticketId: String = DEFAULT.EMPTY_STRING
 	private var eventName: String? = DEFAULT.EMPTY_STRING
+	private var userType: String = DEFAULT.EMPTY_STRING
 
 	private fun getBackCallback(): OnBackPressedCallback {
 		val backPressedCallback = object : OnBackPressedCallback(true) {
@@ -201,48 +202,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private fun notifyAppEvents() {
 		getCurrentTimer = Handler(Looper.getMainLooper())
 		statsManagement = Handler(Looper.getMainLooper())
-		var userType : String = if (AppPreferences.get(
-				AppConstants.userSubscriptionStatus, "none"
-			) != "none"
-		) "m" else "b"
-		addStatsTask = Runnable {
-			if (player.isPlaying) {
-				currentTime = player.currentTime.toString()
-				duration = player.duration.toString()
-				val playerVersion =
-					"ntv"//"${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})"
-				val deviceModel: String = Build.MODEL
-				val deviceVendor: String = Build.MANUFACTURER
-				val playbackStreamType: String =
-					if (player.isLive) EventTypes.LIVE else EventTypes.ON_DEMAND
-				val platform: String = getString(R.string.app_platform)
-
-				viewModel.eventId.value?.let { eventId ->
-					if (eventId.isNotBlank()) {
-						AppPreferences.set(AppConstants.generatedJWT, AppUtil.generateJWT(eventId))
-						val addStatsAPIURL = AppPreferences.get(
-							AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
-						) + APIConstants.addStats
-						addStats(
-							addStatsAPIURL.trim(),
-							currentTime,
-							duration,
-							playerVersion,
-							deviceModel,
-							deviceVendor,
-							playbackStreamType,
-							platform,
-							userType
-						)
-					}
-				}
-			}
-			if (this::statsManagement.isInitialized && this::addStatsTask.isInitialized) {
-				statsManagement.removeCallbacks(addStatsTask)
-				statsManagement.removeCallbacksAndMessages(addStatsTask)
-				statsManagement.postDelayed(addStatsTask, 30000)
-			}
-		}
 
 		binding.chatFromPhone.setOnFocusChangeListener { _, hasFocus ->
 			binding.chatFromPhoneLabel.setTextColor(
@@ -521,7 +480,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		binding.playPause.requestFocus()
 	}
 
-	private fun initPubNub() {
+	private fun initPubNub(eventDetails: Entities) {
 		if (this::pubnub.isInitialized && this::pubNubListener.isInitialized) pubnub.removeListener(
 			pubNubListener
 		)
@@ -610,6 +569,31 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					LastSignalTypes.CHAT_MESSAGE_DELETED -> {
 
 					}
+
+					LastSignalTypes.STREAM_ENDED -> {
+						binding.standBy.visibility = View.GONE
+
+						if (eventDetails.eventReWatchDuration.isNullOrBlank()) {
+							binding.reWatch.text = getString(R.string.re_watch_not_available)
+						} else {
+							val reWatchDuration =
+								eventDetails.eventReWatchDuration!!.ifBlank { "0" }.toInt()
+							if (reWatchDuration == 0) {
+								binding.reWatch.text = getString(R.string.re_watch_not_available)
+							} else {
+								val reWatchDurationString =
+									AppUtil.calculateReWatchTime(reWatchDuration)
+								binding.reWatch.text = getString(
+									R.string.re_watch_available_for_time, reWatchDurationString
+								)
+							}
+						}
+						showError(
+							Screens.STREAM_END,
+							"Thanks for watching the show!",
+							"Hang tight, rewatch available soon"
+						)
+					}
 				}
 			}
 		}
@@ -670,18 +654,20 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		binding.vodControls.setHorizontalBias(R.id.image_preview, positionInPercentage.toFloat())
 		if (!viewModel.tiles.value.isNullOrEmpty() && isScrubVisible && binding.progress.hasFocus()) {
 			binding.imagePreview.clipToOutline = true
-			Glide.with(binding.imagePreview.context).asBitmap().load(viewModel.storyBoard ?: "")
-				.transform(
-					MultiTransformation(
-						GlideThumbnailTransformation(
-							scrubbedPosition,
-							viewModel.tileWidth.value ?: 0,
-							viewModel.tileHeight.value ?: 0,
-							viewModel.tiles.value ?: arrayListOf(),
-						), CenterInside(), RoundedCorners(IntValue.NUMBER_5)
-					)
-				).placeholder(binding.imagePreview.drawable).error(R.drawable.card_background_black)
-				.into(binding.imagePreview)
+			runOnUiThread {
+				Glide.with(binding.imagePreview.context).asBitmap().load(viewModel.storyBoard ?: "")
+					.transform(
+						MultiTransformation(
+							GlideThumbnailTransformation(
+								scrubbedPosition,
+								viewModel.tileWidth.value ?: 0,
+								viewModel.tileHeight.value ?: 0,
+								viewModel.tiles.value ?: arrayListOf(),
+							), CenterInside(), RoundedCorners(IntValue.NUMBER_5)
+						)
+					).placeholder(binding.imagePreview.drawable).error(R.drawable.card_background_black)
+					.into(binding.imagePreview)
+			}
 			binding.imagePreview.visibility = View.VISIBLE
 		} else {
 			binding.imagePreview.visibility = View.INVISIBLE
@@ -787,8 +773,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		signalChannel = eventDetails.chat.chatChannels.signals ?: DEFAULT.EMPTY_STRING
 		playbackStream =
 			eventDetails.playback.widevineUrl?.ifBlank { eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING } }
-				?: DEFAULT.EMPTY_STRING
-		eventDetails.playback.widevineUrl.isNullOrBlank()
+				?: eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING }
+						?: DEFAULT.EMPTY_STRING
 		if (!eventDetails.playback.widevineUrl.isNullOrBlank()) isDrmAvailable = true
 		eventDetails.playback.ads.let { ads ->
 			for (ad in ads) {
@@ -799,13 +785,53 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			}
 		}
 
+		userType = AppUtil.getUserType(eventDetails)
+		addStatsTask = Runnable {
+			if (player.isPlaying) {
+				currentTime = player.currentTime.toString()
+				duration = player.duration.toString()
+				val playerVersion =
+					"ntv"//"${BuildConfig.VERSION_NAME}(${BuildConfig.VERSION_CODE})"
+				val deviceModel: String = Build.MODEL
+				val deviceVendor: String = Build.MANUFACTURER
+				val playbackStreamType: String =
+					if (player.isLive) EventTypes.LIVE else EventTypes.ON_DEMAND
+				val platform: String = getString(R.string.app_platform)
+
+				viewModel.eventId.value?.let { eventId ->
+					if (eventId.isNotBlank()) {
+						AppPreferences.set(AppConstants.generatedJWT, AppUtil.generateJWT(eventId))
+						val addStatsAPIURL = AppPreferences.get(
+							AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
+						) + APIConstants.addStats
+						addStats(
+							addStatsAPIURL.trim(),
+							currentTime,
+							duration,
+							playerVersion,
+							deviceModel,
+							deviceVendor,
+							playbackStreamType,
+							platform,
+							userType
+						)
+					}
+				}
+			}
+			if (this::statsManagement.isInitialized && this::addStatsTask.isInitialized) {
+				statsManagement.removeCallbacks(addStatsTask)
+				statsManagement.removeCallbacksAndMessages(addStatsTask)
+				statsManagement.postDelayed(addStatsTask, 30000)
+			}
+		}
+
 		if (isChatEnabled.and(
 				status.contains(EventTypes.LIVE, true)
 					.or(status.contains(EventTypes.UPCOMING, true))
 					.or(status.contains(EventTypes.ENDED, true))
 			)
 		) {
-			initPubNub()
+			initPubNub(eventDetails)
 			binding.chat.visibility =
 				if (isChatEnabled && binding.chatToggle.isSelected) View.VISIBLE else View.GONE
 		}
@@ -846,7 +872,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					}
 					showError(
 						Screens.STREAM_END,
-						"Thanks for watching the show!",
+						getString(R.string.event_ended),
 						"Hang tight, rewatch available soon"
 					)
 				}
@@ -866,22 +892,24 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					storyBoardResponse.response?.let { storyBoardImages ->
 						if (storyBoardImages.tiles.isNotEmpty()) {
 							viewModel.storyBoardURL.postValue(storyBoardImages.url)
-							Glide.with(binding.imagePreview.context).asBitmap()
-								.load(storyBoardImages.url)
-								.placeholder(R.drawable.card_background_black)
-								.error(R.drawable.card_background_black)
-								.into(object : CustomTarget<Bitmap>() {
-									override fun onResourceReady(
-										resource: Bitmap, transition: Transition<in Bitmap>?
-									) {
-										viewModel.storyBoard = resource
-									}
+							runOnUiThread {
+								Glide.with(binding.imagePreview.context).asBitmap()
+									.load(storyBoardImages.url)
+									.placeholder(R.drawable.card_background_black)
+									.error(R.drawable.card_background_black)
+									.into(object : CustomTarget<Bitmap>() {
+										override fun onResourceReady(
+											resource: Bitmap, transition: Transition<in Bitmap>?
+										) {
+											viewModel.storyBoard = resource
+										}
 
-									override fun onLoadCleared(placeholder: Drawable?) {
+										override fun onLoadCleared(placeholder: Drawable?) {
 
-									}
+										}
 
-								})
+									})
+							}
 							viewModel.tileWidth.postValue(storyBoardImages.tileWidth)
 							viewModel.tileHeight.postValue(storyBoardImages.tileHeight)
 							viewModel.tiles.postValue(storyBoardImages.tiles)

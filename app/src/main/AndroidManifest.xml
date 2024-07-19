@@ -89,7 +89,7 @@
 
         <meta-data
             android:name="io.sentry.attach-screenshot"
-            android:value="true" />
+            android:value="false" />
 
         <!-- enable view hierarchy for crashes -->
         <meta-data

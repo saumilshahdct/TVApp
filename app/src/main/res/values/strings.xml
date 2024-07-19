@@ -88,5 +88,6 @@
     <string name="payment_failed">"Payment Failed. Please Try Again."</string>
     <string name="feature_not_available">This feature is not available</string>
     <string name="product_not_available">Product Data not Available</string>
+    <string name="event_ended">The event has ended</string>
 
 </resources>
