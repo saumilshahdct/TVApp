@@ -496,7 +496,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		player.addAnalyticsListener(EventLogger())
 		binding.videoPlayer.player = player
 		player.repeatMode = Player.REPEAT_MODE_OFF
-
+		player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
+			.setTrackTypeDisabled(TRACK_TYPE_TEXT, /* disabled= */ true).build()
 		// In INACTIVITY_SECONDS seconds of inactivity hide the trickBar
 		timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
 	}

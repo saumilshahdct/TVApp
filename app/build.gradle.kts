@@ -6,7 +6,9 @@ import java.time.format.DateTimeFormatter
 import java.util.Properties
 
 val mainVersionCode = 5
-val mainVersionName = ".4"
+val majorVersionName = "1"
+val minorVersionName = "4"
+val patchVersionName = "1"
 val releaseLabel = "release"
 val debugLabel = "debug"
 
@@ -45,7 +47,7 @@ android {
 		minSdk = 24
 		targetSdk = 34
 		versionCode = mainVersionCode
-		versionName = "1"
+		versionName = majorVersionName
 		signingConfig = signingConfigs.getByName(releaseLabel)
 		testFunctionalTest = true
 		testHandleProfiling = true
@@ -54,7 +56,7 @@ android {
 	buildTypes {
 		getByName(releaseLabel) {
 			isMinifyEnabled = false
-			versionNameSuffix = mainVersionName
+			versionNameSuffix = ".$minorVersionName.$patchVersionName"
 			proguardFiles(
 				getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
 			)
@@ -62,7 +64,7 @@ android {
 		}
 		getByName(debugLabel) {
 			/*applicationIdSuffix = ".$debugLabel"*/
-			versionNameSuffix = ".$mainVersionName.$debugLabel" + LocalDateTime.now()
+			versionNameSuffix = ".$minorVersionName.$patchVersionName.$debugLabel" + LocalDateTime.now()
 				.format(DateTimeFormatter.ofPattern(".MMdd"))
 			signingConfig = signingConfigs.getByName(debugLabel)
 		}
