@@ -381,7 +381,7 @@
             android:id="@+id/options_container"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="65dp"
+            android:layout_marginStart="75dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingTop="30dp"
