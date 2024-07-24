@@ -329,6 +329,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				} else if (!recommendedRailList.none { it.entities.isNotEmpty() } && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
 					binding.listing.visibility = View.GONE
 					binding.description.visibility = View.GONE
+					binding.scrollView.visibility = View.GONE
 					binding.optionsContainer.visibility = View.GONE
 					binding.recommendationListing.requestFocus()
 				}
@@ -339,6 +340,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		homeViewModel.focusItem.observe(viewLifecycleOwner) { hasFocus ->
 			if (hasFocus && !binding.description.text.isNullOrBlank()) {
 				binding.description.visibility = View.VISIBLE
+				binding.scrollView.visibility = View.VISIBLE
 				binding.optionsContainer.visibility = View.VISIBLE
 				binding.description.requestFocus()
 				if (!rail.none { it.entities.isNotEmpty() }) {
