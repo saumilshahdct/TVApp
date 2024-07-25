@@ -64,7 +64,7 @@ abstract class BaseDataSource {
                     when (response.code()) {
                         400 -> {
                             when (tag) {
-                                APIConstants.authenticationPolling -> {
+                                APIConstants.authenticationPolling, APIConstants.validateAppVersions -> {
                                     var error = Veeps.appContext.getString(R.string.unknown_error)
                                     response.errorBody()?.let { errorBody ->
                                         val errorObject = JSONObject(errorBody.string())

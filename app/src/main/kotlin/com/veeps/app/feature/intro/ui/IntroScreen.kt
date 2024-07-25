@@ -102,14 +102,6 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
 
     override fun onResume() {
         super.onResume()
-        if (!viewModel.isAppUpdateCall) {
-            validateAppVersion(
-                APIConstants.validateAppVersions,
-                deviceType,
-                app_envirnment,
-                BuildConfig.VERSION_NAME
-            )
-        }
         setupVideoPlayer()
     }
 
@@ -135,36 +127,6 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
         goToScreen<SignInScreen>(
             false, Pair(AppConstants.TAG, Screens.SIGN_IN)
         )
-    }
-
-    private fun validateAppVersion(
-        appVersionAPIURL: String,
-        platform: String,
-        stage: String,
-        appVersion: String,
-    ) {
-        viewModel.isAppUpdateCall = true
-        viewModel.validateAppVersion(
-            appVersionAPIURL,
-            platform,
-            stage,
-            appVersion
-        ).observe(this@IntroScreen) { appVersionResponse ->
-            fetch(
-                appVersionResponse,
-                isLoaderEnabled = false,
-                canUserAccessScreen = false,
-                shouldBeInBackground = false
-            ) {
-                when (appVersionResponse.callStatus) {
-                    BaseDataSource.Resource.CallStatus.SUCCESS -> {
-                        Logger.doNothing()
-                    }
-
-                    else -> Logger.doNothing()
-                }
-            }
-        }
     }
 
     fun onErrorPositive() {

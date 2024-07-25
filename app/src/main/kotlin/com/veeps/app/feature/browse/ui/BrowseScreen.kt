@@ -172,6 +172,10 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		binding.browseLabel.outlineProvider = ViewOutlineProvider.BACKGROUND
 		binding.browseLabel.clipToOutline = true
 
+		binding.appUpdate.setupWith(binding.container).setBlurRadius(12.5f)
+		binding.appUpdate.outlineProvider = ViewOutlineProvider.BACKGROUND
+		binding.appUpdate.clipToOutline = true
+
 		binding.onDemandLabel.setupWith(binding.container).setBlurRadius(12.5f)
 		binding.onDemandLabel.outlineProvider = ViewOutlineProvider.BACKGROUND
 		binding.onDemandLabel.clipToOutline = true
@@ -693,6 +697,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 						Logger.doNothing()
 					}
 					BaseDataSource.Resource.CallStatus.ERROR -> {
+						binding.appUpdate.visibility = View.VISIBLE
 					}
 					else -> Logger.doNothing()
 				}

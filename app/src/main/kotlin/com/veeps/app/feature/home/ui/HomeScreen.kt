@@ -127,14 +127,6 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 				viewModel.isErrorNegativeApplicable.postValue(true)
 			}
 
-			APIConstants.validateAppVersions -> {
-				viewModel.errorMessage.postValue(getString(R.string.app_update_message))
-				binding.errorContainer.visibility = View.VISIBLE
-				viewModel.errorPositiveLabel.postValue(getString(R.string.ok_label))
-				viewModel.isErrorPositiveApplicable.postValue(true)
-				viewModel.isErrorNegativeApplicable.postValue(false)
-			}
-
 			Screens.EXIT_APP -> {
 				viewModel.errorPositiveLabel.postValue(getString(R.string.yes_label))
 				viewModel.errorNegativeLabel.postValue(getString(R.string.no_label))
