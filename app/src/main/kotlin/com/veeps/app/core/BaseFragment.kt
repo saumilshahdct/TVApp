@@ -101,7 +101,7 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 					}
 				}
 				when (dataResource.tag) {
-					APIConstants.authenticationPolling -> {
+					APIConstants.authenticationPolling, APIConstants.validateAppVersions -> {
 						block.invoke()
 					}
 

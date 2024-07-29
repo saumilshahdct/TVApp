@@ -37,9 +37,13 @@ abstract class BaseDataSource {
                                         return Resource.success(tag, response.body()!!)
                                     }
                                 }
-                            } ?: return Resource.error(
-                                tag, Veeps.appContext.getString(R.string.unknown_error)
-                            )
+                            }
+                                ?: return if (tag == APIConstants.validateAppVersions) Resource.successWithNullResponse(
+                                    tag,
+                                    null
+                                ) else Resource.error(
+                                    tag, Veeps.appContext.getString(R.string.unknown_error)
+                                )
                         }
 
                         else -> {
@@ -64,7 +68,7 @@ abstract class BaseDataSource {
                     when (response.code()) {
                         400 -> {
                             when (tag) {
-                                APIConstants.authenticationPolling, APIConstants.validateAppVersions -> {
+                                APIConstants.authenticationPolling -> {
                                     var error = Veeps.appContext.getString(R.string.unknown_error)
                                     response.errorBody()?.let { errorBody ->
                                         val errorObject = JSONObject(errorBody.string())
@@ -97,7 +101,9 @@ abstract class BaseDataSource {
                                             if (errorObject.has("message")) {
                                                 errorMessage = errorObject.getString("message")
                                             }
-
+                                            if (errorObject.has("error")) {
+                                                errorMessage = errorObject.getString("error")
+                                            }
                                         }
                                     }
                                     return Resource.error(tag, errorMessage)

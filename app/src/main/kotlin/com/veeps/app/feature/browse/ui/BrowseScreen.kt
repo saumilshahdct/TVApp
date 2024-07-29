@@ -50,6 +50,9 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.json.JSONObject
 import kotlin.random.Random
+import com.veeps.app.core.BaseDataSource.Resource.CallStatus.ERROR
+import com.veeps.app.core.BaseDataSource.Resource.CallStatus.LOADING
+import com.veeps.app.core.BaseDataSource.Resource.CallStatus.SUCCESS
 
 
 class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>() {
@@ -105,14 +108,14 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 
 	override fun onResume() {
 		super.onResume()
-		if (!viewModel.isAppUpdateCall) {
+//		if (!viewModel.isAppUpdateCall) {
 			validateAppVersion(
 				APIConstants.validateAppVersions,
 				AppConstants.deviceType,
 				AppConstants.app_envirnment,
-				BuildConfig.VERSION_NAME
+				"1.3.0"
 			)
-		}
+//		}
 	}
 	private fun setupVideoPlayer() {
 		releaseVideoPlayer()
@@ -692,12 +695,17 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 				shouldBeInBackground = false
 			) {
 
+				Logger.print("vicky= "+appVersionResponse)
 				when (appVersionResponse.callStatus) {
-					BaseDataSource.Resource.CallStatus.SUCCESS -> {
-						Logger.doNothing()
+					SUCCESS -> {
+						binding.appUpdate.visibility = View.GONE
 					}
-					BaseDataSource.Resource.CallStatus.ERROR -> {
-						binding.appUpdate.visibility = View.VISIBLE
+					ERROR -> {
+						appVersionResponse.message?.let {
+							if (appVersionResponse.message == "old_version") {
+								binding.appUpdate.visibility = View.VISIBLE
+							}
+						}
 					}
 					else -> Logger.doNothing()
 				}

@@ -435,7 +435,7 @@
                 android:focusable="true"
                 android:focusableInTouchMode="true"
                 android:padding="10dp"
-                android:visibility="visible"
+                android:visibility="gone"
                 app:blurOverlayColor="@color/white_10"
                 app:layout_constraintHorizontal_chainStyle="packed"
                 app:layout_constraintStart_toStartOf="@+id/start"
@@ -452,7 +452,7 @@
                         android:layout_height="20dp"
                         android:layout_margin="5dp"
                         android:contentDescription="@string/app_description"
-                        android:src="@drawable/add_white" />
+                        android:src="@drawable/error" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -484,6 +484,7 @@
                             android:includeFontPadding="false"
                             android:letterSpacing="0.03"
                             android:paddingStart="5dp"
+                            android:layout_marginTop="5dp"
                             android:paddingEnd="5dp"
                             android:paddingBottom="1dp"
                             android:text="@string/app_update_message2"
