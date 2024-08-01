@@ -105,7 +105,7 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 						block.invoke()
 					}
 
-					APIConstants.fetchCompanions, APIConstants.fetchUserStats, APIConstants.fetchEventStreamDetails, APIConstants.fetchEventDetails, APIConstants.fetchEventProductDetails, APIConstants.clearAllReservations, APIConstants.fetchStoryBoard -> {
+					APIConstants.fetchCompanions, APIConstants.fetchUserStats, APIConstants.fetchEventStreamDetails, APIConstants.fetchEventDetails, APIConstants.fetchEventProductDetails, APIConstants.clearAllReservations, APIConstants.fetchStoryBoard, APIConstants.subscriptionMapping -> {
 						block.invoke()
 					}
 

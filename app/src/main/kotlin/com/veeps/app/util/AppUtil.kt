@@ -369,7 +369,8 @@ object AppUtil {
 				entity.subscriberAccessEndsAt, DateTimeZone.UTC
 			).withZone(DateTimeZone.getDefault()).toDateTime()
 		val subscriberAccessEndsAtString = subscriberAccessEndsAt.toString("MMM d yyyy")
-		val reWatchDuration = entity.eventReWatchDuration!!.ifBlank { "0" }.toInt()
+		val reWatchDuration = (entity.eventReWatchDuration?.ifBlank { DEFAULT.DEFAULT_INT_STRING }
+			?: DEFAULT.DEFAULT_INT_STRING).toInt()
 		val reWatchDurationString = calculateReWatchTime(reWatchDuration)
 
 		entity.access.replaceAll(String::lowercase)
@@ -831,6 +832,22 @@ object AppUtil {
 					ButtonLabels.GO_TO_EVENT
 				} else {
 					ButtonLabels.UNAVAILABLE
+				}
+			}
+		}
+	}
+	fun getUserType(entity: Entities): String {
+		return when (AppPreferences.get(
+			AppConstants.userSubscriptionStatus, "none"
+		)) {
+			EventAccessType.VEEPS_PARTNER -> {
+				UserType.VEEPS_PAID_SUBSCRIBER
+			}
+			else -> {
+				if (entity.access.contains("veeps_free")) {
+					UserType.VEEPS_FREE_TIER
+				} else {
+					UserType.VEEPS_TICKETS_HOLDER
 				}
 			}
 		}

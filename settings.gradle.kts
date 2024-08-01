@@ -6,6 +6,7 @@ pluginManagement {
 		mavenCentral()
 		gradlePluginPortal()
 		maven { url = uri("https://www.jitpack.io") }
+		maven { url = uri("https://artifacts.bitmovin.com/artifactory/public-releases") }
 	}
 }
 dependencyResolutionManagement {
@@ -14,6 +15,7 @@ dependencyResolutionManagement {
 		google()
 		mavenCentral()
 		maven { url = uri("https://www.jitpack.io") }
+		maven { url = uri("https://artifacts.bitmovin.com/artifactory/public-releases") }
 	}
 	versionCatalogs {
 

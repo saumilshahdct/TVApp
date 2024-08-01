@@ -46,8 +46,8 @@
             <!-- Inner Container -->
             <include layout="@layout/guidelines" />
 
-            <!-- Video Player -->
-            <androidx.media3.ui.PlayerView
+            <!--             Video Player -->
+            <com.bitmovin.player.PlayerView
                 android:id="@+id/video_player"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -62,7 +62,10 @@
                 app:show_buffering="never"
                 app:show_subtitle_button="true"
                 app:use_artwork="true"
-                app:use_controller="false" />
+                app:use_controller="false"
+                android:keepScreenOn="true"
+                app:initialize_player="true"
+                />
 
             <ImageView
                 android:id="@+id/stand_by"

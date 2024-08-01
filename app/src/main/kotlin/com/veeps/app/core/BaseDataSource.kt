@@ -47,7 +47,9 @@ abstract class BaseDataSource {
                         }
 
                         else -> {
-                            if (tag == APIConstants.removeWatchListEvents) {
+                            if (response.code() == 201 && tag == APIConstants.subscriptionMapping) {
+                                return Resource.successWithNullResponse(tag, response.body())
+                            } else if (tag == APIConstants.removeWatchListEvents) {
                                 return Resource.successWithNullResponse(tag, response.body())
                             } else {
                                 response.body()?.let {
@@ -72,7 +74,6 @@ abstract class BaseDataSource {
                                     var error = Veeps.appContext.getString(R.string.unknown_error)
                                     response.errorBody()?.let { errorBody ->
                                         val errorObject = JSONObject(errorBody.string())
-
                                         if (errorObject.has("error_description")) {
                                             error = Html.fromHtml(
                                                 errorObject.getString("error"),
@@ -83,7 +84,6 @@ abstract class BaseDataSource {
                                                 errorObject.getString("error"),
                                                 HtmlCompat.FROM_HTML_MODE_LEGACY
                                             ).toString()
-
                                         }
                                     }
                                     return Resource.error(tag, error)
@@ -112,11 +112,9 @@ abstract class BaseDataSource {
                                 else -> {
                                     var error: String =
                                         Veeps.appContext.getString(R.string.unknown_error)
-
                                     response.errorBody()?.let { errorBody ->
                                         val errorObject = JSONObject(errorBody.string())
                                         if (errorObject.has("message")) {
-
                                             error = Html.fromHtml(
                                                 errorObject.getString("message"),
                                                 HtmlCompat.FROM_HTML_MODE_LEGACY

@@ -213,6 +213,11 @@ object APIUtil {
 			@Query("s") userType: String
 		): Response<BaseResponseGeneric<Any>>
 
+		@GET(APIConstants.fetchRecommendedContent)
+		suspend fun fetchRecommendedContent(@Query("scope") scope: String): Response<RailResponse>
+
+		@POST(APIConstants.subscriptionMapping)
+		suspend fun subscriptionMapping(@Body hashMap: HashMap<String, Any>): Response<BaseResponseGeneric<Any>>
 		@GET
 		suspend fun validateAppVersion(
 			@Url addStatsAPIURL: String,

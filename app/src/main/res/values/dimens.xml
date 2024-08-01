@@ -14,7 +14,12 @@
     <dimen name="dp16">16dp</dimen>
     <dimen name="dp32">32dp</dimen>
     <dimen name="dp75">75dp</dimen>
-
+    <dimen name="dp7">7dp</dimen>
+    <dimen name="dp10">10dp</dimen>
+    <dimen name="sp16">16sp</dimen>
+    <dimen name="dp15">15dp</dimen>
+    <dimen name="dp20">20dp</dimen>
+    <dimen name="sp50">50sp</dimen>
     <!-- EPG dimensions-->
     <!-- TODO Reset Removal-->
 
