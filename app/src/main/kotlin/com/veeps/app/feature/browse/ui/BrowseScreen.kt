@@ -108,14 +108,12 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 
 	override fun onResume() {
 		super.onResume()
-//		if (!viewModel.isAppUpdateCall) {
 			validateAppVersion(
 				APIConstants.validateAppVersions,
 				AppConstants.deviceType,
 				AppConstants.app_envirnment,
-				"1.3.0"
+				BuildConfig.VERSION_NAME
 			)
-//		}
 	}
 	private fun setupVideoPlayer() {
 		releaseVideoPlayer()
