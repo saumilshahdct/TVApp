@@ -435,7 +435,7 @@
                 android:focusable="true"
                 android:focusableInTouchMode="true"
                 android:padding="10dp"
-                android:visibility="gone"
+                android:visibility="visible"
                 app:blurOverlayColor="@color/white_10"
                 app:layout_constraintHorizontal_chainStyle="packed"
                 app:layout_constraintStart_toStartOf="@+id/start"
@@ -450,7 +450,7 @@
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:layout_margin="5dp"
+                        android:layout_marginTop="-5dp"
                         android:contentDescription="@string/app_description"
                         android:src="@drawable/error" />
 

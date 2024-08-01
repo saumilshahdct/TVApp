@@ -15,17 +15,4 @@ class IntroViewModel : ViewModel() {
 	var isErrorPositiveApplicable = MutableLiveData(false)
 	var isErrorNegativeApplicable = MutableLiveData(false)
 	val isErrorVisible = MutableLiveData(false)
-	var isAppUpdateCall: Boolean = false
-
-	fun validateAppVersion(
-		appVersionAPIURL: String,
-		platform: String,
-		stage: String,
-		appVersion: String,
-	) = APIRepository().validateAppVersion(
-		appVersionAPIURL,
-		platform,
-		stage,
-		appVersion
-	)
 }
