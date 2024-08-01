@@ -3,8 +3,6 @@ package com.veeps.app.feature.video.ui
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
@@ -37,12 +35,6 @@ import androidx.media3.exoplayer.trackselection.DefaultTrackSelector
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.media3.ui.TimeBar
 import androidx.recyclerview.widget.PagerSnapHelper
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.MultiTransformation
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.pubnub.api.PNConfiguration
 import com.pubnub.api.PubNub
 import com.pubnub.api.UserId
@@ -71,7 +63,6 @@ import com.veeps.app.util.AppPreferences
 import com.veeps.app.util.AppUtil
 import com.veeps.app.util.DEFAULT
 import com.veeps.app.util.EventTypes
-import com.veeps.app.util.GlideThumbnailTransformation
 import com.veeps.app.util.ImageTags
 import com.veeps.app.util.IntValue
 import com.veeps.app.util.LastSignalTypes
@@ -667,28 +658,39 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	}
 
 	private fun setImagePreview() {
-		val positionInPercentage =
-			scrubbedPosition / (player.duration / IntValue.NUMBER_1000).toDouble().round(2)
-				.toFloat()
+		val aligner = 160L
+		val positionInPercentage = maxOf(scrubbedPosition - aligner, aligner) / (player.duration / IntValue.NUMBER_1000).toDouble().round(2).toFloat()
 		binding.vodControls.setHorizontalBias(R.id.image_preview, positionInPercentage)
-		if (!viewModel.tiles.value.isNullOrEmpty() && isScrubVisible && binding.progress.hasFocus()) {
-			binding.imagePreview.clipToOutline = true
-			Glide.with(binding.imagePreview.context).asBitmap().load(viewModel.storyBoard ?: "")
-				.transform(
-					MultiTransformation(
-						GlideThumbnailTransformation(
-							scrubbedPosition,
-							viewModel.tileWidth.value ?: 0,
-							viewModel.tileHeight.value ?: 0,
-							viewModel.tiles.value ?: arrayListOf(),
-						), CenterInside(), RoundedCorners(IntValue.NUMBER_5)
-					)
-				).placeholder(binding.imagePreview.drawable).error(R.drawable.card_background_black)
-				.into(binding.imagePreview)
-			binding.imagePreview.visibility = View.VISIBLE
-		} else {
-			binding.imagePreview.visibility = View.INVISIBLE
-		}
+//		if (!viewModel.tiles.value.isNullOrEmpty() && isScrubVisible && binding.progress.hasFocus()) {
+//			binding.imagePreview.clipToOutline = true
+//			val tiles = viewModel.tiles.value ?: arrayListOf()
+//			var x = 0
+//			var y = 0
+//			for (position in tiles.indices) {
+//				try {
+//					if (scrubbedPosition >= tiles[position].start && scrubbedPosition <= tiles[position + 1].start) {
+//						x = tiles[position].x
+//						y = tiles[position].y
+//						break
+//					}
+//				} catch (e: Exception) {
+//					if (scrubbedPosition >= tiles[position].start) {
+//						x = tiles[position].x
+//						y = tiles[position].y
+//						break
+//					}
+//				}
+//			}
+//			viewModel.storyBoard?.let {
+//				val frameBitmap = Bitmap.createBitmap(it, x, y, viewModel.tileWidth.value ?: 0, viewModel.tileHeight.value ?: 0)
+//				binding.imagePreview.setImageBitmap(frameBitmap)
+//			} ?: run {
+//				binding.imagePreview.setImageDrawable(AppCompatResources.getDrawable(this@VideoPlayerScreen, R.drawable.card_background_black))
+//			}
+//			binding.imagePreview.visibility = View.VISIBLE
+//		} else {
+//			binding.imagePreview.visibility = View.INVISIBLE
+//		}
 		val seekDuration =
 			PeriodFormatterBuilder().printZeroAlways().minimumPrintedDigits(2).appendHours()
 				.appendSeparator(":").printZeroAlways().minimumPrintedDigits(2).appendMinutes()
@@ -884,25 +886,25 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					storyBoardResponse.response?.let { storyBoardImages ->
 						if (storyBoardImages.tiles.isNotEmpty()) {
 							viewModel.storyBoardURL.postValue(storyBoardImages.url)
-							Glide.with(binding.imagePreview.context).asBitmap()
-								.load(storyBoardImages.url)
-								.placeholder(R.drawable.card_background_black)
-								.error(R.drawable.card_background_black)
-								.into(object : CustomTarget<Bitmap>() {
-									override fun onResourceReady(
-										resource: Bitmap, transition: Transition<in Bitmap>?
-									) {
-										viewModel.storyBoard = resource
-									}
-
-									override fun onLoadCleared(placeholder: Drawable?) {
-
-									}
-
-								})
-							viewModel.tileWidth.postValue(storyBoardImages.tileWidth)
-							viewModel.tileHeight.postValue(storyBoardImages.tileHeight)
-							viewModel.tiles.postValue(storyBoardImages.tiles)
+//							Glide.with(binding.imagePreview.context).asBitmap()
+//								.load(storyBoardImages.url)
+//								.placeholder(R.drawable.card_background_black)
+//								.error(R.drawable.card_background_black)
+//								.into(object : CustomTarget<Bitmap>() {
+//									override fun onResourceReady(
+//										resource: Bitmap, transition: Transition<in Bitmap>?
+//									) {
+//										viewModel.storyBoard = resource
+//									}
+//
+//									override fun onLoadCleared(placeholder: Drawable?) {
+//
+//									}
+//
+//								})
+//							viewModel.tileWidth.postValue(storyBoardImages.tileWidth)
+//							viewModel.tileHeight.postValue(storyBoardImages.tileHeight)
+//							viewModel.tiles.postValue(storyBoardImages.tiles)
 						}
 					}
 				}
@@ -1231,6 +1233,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		}
 		releaseVideoPlayer()
 		super.onDestroy()
+		System.gc()
 	}
 
 	override fun onPause() {

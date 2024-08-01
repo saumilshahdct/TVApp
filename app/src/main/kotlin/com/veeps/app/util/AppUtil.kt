@@ -369,7 +369,7 @@ object AppUtil {
 				entity.subscriberAccessEndsAt, DateTimeZone.UTC
 			).withZone(DateTimeZone.getDefault()).toDateTime()
 		val subscriberAccessEndsAtString = subscriberAccessEndsAt.toString("MMM d yyyy")
-		val reWatchDuration = entity.eventReWatchDuration!!.ifBlank { "0" }.toInt()
+		val reWatchDuration = (entity.eventReWatchDuration?.ifBlank { "0" } ?: "0").toInt()
 		val reWatchDurationString = calculateReWatchTime(reWatchDuration)
 
 		entity.access.replaceAll(String::lowercase)
@@ -492,6 +492,7 @@ object AppUtil {
 					else -> ButtonLabels.UNAVAILABLE
 				}
 			}
+
 			"off_sale_ondemand" -> {
 				when (userEventAccess) {
 					EventAccessType.VEEPS_FREE -> ButtonLabels.PLAY

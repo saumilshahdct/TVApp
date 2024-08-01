@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Properties
 
-val mainVersionCode = 5
+val mainVersionCode = 6
 val majorVersionName = "1"
 val minorVersionName = "4"
 val patchVersionName = "1"

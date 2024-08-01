@@ -41,6 +41,7 @@ import com.veeps.app.util.AppHelper
 import com.veeps.app.util.AppPreferences
 import com.veeps.app.util.DEFAULT
 import com.veeps.app.util.Logger
+import com.veeps.app.util.PurchaseResponseStatus
 import com.veeps.app.util.Screens
 import com.veeps.app.widget.navigationMenu.NavigationItem
 import com.veeps.app.widget.navigationMenu.NavigationItems
@@ -74,6 +75,8 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 				}"
 			)
 			if (binding.errorContainer.isVisible) {
+				return true
+			} else if (viewModel.isPaymentInProgress) {
 				return true
 			} else if (viewModel.isNavigationMenuVisible.value!! && supportFragmentManager.findFragmentById(
 					R.id.fragment_container
@@ -596,7 +599,6 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 		PurchasingService.registerListener(this@HomeScreen, this@HomeScreen)
 		PurchasingService.enablePendingPurchases()
 		PurchasingService.getUserData()
-		PurchasingService.getPurchaseUpdates(true)
 	}
 
 	fun fetchProduct() {
@@ -625,19 +627,34 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	override fun onPurchaseResponse(purchaseResponse: PurchaseResponse?) {
 		when (purchaseResponse?.requestStatus) {
 			PurchaseResponse.RequestStatus.SUCCESSFUL -> {
-				viewModel.receiptId = purchaseResponse.receipt.receiptId
-				viewModel.purchaseAction.postValue("PURCHASED")
-				PurchasingService.notifyFulfillment(
-					purchaseResponse.receipt.receiptId, FulfillmentResult.FULFILLED
-				)
+				if (!purchaseResponse.receipt.isCanceled) {
+					AppPreferences.set(AppConstants.receiptId, purchaseResponse.receipt.receiptId)
+					viewModel.purchaseAction.postValue(PurchaseResponseStatus.SUCCESS)
+				}
 			}
 
 			PurchaseResponse.RequestStatus.FAILED -> {
-				viewModel.purchaseAction.postValue("FAILED")
+				viewModel.purchaseAction.postValue(PurchaseResponseStatus.FAILED)
+			}
+
+			PurchaseResponse.RequestStatus.INVALID_SKU -> {
+				viewModel.purchaseAction.postValue(PurchaseResponseStatus.INVALID_SKU)
+			}
+
+			PurchaseResponse.RequestStatus.ALREADY_PURCHASED -> {
+				viewModel.purchaseAction.postValue(PurchaseResponseStatus.ALREADY_PURCHASED)
+			}
+
+			PurchaseResponse.RequestStatus.NOT_SUPPORTED -> {
+				viewModel.purchaseAction.postValue(PurchaseResponseStatus.NOT_SUPPORTED)
+			}
+
+			PurchaseResponse.RequestStatus.PENDING -> {
+				viewModel.purchaseAction.postValue(PurchaseResponseStatus.PENDING)
 			}
 
 			else -> {
-				viewModel.purchaseAction.postValue("FAILED")
+				viewModel.purchaseAction.postValue(PurchaseResponseStatus.CANCELLED_BY_VEEPS)
 			}
 		}
 	}
@@ -645,21 +662,68 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	override fun onPurchaseUpdatesResponse(response: PurchaseUpdatesResponse?) {
 		when (response?.requestStatus) {
 			PurchaseUpdatesResponse.RequestStatus.SUCCESSFUL -> {
-				if (response.hasMore()) {
-					PurchasingService.getPurchaseUpdates(true)
+				response.receipts.forEach { receipt ->
+					if (!receipt.isCanceled) {
+						if (receipt.sku.equals(AppPreferences.get(AppConstants.SKUId, DEFAULT.EMPTY_STRING))) {
+							AppPreferences.set(AppConstants.receiptId, receipt.receiptId)
+							createOrder()
+						} else {
+							PurchasingService.notifyFulfillment(receipt.receiptId, FulfillmentResult.UNAVAILABLE)
+							viewModel.purchaseAction.postValue(PurchaseResponseStatus.NONE)
+						}
+					}
 				}
 			}
 
-			PurchaseUpdatesResponse.RequestStatus.FAILED -> {
-			}
+			else -> {}
+		}
+	}
 
-			else -> {
+	private fun createOrder() {
+		viewModel.createOrder(
+			hashMapOf(
+				"order_id" to AppPreferences.get(AppConstants.orderId, DEFAULT.EMPTY_STRING).toString(),
+				"payment_id" to AppPreferences.get(AppConstants.receiptId, DEFAULT.EMPTY_STRING).toString(),
+				"vendor" to "fire_tv",
+			)
+		).observe(this@HomeScreen) { createOrder ->
+			fetch(
+				createOrder,
+				isLoaderEnabled = false,
+				canUserAccessScreen = true,
+				shouldBeInBackground = true
+			) {
+				createOrder.response?.let {
+					it.data?.let {
+						PurchasingService.notifyFulfillment(AppPreferences.get(AppConstants.receiptId, DEFAULT.EMPTY_STRING).toString(), FulfillmentResult.FULFILLED)
+						if (viewModel.purchaseAction.value == PurchaseResponseStatus.SUCCESS) showToast(getString(R.string.payment_success))
+						val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+						if (fragment is EventScreen) {
+							viewModel.purchaseAction.postValue(PurchaseResponseStatus.SUCCESS_WITH_PENDING_PURCHASE)
+						} else {
+							AppPreferences.remove(AppConstants.reservedId)
+							AppPreferences.remove(AppConstants.receiptId)
+							AppPreferences.remove(AppConstants.orderId)
+							AppPreferences.remove(AppConstants.requestId)
+							AppPreferences.remove(AppConstants.SKUId)
+							viewModel.isPaymentInProgress = false
+							viewModel.purchaseAction.postValue(PurchaseResponseStatus.NONE)
+						}
+					} ?: run {
+						PurchasingService.notifyFulfillment(AppPreferences.get(AppConstants.receiptId, DEFAULT.EMPTY_STRING).toString(), FulfillmentResult.UNAVAILABLE)
+						viewModel.purchaseAction.postValue(if (viewModel.purchaseAction.value == PurchaseResponseStatus.SUCCESS_WITH_PENDING_PURCHASE) PurchaseResponseStatus.NONE else PurchaseResponseStatus.FAILED)
+					}
+				} ?: run {
+					PurchasingService.notifyFulfillment(AppPreferences.get(AppConstants.receiptId, DEFAULT.EMPTY_STRING).toString(), FulfillmentResult.UNAVAILABLE)
+					viewModel.purchaseAction.postValue(if (viewModel.purchaseAction.value == PurchaseResponseStatus.SUCCESS_WITH_PENDING_PURCHASE) PurchaseResponseStatus.NONE else PurchaseResponseStatus.FAILED)
+				}
 			}
 		}
 	}
 
 	override fun onResume() {
 		super.onResume()
+		PurchasingService.getPurchaseUpdates(true)
 		val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
 		if (fragment is EventScreen) {
 			viewModel.updateUserStat.postValue(true)

@@ -37,6 +37,11 @@ object AppConstants {
 	const val userDisplayName: String = "user_display_name"
 	const val userAvatar: String = "user_avatar"
 	const val userTimeZoneAbbr: String = "user_time_zone_abbr"
+	const val reservedId = "reservedId"
+	const val receiptId = "receiptId"
+	const val orderId = "orderId"
+	const val requestId = "requestId"
+	const val SKUId = "SKUId"
 }
 
 object Image {
@@ -153,6 +158,18 @@ object Screens {
 	const val EXIT_APP = "EXIT_APP"
 	const val PLAYER_ERROR = "PLAYER_ERROR"
 	const val STREAM_END = "STREAM_END"
+}
+
+object PurchaseResponseStatus {
+	const val NONE = "NONE"
+	const val SUCCESS = "SUCCESS"
+	const val SUCCESS_WITH_PENDING_PURCHASE = "SUCCESS_WITH_PENDING_PURCHASE"
+	const val FAILED = "FAILED"
+	const val INVALID_SKU = "INVALID_SKU"
+	const val ALREADY_PURCHASED = "ALREADY_PURCHASED"
+	const val NOT_SUPPORTED = "NOT_SUPPORTED"
+	const val PENDING = "PENDING"
+	const val CANCELLED_BY_VEEPS = "CANCELLED_BY_VEEPS"
 }
 
 object EntityTypes {
