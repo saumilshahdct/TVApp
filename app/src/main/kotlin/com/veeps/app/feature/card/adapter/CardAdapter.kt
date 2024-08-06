@@ -104,7 +104,7 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 					helper.translateCarouselToBottom(true)
 					true
 				} else if (adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-					if (screen == Screens.EVENT && railCount == 1) {
+					if (!isRecommended && screen == Screens.EVENT && railCount == 1) {
 						helper.focusItem()
 						true
 					} else if (screen == Screens.ARTIST || screen == Screens.VENUE) {
