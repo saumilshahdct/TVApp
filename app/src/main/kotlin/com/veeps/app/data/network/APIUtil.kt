@@ -218,5 +218,12 @@ object APIUtil {
 
 		@POST(APIConstants.subscriptionMapping)
 		suspend fun subscriptionMapping(@Body hashMap: HashMap<String, Any>): Response<BaseResponseGeneric<Any>>
+		@GET
+		suspend fun validateAppVersion(
+			@Url addStatsAPIURL: String,
+			@Query("platform") platform: String,
+			@Query("stage") stage: String,
+			@Query("version") appVersion: String,
+		): Response<BaseResponseGeneric<Any>>
 	}
 }

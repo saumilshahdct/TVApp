@@ -90,4 +90,6 @@
     <string name="product_not_available">Product Data not Available</string>
     <string name="event_ended">The event has ended</string>
 
+    <string name="app_update_message">New Version Available</string>
+    <string name="app_update_message2">Please Update Your Application</string>
 </resources>

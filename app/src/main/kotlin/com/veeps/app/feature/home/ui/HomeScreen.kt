@@ -209,6 +209,9 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 				binding.errorContainer.visibility = View.GONE
 				addRemoveWatchListEvent(binding.errorDescription.text.toString())
 			}
+			APIConstants.validateAppVersions -> {
+				binding.errorContainer.visibility = View.GONE
+			}
 
 			Screens.EXIT_APP -> {
 //				finish()

@@ -100,7 +100,7 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 					}
 				}
 				when (dataResource.tag) {
-					APIConstants.authenticationPolling -> {
+					APIConstants.authenticationPolling, APIConstants.validateAppVersions -> {
 						block.invoke()
 					}
 

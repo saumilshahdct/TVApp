@@ -16,7 +16,9 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
+import com.veeps.app.BuildConfig
 import com.veeps.app.R
+import com.veeps.app.core.BaseDataSource
 import com.veeps.app.core.BaseFragment
 import com.veeps.app.databinding.FragmentBrowseScreenBinding
 import com.veeps.app.extension.fadeInNow
@@ -48,6 +50,9 @@ import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.json.JSONObject
 import kotlin.random.Random
+import com.veeps.app.core.BaseDataSource.Resource.CallStatus.ERROR
+import com.veeps.app.core.BaseDataSource.Resource.CallStatus.LOADING
+import com.veeps.app.core.BaseDataSource.Resource.CallStatus.SUCCESS
 
 
 class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>() {
@@ -101,6 +106,15 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		notifyAppEvents()
 	}
 
+	override fun onResume() {
+		super.onResume()
+			validateAppVersion(
+				APIConstants.validateAppVersions,
+				AppConstants.deviceType,
+				AppConstants.app_envirnment,
+				BuildConfig.VERSION_NAME
+			)
+	}
 	private fun setupVideoPlayer() {
 		releaseVideoPlayer()
 		player = context?.let { context -> ExoPlayer.Builder(context).build() }!!
@@ -158,6 +172,10 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		binding.browseLabel.setupWith(binding.container).setBlurRadius(12.5f)
 		binding.browseLabel.outlineProvider = ViewOutlineProvider.BACKGROUND
 		binding.browseLabel.clipToOutline = true
+
+		binding.appUpdate.setupWith(binding.container).setBlurRadius(12.5f)
+		binding.appUpdate.outlineProvider = ViewOutlineProvider.BACKGROUND
+		binding.appUpdate.clipToOutline = true
 
 		binding.onDemandLabel.setupWith(binding.container).setBlurRadius(12.5f)
 		binding.onDemandLabel.outlineProvider = ViewOutlineProvider.BACKGROUND
@@ -655,4 +673,43 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			fetchOnDemandRails()
 		}
 	}
+	private fun validateAppVersion(
+		appVersionAPIURL: String,
+		platform: String,
+		stage: String,
+		appVersion: String,
+	) {
+		viewModel.isAppUpdateCall = true
+		viewModel.validateAppVersion(
+			appVersionAPIURL,
+			platform,
+			stage,
+			appVersion
+		).observe(this@BrowseScreen) { appVersionResponse ->
+			fetch(
+				appVersionResponse,
+				isLoaderEnabled = false,
+				canUserAccessScreen = false,
+				shouldBeInBackground = false
+			) {
+
+				Logger.print("vicky= "+appVersionResponse)
+				when (appVersionResponse.callStatus) {
+					SUCCESS -> {
+						binding.appUpdate.visibility = View.GONE
+					}
+					ERROR -> {
+						appVersionResponse.message?.let {
+							if (appVersionResponse.message == "old_version") {
+								binding.appUpdate.visibility = View.VISIBLE
+							}
+						}
+					}
+					else -> Logger.doNothing()
+				}
+			}
+		}
+	}
+
+
 }

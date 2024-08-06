@@ -5,7 +5,8 @@ import com.veeps.app.BuildConfig
 object AppConstants {
 	const val PREFS_FILENAME: String = "veeps"
 	const val TAG: String = "VeepsAppTag"
-	const val deviceType: String = "fireTv"
+	const val deviceType: String = "firetv"
+	const val app_envirnment: String = "prd"
 	const val deviceName: String = "Amazon Fire TV"
 	const val clientId: String = "40a3903ae06585f0c114464750d605bba618afd01159f4eefef68c255c746a89"
 	const val clientSecret: String =
@@ -157,6 +158,7 @@ object Screens {
 	const val EXIT_APP = "EXIT_APP"
 	const val PLAYER_ERROR = "PLAYER_ERROR"
 	const val STREAM_END = "STREAM_END"
+	const val APP_UPDATE = "APP_UPDATE"
 	const val SUBSCRIPTION = "SUBSCRIPTION"
 }
 
