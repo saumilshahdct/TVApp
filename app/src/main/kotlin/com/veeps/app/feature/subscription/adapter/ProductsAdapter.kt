@@ -1,6 +1,7 @@
 package com.veeps.app.feature.subscription.adapter
 
 import android.content.Context
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +12,7 @@ import com.veeps.app.databinding.ProductItemBinding
 import com.veeps.app.extension.isFireTV
 import com.veeps.app.feature.contentRail.model.Products
 import com.veeps.app.util.AppHelper
+import com.veeps.app.util.DEFAULT
 import com.veeps.app.util.Screens
 
 
@@ -49,6 +51,9 @@ class ProductsAdapter(
         holder.binding.planContainer.setOnFocusChangeListener { view, hasFocus ->
             holder.binding.unselectLabel.visibility = if (hasFocus) View.GONE else View.VISIBLE
             holder.binding.selectLabel.visibility = if (hasFocus) View.VISIBLE else View.GONE
+        }
+        holder.binding.planContainer.setOnKeyListener { _, keyCode, keyEvent ->
+            keyEvent.action == KeyEvent.ACTION_DOWN && (keyCode == KeyEvent.KEYCODE_DPAD_DOWN || keyCode == KeyEvent.KEYCODE_DPAD_UP || (position != DEFAULT.EMPTY_INT && (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT)))
         }
 
     }
