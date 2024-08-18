@@ -49,7 +49,7 @@ import kotlin.system.exitProcess
 
 
 class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), NavigationItem,
-	AppHelper, PurchasingListener {
+	AppHelper {
 
 	private var currentUserId: String = DEFAULT.EMPTY_STRING
 	private var currentMarketplace: String = DEFAULT.EMPTY_STRING
@@ -596,7 +596,76 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	private fun initiateIAP() {
-		PurchasingService.registerListener(this@HomeScreen, this@HomeScreen)
+		PurchasingService.registerListener(this@HomeScreen, object : PurchasingListener {
+			override fun onUserDataResponse(response: UserDataResponse?) {
+				when (response?.requestStatus) {
+					UserDataResponse.RequestStatus.SUCCESSFUL -> {
+						currentUserId = response.userData.userId
+						currentMarketplace = response.userData.marketplace
+					}
+
+					UserDataResponse.RequestStatus.FAILED, UserDataResponse.RequestStatus.NOT_SUPPORTED, null -> {
+					}
+				}
+			}
+
+			override fun onProductDataResponse(productDataResponse: ProductDataResponse?) {}
+
+			override fun onPurchaseResponse(purchaseResponse: PurchaseResponse?) {
+				when (purchaseResponse?.requestStatus) {
+					PurchaseResponse.RequestStatus.SUCCESSFUL -> {
+						if (!purchaseResponse.receipt.isCanceled) {
+							AppPreferences.set(AppConstants.receiptId, purchaseResponse.receipt.receiptId)
+							viewModel.purchaseAction.postValue(PurchaseResponseStatus.SUCCESS)
+						}
+					}
+
+					PurchaseResponse.RequestStatus.FAILED -> {
+						viewModel.purchaseAction.postValue(PurchaseResponseStatus.FAILED)
+					}
+
+					PurchaseResponse.RequestStatus.INVALID_SKU -> {
+						viewModel.purchaseAction.postValue(PurchaseResponseStatus.INVALID_SKU)
+					}
+
+					PurchaseResponse.RequestStatus.ALREADY_PURCHASED -> {
+						viewModel.purchaseAction.postValue(PurchaseResponseStatus.ALREADY_PURCHASED)
+					}
+
+					PurchaseResponse.RequestStatus.NOT_SUPPORTED -> {
+						viewModel.purchaseAction.postValue(PurchaseResponseStatus.NOT_SUPPORTED)
+					}
+
+					PurchaseResponse.RequestStatus.PENDING -> {
+						viewModel.purchaseAction.postValue(PurchaseResponseStatus.PENDING)
+					}
+
+					else -> {
+						viewModel.purchaseAction.postValue(PurchaseResponseStatus.CANCELLED_BY_VEEPS)
+					}
+				}
+			}
+
+			override fun onPurchaseUpdatesResponse(response: PurchaseUpdatesResponse?) {
+				when (response?.requestStatus) {
+					PurchaseUpdatesResponse.RequestStatus.SUCCESSFUL -> {
+						response.receipts.forEach { receipt ->
+							if (!receipt.isCanceled) {
+								if (receipt.sku.equals(AppPreferences.get(AppConstants.SKUId, DEFAULT.EMPTY_STRING))) {
+									AppPreferences.set(AppConstants.receiptId, receipt.receiptId)
+									createOrder()
+								} else {
+									PurchasingService.notifyFulfillment(receipt.receiptId, FulfillmentResult.UNAVAILABLE)
+									viewModel.purchaseAction.postValue(PurchaseResponseStatus.NONE)
+								}
+							}
+						}
+					}
+
+					else -> {}
+				}
+			}
+		})
 		PurchasingService.enablePendingPurchases()
 		PurchasingService.getUserData()
 	}
@@ -608,75 +677,6 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 
 	fun purchaseProduct() {
 		PurchasingService.purchase("parentSKU")
-	}
-
-	override fun onUserDataResponse(response: UserDataResponse?) {
-		when (response?.requestStatus) {
-			UserDataResponse.RequestStatus.SUCCESSFUL -> {
-				currentUserId = response.userData.userId
-				currentMarketplace = response.userData.marketplace
-			}
-
-			UserDataResponse.RequestStatus.FAILED, UserDataResponse.RequestStatus.NOT_SUPPORTED, null -> {
-			}
-		}
-	}
-
-	override fun onProductDataResponse(productDataResponse: ProductDataResponse?) {}
-
-	override fun onPurchaseResponse(purchaseResponse: PurchaseResponse?) {
-		when (purchaseResponse?.requestStatus) {
-			PurchaseResponse.RequestStatus.SUCCESSFUL -> {
-				if (!purchaseResponse.receipt.isCanceled) {
-					AppPreferences.set(AppConstants.receiptId, purchaseResponse.receipt.receiptId)
-					viewModel.purchaseAction.postValue(PurchaseResponseStatus.SUCCESS)
-				}
-			}
-
-			PurchaseResponse.RequestStatus.FAILED -> {
-				viewModel.purchaseAction.postValue(PurchaseResponseStatus.FAILED)
-			}
-
-			PurchaseResponse.RequestStatus.INVALID_SKU -> {
-				viewModel.purchaseAction.postValue(PurchaseResponseStatus.INVALID_SKU)
-			}
-
-			PurchaseResponse.RequestStatus.ALREADY_PURCHASED -> {
-				viewModel.purchaseAction.postValue(PurchaseResponseStatus.ALREADY_PURCHASED)
-			}
-
-			PurchaseResponse.RequestStatus.NOT_SUPPORTED -> {
-				viewModel.purchaseAction.postValue(PurchaseResponseStatus.NOT_SUPPORTED)
-			}
-
-			PurchaseResponse.RequestStatus.PENDING -> {
-				viewModel.purchaseAction.postValue(PurchaseResponseStatus.PENDING)
-			}
-
-			else -> {
-				viewModel.purchaseAction.postValue(PurchaseResponseStatus.CANCELLED_BY_VEEPS)
-			}
-		}
-	}
-
-	override fun onPurchaseUpdatesResponse(response: PurchaseUpdatesResponse?) {
-		when (response?.requestStatus) {
-			PurchaseUpdatesResponse.RequestStatus.SUCCESSFUL -> {
-				response.receipts.forEach { receipt ->
-					if (!receipt.isCanceled) {
-						if (receipt.sku.equals(AppPreferences.get(AppConstants.SKUId, DEFAULT.EMPTY_STRING))) {
-							AppPreferences.set(AppConstants.receiptId, receipt.receiptId)
-							createOrder()
-						} else {
-							PurchasingService.notifyFulfillment(receipt.receiptId, FulfillmentResult.UNAVAILABLE)
-							viewModel.purchaseAction.postValue(PurchaseResponseStatus.NONE)
-						}
-					}
-				}
-			}
-
-			else -> {}
-		}
 	}
 
 	private fun createOrder() {
@@ -723,7 +723,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 
 	override fun onResume() {
 		super.onResume()
-		PurchasingService.getPurchaseUpdates(true)
+		if (isFireTV) PurchasingService.getPurchaseUpdates(true)
 		val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
 		if (fragment is EventScreen) {
 			viewModel.updateUserStat.postValue(true)
