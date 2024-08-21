@@ -38,7 +38,6 @@ object AppConstants {
 	const val userAvatar: String = "user_avatar"
 	const val userTimeZoneAbbr: String = "user_time_zone_abbr"
 	const val drmLicenseURL = "https://widevine-dash.ezdrm.com/proxy?pX=72D27A"
-
 	const val reservedId = "reservedId"
 	const val receiptId = "receiptId"
 	const val orderId = "orderId"
@@ -166,6 +165,18 @@ object Screens {
 	const val APP_UPDATE = "APP_UPDATE"
 	const val SUBSCRIPTION = "SUBSCRIPTION"
 	const val GENRE = "GENRE"
+}
+
+object PurchaseResponseStatus {
+	const val NONE = "NONE"
+	const val SUCCESS = "SUCCESS"
+	const val SUCCESS_WITH_PENDING_PURCHASE = "SUCCESS_WITH_PENDING_PURCHASE"
+	const val FAILED = "FAILED"
+	const val INVALID_SKU = "INVALID_SKU"
+	const val ALREADY_PURCHASED = "ALREADY_PURCHASED"
+	const val NOT_SUPPORTED = "NOT_SUPPORTED"
+	const val PENDING = "PENDING"
+	const val CANCELLED_BY_VEEPS = "CANCELLED_BY_VEEPS"
 }
 
 object PurchaseResponseStatus {

@@ -443,11 +443,13 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 						errorMessage = getString(R.string.ticket_already_purchased)
 					}
 				}
+
 				if (it != PurchaseResponseStatus.NONE) {
 					helper.showErrorOnScreen(APIConstants.generateNewOrder, errorMessage)
 					homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.NONE)
 				}
-				AppPreferences.remove(AppConstants.reservedId)
+
+        AppPreferences.remove(AppConstants.reservedId)
 				AppPreferences.remove(AppConstants.receiptId)
 				AppPreferences.remove(AppConstants.orderId)
 				AppPreferences.remove(AppConstants.requestId)

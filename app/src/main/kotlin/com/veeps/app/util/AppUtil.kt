@@ -527,7 +527,6 @@ object AppUtil {
 						EventAccessType.VEEPS_FREE -> if (isEventStarted)
 							ButtonLabels.JOIN_LIVE
 						else ButtonLabels.JOIN
-
 						else -> if (isEventPurchased) {
 							if (isEventStarted) {
 								ButtonLabels.JOIN_LIVE
@@ -603,7 +602,6 @@ object AppUtil {
 						EventAccessType.VEEPS_FREE -> if (isEventStarted)
 							ButtonLabels.JOIN_LIVE
 						else ButtonLabels.JOIN
-
 						else -> if (isUserSubscribed || isEventPurchased) {
 							if (isEventStarted) {
 								ButtonLabels.JOIN_LIVE
@@ -613,6 +611,7 @@ object AppUtil {
 						} else {
 							ButtonLabels.UNAVAILABLE
 						}
+					}
 					}
 				}
 			}
@@ -665,7 +664,6 @@ object AppUtil {
 						EventAccessType.VEEPS_FREE -> if (isEventStarted)
 							ButtonLabels.JOIN_LIVE
 						else ButtonLabels.JOIN
-
 						else -> if (isUserSubscribed) {
 							if (isEventStarted) {
 								ButtonLabels.JOIN_LIVE
@@ -730,7 +728,6 @@ object AppUtil {
 						EventAccessType.VEEPS_FREE -> if (isEventStarted)
 							ButtonLabels.JOIN_LIVE
 						else ButtonLabels.JOIN
-
 						else -> if (isUserSubscribed || isEventPurchased) {
 							if (isEventStarted) {
 								ButtonLabels.JOIN_LIVE

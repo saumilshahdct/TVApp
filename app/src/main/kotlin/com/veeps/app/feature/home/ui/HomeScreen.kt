@@ -54,7 +54,7 @@ import kotlin.system.exitProcess
 
 
 class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), NavigationItem,
-	AppHelper, PurchasingListener {
+	AppHelper {
 
 	private var currentUserId: String = DEFAULT.EMPTY_STRING
 	private var currentMarketplace: String = DEFAULT.EMPTY_STRING
@@ -622,7 +622,6 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 					}
 				}
 			}
-
 			override fun onProductDataResponse(productDataResponse: ProductDataResponse?) {
 				when (productDataResponse?.requestStatus) {
 					ProductDataResponse.RequestStatus.SUCCESSFUL -> {
