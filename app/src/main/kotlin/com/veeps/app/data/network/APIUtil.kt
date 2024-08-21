@@ -218,7 +218,11 @@ object APIUtil {
 
 		@POST(APIConstants.subscriptionMapping)
 		suspend fun subscriptionMapping(@Body hashMap: HashMap<String, Any>): Response<BaseResponseGeneric<Any>>
-		@GET
+
+    @GET(APIConstants.fetchGenreContent)
+		suspend fun fetchGenreContent(@Query("scope") scope: String): Response<RailResponse>
+
+    @GET
 		suspend fun validateAppVersion(
 			@Url addStatsAPIURL: String,
 			@Query("platform") platform: String,

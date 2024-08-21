@@ -43,6 +43,12 @@ class APIRepository : BaseDataSource() {
 		}
 	}
 
+	fun fetchGenreRails(genreName : String) = performOperation(APIConstants.fetchGenreContent) {
+		getResult(APIConstants.fetchGenreContent) {
+			APIUtil.service.fetchGenreContent(genreName)
+		}
+	}
+
 	fun fetchFeaturedContent() = performOperation(APIConstants.fetchFeaturedContent) {
 		getResult(APIConstants.fetchFeaturedContent) {
 			APIUtil.service.fetchFeaturedContent()

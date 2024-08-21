@@ -18,6 +18,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.util.EventLogger
 import androidx.recyclerview.widget.PagerSnapHelper
 import com.amazon.device.iap.PurchasingService
+import com.amazon.device.iap.model.FulfillmentResult
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
 import com.veeps.app.R
@@ -28,6 +29,7 @@ import com.veeps.app.extension.fadeOutNow
 import com.veeps.app.extension.isFireTV
 import com.veeps.app.extension.isGreaterThan
 import com.veeps.app.extension.loadImage
+import com.veeps.app.extension.showToast
 import com.veeps.app.feature.contentRail.adapter.ContentRailsAdapter
 import com.veeps.app.feature.contentRail.model.Entities
 import com.veeps.app.feature.contentRail.model.Products
@@ -47,6 +49,7 @@ import com.veeps.app.util.EntityTypes
 import com.veeps.app.util.ImageTags
 import com.veeps.app.util.IntValue
 import com.veeps.app.util.Logger
+import com.veeps.app.util.PurchaseResponseStatus
 import com.veeps.app.util.Screens
 import com.veeps.app.widget.navigationMenu.NavigationItems
 import io.noties.markwon.Markwon
@@ -413,23 +416,47 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		homeViewModel.purchaseAction.observe(viewLifecycleOwner) {
 			if (it.isNullOrBlank()) {
 				binding.paymentLoader.visibility = View.GONE
+			} else if (it == PurchaseResponseStatus.SUCCESS) {
+				if (!homeViewModel.isSubscription) createOrder()
+			} else if (it == PurchaseResponseStatus.SUCCESS_WITH_PENDING_PURCHASE) {
+				fetchEventStreamDetails()
 			} else {
+				var errorMessage = getString(R.string.unknown_error)
 				when (it) {
-					"PURCHASED" -> {
-						if (!homeViewModel.isSubscription)
-						createOrder()
+					PurchaseResponseStatus.FAILED -> {
+						errorMessage = getString(R.string.payment_failed)
 					}
 
-					"FAILED" -> {
-						homeViewModel.purchaseAction.postValue(null)
-						helper.showErrorOnScreen(
-							APIConstants.generateNewOrder, "Payment Failed. Please Try Again."
-						)
-						binding.paymentLoader.visibility = View.GONE
+					PurchaseResponseStatus.INVALID_SKU -> {
+						errorMessage = getString(R.string.product_not_available)
+					}
+
+					PurchaseResponseStatus.NOT_SUPPORTED -> {
+						errorMessage = getString(R.string.iap_not_supported)
+					}
+
+					PurchaseResponseStatus.PENDING -> {
+						errorMessage = getString(R.string.payment_pending)
+					}
+
+					PurchaseResponseStatus.ALREADY_PURCHASED -> {
+						errorMessage = getString(R.string.ticket_already_purchased)
 					}
 				}
+				if (it != PurchaseResponseStatus.NONE) {
+					helper.showErrorOnScreen(APIConstants.generateNewOrder, errorMessage)
+					homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.NONE)
+				}
+				AppPreferences.remove(AppConstants.reservedId)
+				AppPreferences.remove(AppConstants.receiptId)
+				AppPreferences.remove(AppConstants.orderId)
+				AppPreferences.remove(AppConstants.requestId)
+				AppPreferences.remove(AppConstants.SKUId)
+				homeViewModel.isPaymentInProgress = false
+				binding.paymentLoader.visibility = View.GONE
 			}
 		}
+
 		homeViewModel.updateUserStat.observe(viewLifecycleOwner) { doesUpdateRequired ->
 			if (doesUpdateRequired && binding.primary.tag == ButtonLabels.PLAY) {
 				fetchUserStats()
@@ -476,6 +503,8 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 								ButtonLabels.BUY_TICKET.plus(product.displayPrice)
 							if (context?.isFireTV == true) {
 								PurchasingService.getProductData(hashSetOf(product.productCode))
+							} else {
+								homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.NOT_SUPPORTED)
 							}
 						}
 					} else {
@@ -587,8 +616,10 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		)
 		binding.subscribe.visibility = if (AppPreferences.get(
 				AppConstants.userSubscriptionStatus, "none"
-			) == "none"
-		) View.VISIBLE else View.GONE
+			) == "none" && (homeViewModel.productsList.isNotEmpty())
+		) {
+			View.VISIBLE
+		} else View.GONE
 
 		setupMyShows(isAdded = homeViewModel.watchlistIds.contains(eventDetails.id))
 
@@ -666,6 +697,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		binding.primary.requestFocus()
 		binding.logo.isFocusable = false
 		binding.logo.isFocusableInTouchMode = false
+		homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.NONE)
 	}
 
 	private fun setupRails() {
@@ -900,7 +932,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		viewModel.clearAllReservations().observe(viewLifecycleOwner) { clearAllReservations ->
 			fetch(
 				clearAllReservations,
-				isLoaderEnabled = true,
+				isLoaderEnabled = false,
 				canUserAccessScreen = true,
 				shouldBeInBackground = true
 			) {
@@ -914,18 +946,19 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			.observe(viewLifecycleOwner) { setNewReservation ->
 				fetch(
 					setNewReservation,
-					isLoaderEnabled = true,
+					isLoaderEnabled = false,
 					canUserAccessScreen = true,
 					shouldBeInBackground = true
 				) {
 					setNewReservation.response?.let {
 						it.data?.let { reservation ->
-							homeViewModel.reservedId = reservation.id
+							AppPreferences.set(AppConstants.reservedId, reservation.id)
 							generateNewOrder()
+						} ?: run {
+							homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.FAILED)
 						}
 					} ?: run {
-						binding.paymentLoader.visibility = View.GONE
-
+						homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.FAILED)
 					}
 				}
 			}
@@ -935,20 +968,22 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		viewModel.generateNewOrder().observe(viewLifecycleOwner) { generateNewOrder ->
 			fetch(
 				generateNewOrder,
-				isLoaderEnabled = true,
+				isLoaderEnabled = false,
 				canUserAccessScreen = true,
 				shouldBeInBackground = true
 			) {
 				generateNewOrder.response?.let {
 					it.data?.let { order ->
-						homeViewModel.orderId = order.id
+						AppPreferences.set(AppConstants.orderId, order.id)
 						if (context?.isFireTV == true) {
-							PurchasingService.purchase(product.productCode)
+							val requestId = PurchasingService.purchase(product.productCode)
+							AppPreferences.set(AppConstants.SKUId, product.productCode)
+							AppPreferences.set(AppConstants.requestId, requestId.toString())
 						} else {
-							binding.paymentLoader.visibility = View.GONE
+							homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.NOT_SUPPORTED)
 						}
-					} ?: run { binding.paymentLoader.visibility = View.GONE }
-				} ?: run { binding.paymentLoader.visibility = View.GONE }
+					} ?: run { homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.FAILED) }
+				} ?: run { homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.FAILED) }
 			}
 		}
 	}
@@ -956,24 +991,30 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 	private fun createOrder() {
 		viewModel.createOrder(
 			hashMapOf(
-				"order_id" to homeViewModel.orderId,
-				"payment_id" to homeViewModel.receiptId,
+				"order_id" to AppPreferences.get(AppConstants.orderId, DEFAULT.EMPTY_STRING).toString(),
+				"payment_id" to AppPreferences.get(AppConstants.receiptId, DEFAULT.EMPTY_STRING).toString(),
 				"vendor" to "fire_tv",
 			)
 		).observe(viewLifecycleOwner) { createOrder ->
 			fetch(
 				createOrder,
-				isLoaderEnabled = true,
+				isLoaderEnabled = false,
 				canUserAccessScreen = true,
 				shouldBeInBackground = true
 			) {
 				createOrder.response?.let {
 					it.data?.let {
-						homeViewModel.purchaseAction.postValue(null)
 						fetchEventStreamDetails()
-						binding.paymentLoader.visibility = View.GONE
-					} ?: run { binding.paymentLoader.visibility = View.GONE }
-				} ?: run { binding.paymentLoader.visibility = View.GONE }
+						PurchasingService.notifyFulfillment(AppPreferences.get(AppConstants.receiptId, DEFAULT.EMPTY_STRING).toString(), FulfillmentResult.FULFILLED)
+						if (homeViewModel.purchaseAction.value == PurchaseResponseStatus.SUCCESS) showToast(getString(R.string.payment_success))
+					} ?: run {
+						PurchasingService.notifyFulfillment(AppPreferences.get(AppConstants.receiptId, DEFAULT.EMPTY_STRING).toString(), FulfillmentResult.UNAVAILABLE)
+						homeViewModel.purchaseAction.postValue(if (homeViewModel.purchaseAction.value == PurchaseResponseStatus.SUCCESS_WITH_PENDING_PURCHASE) PurchaseResponseStatus.NONE else PurchaseResponseStatus.FAILED)
+					}
+				} ?: run {
+					PurchasingService.notifyFulfillment(AppPreferences.get(AppConstants.receiptId, DEFAULT.EMPTY_STRING).toString(), FulfillmentResult.UNAVAILABLE)
+					homeViewModel.purchaseAction.postValue(if (homeViewModel.purchaseAction.value == PurchaseResponseStatus.SUCCESS_WITH_PENDING_PURCHASE) PurchaseResponseStatus.NONE else PurchaseResponseStatus.FAILED)
+				}
 			}
 		}
 	}
@@ -981,9 +1022,16 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 	fun onPrimaryClicked(tag: Any?) {
 		when (tag) {
 			ButtonLabels.BUY_TICKET -> {
-				homeViewModel.isSubscription = false
-				binding.paymentLoader.visibility = View.VISIBLE
-				clearAllReservations()
+				if (context?.isFireTV == true) {
+					if (!homeViewModel.isPaymentInProgress) {
+						homeViewModel.isPaymentInProgress = true
+						homeViewModel.isSubscription = false
+						binding.paymentLoader.visibility = View.VISIBLE
+						clearAllReservations()
+					}
+				} else {
+					homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.NOT_SUPPORTED)
+				}
 			}
 
 			ButtonLabels.PLAY -> {

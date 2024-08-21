@@ -7,7 +7,6 @@
 
     <string name="unknown_error">Something went wrong at our end. Please try again later.</string>
     <string name="no_connectivity_error">You are not connected to the internet.</string>
-    <string name="error_message">You are not connected to the internet.</string>
     <string name="error_description">We’re having trouble playing this video. Please try again or visit veeps.com/help for more information.</string>
 
     <string name="ok_label">OK</string>
@@ -85,11 +84,19 @@
     <string name="free_for_subscriber">Free For Subscribers</string>
     <string name="choose_plan">Choose your plan</string>
     <string name="switch_or_cancel">Switch or cancel anytime</string>
-    <string name="payment_failed">"Payment Failed. Please Try Again."</string>
-    <string name="feature_not_available">This feature is not available</string>
-    <string name="product_not_available">Product Data not Available</string>
     <string name="event_ended">The event has ended</string>
 
     <string name="app_update_message">New Version Available</string>
     <string name="app_update_message2">Please Update Your Application</string>
+
+    <!-- Payment Status -->
+    <string name="payment_success">Thank you! Your ticket purchase was successful. Enjoy the event!</string>
+    <string name="payment_failed">Your payment could not be completed. Please try again.</string>
+    <string name="product_not_available">We\'re sorry, but the product you are trying to purchase is not available at the moment. Please check back later.</string>
+    <string name="iap_not_supported">We\'re sorry, but in-app purchases are not supported on this device.\n\nTo complete your purchase, please visit our website or use a compatible device.\n\nFor further assistance, please contact our support team.</string>
+    <string name="ticket_already_purchased">It looks like you\'ve already purchased this ticket. Please check your purchases or contact support for more information.</string>
+    <string name="payment_pending">Your payment is currently pending. Please wait a few moments and check back later. If the issue persists, contact support for assistance.</string>
+    <string name="order_pending">Your order is currently pending. Please wait a few moments and check back later. If the issue persists, contact support for assistance.</string>
+
+
 </resources>

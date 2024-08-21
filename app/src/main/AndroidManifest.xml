@@ -137,4 +137,9 @@
             android:value="${BitmovinKey}"/>
     </application>
 
+    <queries>
+        <package android:name="com.amazon.sdktestclient" />
+        <package android:name="com.amazon.venezia" />
+    </queries>
+
 </manifest>

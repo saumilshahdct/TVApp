@@ -382,7 +382,7 @@ object AppUtil {
 			EventAccessType.PAID
 		} else if (entity.access.contains("free")) {
 			EventAccessType.FREE
-		} else if (entity.access.contains( "veeps_free")) {
+		} else if (entity.access.contains("veeps_free")) {
 			EventAccessType.VEEPS_FREE
 		} else EventAccessType.NONE
 
@@ -443,7 +443,7 @@ object AppUtil {
 			EventAccessType.PAID
 		} else if (entity.access.contains("free")) {
 			EventAccessType.FREE
-		} else if (entity.access.contains( "veeps_free")) {
+		} else if (entity.access.contains("veeps_free")) {
 			EventAccessType.VEEPS_FREE
 		} else EventAccessType.NONE
 		val streamStartsAtDate =
@@ -490,6 +490,7 @@ object AppUtil {
 					else -> ButtonLabels.UNAVAILABLE
 				}
 			}
+
 			"off_sale_ondemand" -> {
 				when (userEventAccess) {
 					EventAccessType.VEEPS_FREE -> ButtonLabels.PLAY
@@ -526,6 +527,7 @@ object AppUtil {
 						EventAccessType.VEEPS_FREE -> if (isEventStarted)
 							ButtonLabels.JOIN_LIVE
 						else ButtonLabels.JOIN
+
 						else -> if (isEventPurchased) {
 							if (isEventStarted) {
 								ButtonLabels.JOIN_LIVE
@@ -577,7 +579,7 @@ object AppUtil {
 				if (screen == Screens.BROWSE) {
 					if (isEventStarted) {
 						if (isUserSubscribed) when (userEventAccess) {
-							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE, EventAccessType.PAID  -> ButtonLabels.GO_TO_EVENT
+							EventAccessType.VEEPS_PLUS_PAID, EventAccessType.VEEPS_PLUS, EventAccessType.FREE, EventAccessType.PAID -> ButtonLabels.GO_TO_EVENT
 							else -> ButtonLabels.UNAVAILABLE
 						}
 						else when (userEventAccess) {
@@ -601,15 +603,16 @@ object AppUtil {
 						EventAccessType.VEEPS_FREE -> if (isEventStarted)
 							ButtonLabels.JOIN_LIVE
 						else ButtonLabels.JOIN
+
 						else -> if (isUserSubscribed || isEventPurchased) {
-						if (isEventStarted) {
-							ButtonLabels.JOIN_LIVE
+							if (isEventStarted) {
+								ButtonLabels.JOIN_LIVE
+							} else {
+								ButtonLabels.JOIN
+							}
 						} else {
-							ButtonLabels.JOIN
+							ButtonLabels.UNAVAILABLE
 						}
-					} else {
-						ButtonLabels.UNAVAILABLE
-					}
 					}
 				}
 			}
@@ -662,6 +665,7 @@ object AppUtil {
 						EventAccessType.VEEPS_FREE -> if (isEventStarted)
 							ButtonLabels.JOIN_LIVE
 						else ButtonLabels.JOIN
+
 						else -> if (isUserSubscribed) {
 							if (isEventStarted) {
 								ButtonLabels.JOIN_LIVE
@@ -726,6 +730,7 @@ object AppUtil {
 						EventAccessType.VEEPS_FREE -> if (isEventStarted)
 							ButtonLabels.JOIN_LIVE
 						else ButtonLabels.JOIN
+
 						else -> if (isUserSubscribed || isEventPurchased) {
 							if (isEventStarted) {
 								ButtonLabels.JOIN_LIVE
@@ -836,6 +841,7 @@ object AppUtil {
 			}
 		}
 	}
+
 	fun getUserType(entity: Entities): String {
 		return when (AppPreferences.get(
 			AppConstants.userSubscriptionStatus, "none"
@@ -843,6 +849,7 @@ object AppUtil {
 			EventAccessType.VEEPS_PARTNER -> {
 				UserType.VEEPS_PAID_SUBSCRIBER
 			}
+
 			else -> {
 				if (entity.access.contains("veeps_free")) {
 					UserType.VEEPS_FREE_TIER
@@ -852,13 +859,27 @@ object AppUtil {
 			}
 		}
 	}
+
 	fun isEventStarted(streamStartAt: String): Boolean {
-		val currentDate = DateTime.now()
-		val streamStartsAtDate =
-			DateTime(streamStartAt, DateTimeZone.UTC).withZone(DateTimeZone.getDefault())
-				.toDateTime()
-		val isEventStarted =
-			compare(streamStartsAtDate, currentDate) != DateTimeCompareDifference.GREATER_THAN
-		return isEventStarted
+		return compare(DateTime(streamStartAt, DateTimeZone.UTC).withZone(DateTimeZone.getDefault())
+			.toDateTime(), DateTime.now()) != DateTimeCompareDifference.GREATER_THAN
+	}
+
+	fun getGenreCardColor(genreName: String): Int {
+		return when (genreName) {
+			GenreName.COMEDY -> Veeps.appContext.getColor(R.color.comedy)
+			GenreName.COUNTRY -> Veeps.appContext.getColor(R.color.country)
+			GenreName.INDIE -> Veeps.appContext.getColor(R.color.indie)
+			GenreName.POP -> Veeps.appContext.getColor(R.color.pop)
+			GenreName.K_POP -> Veeps.appContext.getColor(R.color.kpop)
+			GenreName.RAP -> Veeps.appContext.getColor(R.color.rap)
+			GenreName.FOLK -> Veeps.appContext.getColor(R.color.folk)
+			GenreName.ROCK -> Veeps.appContext.getColor(R.color.rock)
+			GenreName.ALTERNATIVE -> Veeps.appContext.getColor(R.color.alternative)
+			GenreName.METAL -> Veeps.appContext.getColor(R.color.metal)
+			GenreName.JAZZ -> Veeps.appContext.getColor(R.color.jazz)
+			GenreName.R_AND_B -> Veeps.appContext.getColor(R.color.rnb)
+			else -> Veeps.appContext.getColor(R.color.comedy)
+		}
 	}
 }

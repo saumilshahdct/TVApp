@@ -5,9 +5,9 @@ import com.veeps.app.BuildConfig
 object AppConstants {
 	const val PREFS_FILENAME: String = "veeps"
 	const val TAG: String = "VeepsAppTag"
-	const val deviceType: String = "firetv"
-	const val app_envirnment: String = "prd"
+	const val deviceType: String = "fireTv"
 	const val deviceName: String = "Amazon Fire TV"
+
 	const val clientId: String = "40a3903ae06585f0c114464750d605bba618afd01159f4eefef68c255c746a89"
 	const val clientSecret: String =
 		"0db660fe553f3fe5fba3f0c7270a7a20c31ef49f27167bbde9ce905777a5aaac"
@@ -39,6 +39,11 @@ object AppConstants {
 	const val userTimeZoneAbbr: String = "user_time_zone_abbr"
 	const val drmLicenseURL = "https://widevine-dash.ezdrm.com/proxy?pX=72D27A"
 
+	const val reservedId = "reservedId"
+	const val receiptId = "receiptId"
+	const val orderId = "orderId"
+	const val requestId = "requestId"
+	const val SKUId = "SKUId"
 }
 
 object Image {
@@ -160,12 +165,26 @@ object Screens {
 	const val STREAM_END = "STREAM_END"
 	const val APP_UPDATE = "APP_UPDATE"
 	const val SUBSCRIPTION = "SUBSCRIPTION"
+	const val GENRE = "GENRE"
+}
+
+object PurchaseResponseStatus {
+	const val NONE = "NONE"
+	const val SUCCESS = "SUCCESS"
+	const val SUCCESS_WITH_PENDING_PURCHASE = "SUCCESS_WITH_PENDING_PURCHASE"
+	const val FAILED = "FAILED"
+	const val INVALID_SKU = "INVALID_SKU"
+	const val ALREADY_PURCHASED = "ALREADY_PURCHASED"
+	const val NOT_SUPPORTED = "NOT_SUPPORTED"
+	const val PENDING = "PENDING"
+	const val CANCELLED_BY_VEEPS = "CANCELLED_BY_VEEPS"
 }
 
 object EntityTypes {
 	const val EVENT = "event"
 	const val ARTIST = "artist"
 	const val VENUE = "venue"
+	const val GENRES = "genre"
 }
 
 object EventTypes {
@@ -255,4 +274,22 @@ object SubscriptionPlanDetails {
 	const val PLAN_BENEFIT_TWO = "Enjoy 3000 hours of on-demand shows"
 	const val PLAN_BENEFIT_THREE = "Unlock exclusive content from your favorite artists"
 	const val PLAN_BENEFIT_FOURE = "Stream on your Fire TV"
+}
+
+object MarketPlace {
+	const val US = "US"
+
+object GenreName {
+	const val COMEDY = "Comedy"
+	const val COUNTRY = "Country"
+	const val INDIE = "Indie"
+	const val POP = "Pop"
+	const val K_POP = "K-Pop"
+	const val RAP = "Rap"
+	const val FOLK = "Folk"
+	const val ROCK = "Rock"
+	const val ALTERNATIVE = "Alternative"
+	const val METAL = "Metal"
+	const val JAZZ = "Jazz"
+	const val R_AND_B = "R&B"
 }

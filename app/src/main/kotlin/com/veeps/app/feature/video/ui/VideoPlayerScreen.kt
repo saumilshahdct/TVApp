@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -59,6 +60,7 @@ import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
 import com.veeps.app.databinding.ActivityVideoPlayerScreenBinding
 import com.veeps.app.extension.loadImage
+import com.veeps.app.extension.round
 import com.veeps.app.extension.setHorizontalBias
 import com.veeps.app.feature.contentRail.model.ChatMessageItem
 import com.veeps.app.feature.contentRail.model.Entities
@@ -72,7 +74,6 @@ import com.veeps.app.util.AppUtil
 import com.veeps.app.util.DEFAULT
 import com.veeps.app.util.EntityTypes
 import com.veeps.app.util.EventTypes
-import com.veeps.app.util.GlideThumbnailTransformation
 import com.veeps.app.util.ImageTags
 import com.veeps.app.util.IntValue
 import com.veeps.app.util.LastSignalTypes
@@ -266,6 +267,13 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				if (this::player.isInitialized) {
 
 					// Create a new source config
+					//https://mtoczko.github.io/hls-test-streams/test-vtt/playlist.m3u8 // VOD 10 mins
+					//https://cdn.bitmovin.com/content/assets/sintel/hls/playlist.m3u8 // VOD Full
+					//https://cdn.bitmovin.com/content/assets/sintel/sintel.mpd // VOD DASH
+					//https://mtoczko.github.io/hls-test-streams/test-gap/playlist.m3u8 // VOD 4 min Gap video
+					//https://mtoczko.github.io/hls-test-streams/test-group/playlist.m3u8 // VOD 1 min Quality changes
+					//https://mtoczko.github.io/hls-test-streams/test-vtt-ts-segments/playlist.m3u8 // vod 20 seconds timer
+					//https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8 // Live HLS
 					val sourceConfig = SourceConfig.fromUrl(playbackURL)
 					// Attach DRM handling to the source config
 					if (isDrmAvailable) {
@@ -649,29 +657,74 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		}
 	}
 
-	private fun setImagePreview() {
-		val positionInPercentage = scrubbedPosition / player.duration
-		binding.vodControls.setHorizontalBias(R.id.image_preview, positionInPercentage.toFloat())
-		if (!viewModel.tiles.value.isNullOrEmpty() && isScrubVisible && binding.progress.hasFocus()) {
-			binding.imagePreview.clipToOutline = true
-			runOnUiThread {
-				Glide.with(binding.imagePreview.context).asBitmap().load(viewModel.storyBoard ?: "")
-					.transform(
-						MultiTransformation(
-							GlideThumbnailTransformation(
-								scrubbedPosition,
-								viewModel.tileWidth.value ?: 0,
-								viewModel.tileHeight.value ?: 0,
-								viewModel.tiles.value ?: arrayListOf(),
-							), CenterInside(), RoundedCorners(IntValue.NUMBER_5)
-						)
-					).placeholder(binding.imagePreview.drawable).error(R.drawable.card_background_black)
-					.into(binding.imagePreview)
-			}
-			binding.imagePreview.visibility = View.VISIBLE
+	fun setSubtitles(needDisabled: Boolean, subtitle: Subtitle) {
+		if (needDisabled) {
+			player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
+				.setTrackTypeDisabled(TRACK_TYPE_TEXT, /* disabled= */ true).build()
 		} else {
-			binding.imagePreview.visibility = View.INVISIBLE
+			player.trackSelectionParameters =
+				player.trackSelectionParameters.buildUpon().setTrackTypeDisabled(
+					TRACK_TYPE_TEXT, /* disabled= */
+					false
+				).setOverrideForType(
+					TrackSelectionOverride(
+						subtitle.mediaGroup, /* trackIndex= */
+						subtitle.trackPosition
+					)
+				).build()
 		}
+	}
+
+	private fun setImagePreview() {
+		val aligner = 160L
+		val positionInPercentage = maxOf(scrubbedPosition - aligner, aligner) / player.duration.round(2).toFloat()
+		binding.vodControls.setHorizontalBias(R.id.image_preview, positionInPercentage.toFloat())
+//		if (!viewModel.tiles.value.isNullOrEmpty() && isScrubVisible && binding.progress.hasFocus()) {
+//			binding.imagePreview.clipToOutline = true
+//			runOnUiThread {
+//				Glide.with(binding.imagePreview.context).asBitmap().load(viewModel.storyBoard ?: "")
+//					.transform(
+//						MultiTransformation(
+//							GlideThumbnailTransformation(
+//								scrubbedPosition,
+//								viewModel.tileWidth.value ?: 0,
+//								viewModel.tileHeight.value ?: 0,
+//								viewModel.tiles.value ?: arrayListOf(),
+//							), CenterInside(), RoundedCorners(IntValue.NUMBER_5)
+//						)
+//					).placeholder(binding.imagePreview.drawable).error(R.drawable.card_background_black)
+//					.into(binding.imagePreview)
+//
+//				val tiles = viewModel.tiles.value ?: arrayListOf()
+//				var x = 0
+//				var y = 0
+//				for (position in tiles.indices) {
+//					try {
+//						if (scrubbedPosition >= tiles[position].start && scrubbedPosition <= tiles[position + 1].start) {
+//							x = tiles[position].x
+//							y = tiles[position].y
+//							break
+//						}
+//					} catch (e: Exception) {
+//						if (scrubbedPosition >= tiles[position].start) {
+//							x = tiles[position].x
+//							y = tiles[position].y
+//							break
+//						}
+//					}
+//				}
+//				viewModel.storyBoard?.let {
+//					val frameBitmap = Bitmap.createBitmap(it, x, y, viewModel.tileWidth.value ?: 0, viewModel.tileHeight.value ?: 0)
+//					binding.imagePreview.setImageBitmap(frameBitmap)
+//				} ?: run {
+//					binding.imagePreview.setImageDrawable(AppCompatResources.getDrawable(this@VideoPlayerScreen, R.drawable.card_background_black))
+//				}
+//
+//			}
+//			binding.imagePreview.visibility = View.VISIBLE
+//		} else {
+//			binding.imagePreview.visibility = View.INVISIBLE
+//		}
 		val seekDuration =
 			PeriodFormatterBuilder().printZeroAlways().minimumPrintedDigits(2).appendHours()
 				.appendSeparator(":").printZeroAlways().minimumPrintedDigits(2).appendMinutes()
@@ -687,6 +740,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private fun releaseVideoPlayer() {
 		if (this::player.isInitialized) {
 			playerView.onPause()
+			playerView.onDestroy()
 		}
 	}
 
@@ -872,7 +926,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					}
 					showError(
 						Screens.STREAM_END,
-						getString(R.string.event_ended),
+						"Thanks for watching the show!",
 						"Hang tight, rewatch available soon"
 					)
 				}
@@ -892,27 +946,26 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					storyBoardResponse.response?.let { storyBoardImages ->
 						if (storyBoardImages.tiles.isNotEmpty()) {
 							viewModel.storyBoardURL.postValue(storyBoardImages.url)
-							runOnUiThread {
-								Glide.with(binding.imagePreview.context).asBitmap()
-									.load(storyBoardImages.url)
-									.placeholder(R.drawable.card_background_black)
-									.error(R.drawable.card_background_black)
-									.into(object : CustomTarget<Bitmap>() {
-										override fun onResourceReady(
-											resource: Bitmap, transition: Transition<in Bitmap>?
-										) {
-											viewModel.storyBoard = resource
-										}
-
-										override fun onLoadCleared(placeholder: Drawable?) {
-
-										}
-
-									})
-							}
-							viewModel.tileWidth.postValue(storyBoardImages.tileWidth)
-							viewModel.tileHeight.postValue(storyBoardImages.tileHeight)
-							viewModel.tiles.postValue(storyBoardImages.tiles)
+//							runOnUiThread {
+//								Glide.with(binding.imagePreview.context).asBitmap()
+//									.load(storyBoardImages.url)
+//									.placeholder(R.drawable.card_background_black)
+//									.error(R.drawable.card_background_black)
+//									.into(object : CustomTarget<Bitmap>() {
+//										override fun onResourceReady(
+//											resource: Bitmap, transition: Transition<in Bitmap>?
+//										) {
+//											viewModel.storyBoard = resource
+//										}
+//
+//										override fun onLoadCleared(placeholder: Drawable?) {
+//
+//										}
+//									})
+//							}
+//							viewModel.tileWidth.postValue(storyBoardImages.tileWidth)
+//							viewModel.tileHeight.postValue(storyBoardImages.tileHeight)
+//							viewModel.tiles.postValue(storyBoardImages.tiles)
 						}
 					}
 				}
@@ -1240,8 +1293,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			pubnub.removeListener(listener = pubNubListener)
 		}
 		releaseVideoPlayer()
-		playerView.onDestroy()
 		super.onDestroy()
+		System.gc()
 	}
 
 	override fun onPause() {
@@ -1276,6 +1329,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		playerView.onStop()
 		super.onStop()
 	}
+
 	@SuppressLint("RestrictedApi")
 	override fun dispatchKeyEvent(event: KeyEvent): Boolean {
 		// This method is called on key down and key up, so avoid being called twice

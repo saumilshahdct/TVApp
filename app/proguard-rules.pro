@@ -71,3 +71,8 @@
 # PubNub
 -dontwarn com.pubnub.**
 -keep class com.pubnub.** { *; }
+
+# IAP
+-dontwarn com.amazon.**
+-keep class com.amazon.** {*;}
+-keepattributes *Annotation*

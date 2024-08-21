@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.veeps.app.data.common.APIRepository
 import com.veeps.app.feature.contentRail.model.Products
 import com.veeps.app.util.DEFAULT
+import com.veeps.app.util.PurchaseResponseStatus
 
 class HomeViewModel : ViewModel() {
 	var contentHasLoaded = MutableLiveData(false)
@@ -21,11 +22,12 @@ class HomeViewModel : ViewModel() {
 	val translateCarouselToBottom = MutableLiveData(false)
 	val focusItem = MutableLiveData(false)
 	val updateUserStat = MutableLiveData(false)
-	val purchaseAction = MutableLiveData("")
+	val purchaseAction = MutableLiveData(PurchaseResponseStatus.NONE)
 	var isSubscription : Boolean = false
 
 	var watchlistIds = listOf<String>()
 	var productsList = ArrayList<Products>()
+	var isPaymentInProgress = false
 	var reservedId = ""
 	var receiptId = ""
 	var orderId = ""
@@ -33,4 +35,5 @@ class HomeViewModel : ViewModel() {
 	fun fetchAllWatchListEvents() = APIRepository().fetchAllWatchListEvents()
 	fun addRemoveWatchListEvent(eventId: HashMap<String, Any>, isRemoveFromWatchList: Boolean) =
 		APIRepository().addRemoveWatchListEvent(eventId, isRemoveFromWatchList)
+	fun createOrder(orderDetails: HashMap<String, Any>) = APIRepository().createOrder(orderDetails)
 }

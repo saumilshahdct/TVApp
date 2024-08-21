@@ -57,10 +57,15 @@ class ContentRailsAdapter(
 			isItemAlignmentOffsetWithPadding = true
 			itemAlignmentOffsetPercent = 0f
 			setRowHeight(
-				if (rails[position].cardType == CardTypes.CIRCLE) context.resources.getDimensionPixelSize(
-					R.dimen.row_height_circle_without_follow
-				)
-				else context.resources.getDimensionPixelSize(R.dimen.row_height_default)
+				when (rails[position].cardType) {
+					CardTypes.CIRCLE -> context.resources.getDimensionPixelSize(
+						R.dimen.row_height_circle_without_follow
+					)
+					CardTypes.GENRE -> context.resources.getDimensionPixelSize(
+						R.dimen.row_height_genre
+					)
+					else -> context.resources.getDimensionPixelSize(R.dimen.row_height_default)
+				}
 			)
 //			setItemViewCacheSize(rails[position].entities.size)
 			val cardAdapter = CardAdapter(action)
