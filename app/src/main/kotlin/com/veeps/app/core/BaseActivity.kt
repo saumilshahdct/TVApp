@@ -100,15 +100,16 @@ abstract class BaseActivity<VM : ViewModel, VB : ViewDataBinding> : FragmentActi
 					}
 				}
 				when (dataResource.tag) {
-					APIConstants.authenticationPolling, APIConstants.validateAppVersions -> {
-						block.invoke()
-					}
-
-					APIConstants.fetchCompanions, APIConstants.addStats -> {
-						block.invoke()
-					}
-
-					APIConstants.fetchEventStreamDetails, APIConstants.fetchUserStats, APIConstants.fetchEventDetails, APIConstants.fetchEventProductDetails, APIConstants.clearAllReservations, APIConstants.fetchStoryBoard -> {
+					APIConstants.authenticationPolling,
+					APIConstants.validateAppVersions,
+					APIConstants.fetchCompanions,
+					APIConstants.addStats,
+					APIConstants.fetchEventStreamDetails,
+					APIConstants.fetchUserStats,
+					APIConstants.fetchEventDetails,
+					APIConstants.fetchEventProductDetails,
+					APIConstants.clearAllReservations,
+					APIConstants.fetchStoryBoard -> {
 						block.invoke()
 					}
 

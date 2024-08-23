@@ -370,16 +370,16 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/genere_container"
+            android:id="@+id/genre_container"
             android:layout_width="130dp"
             android:layout_height="80dp"
             android:visibility="gone"
-            android:padding="2dp"
-            >
+            android:padding="2dp">
 
             <ImageView
-                android:id="@+id/genre_thumbnail"
+                android:id="@+id/genre_thumbnail_background"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:contentDescription="@string/app_description"
@@ -387,24 +387,24 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                android:src="@drawable/rounded_card_background_black"
-                />
+                android:src="@drawable/rounded_card_background_black" />
 
             <TextView
-                android:id="@+id/genere_label"
+                android:id="@+id/genre_label"
                 fontPath="fonts/RuderPlakatRegular.ttf"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
                 android:includeFontPadding="false"
                 android:lineSpacingMultiplier="0.85"
+                android:text="@string/app_name"
                 android:textAlignment="gravity"
                 android:textAllCaps="true"
                 android:textColor="@color/white"
                 android:textIsSelectable="false"
                 android:paddingTop="10dp"
-                android:paddingLeft="10dp"
-                android:text="Comedy"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
                 android:textSize="16sp"
                 app:layout_constrainedHeight="true"
                 app:layout_constraintStart_toEndOf="parent"
@@ -412,15 +412,17 @@
                 tools:ignore="MissingConstraints,MissingPrefix" />
 
             <ImageView
-                android:id="@+id/genere_thumbnail"
+                android:id="@+id/genre_thumbnail"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
+                android:contentDescription="@string/app_name"
                 android:scaleType="fitXY"
                 android:layout_marginTop="5dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/genere_label"
+                app:layout_constraintStart_toEndOf="@+id/genre_label"
                 app:layout_constraintTop_toTopOf="parent" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </RelativeLayout>

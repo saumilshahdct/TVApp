@@ -179,18 +179,6 @@ object PurchaseResponseStatus {
 	const val CANCELLED_BY_VEEPS = "CANCELLED_BY_VEEPS"
 }
 
-object PurchaseResponseStatus {
-	const val NONE = "NONE"
-	const val SUCCESS = "SUCCESS"
-	const val SUCCESS_WITH_PENDING_PURCHASE = "SUCCESS_WITH_PENDING_PURCHASE"
-	const val FAILED = "FAILED"
-	const val INVALID_SKU = "INVALID_SKU"
-	const val ALREADY_PURCHASED = "ALREADY_PURCHASED"
-	const val NOT_SUPPORTED = "NOT_SUPPORTED"
-	const val PENDING = "PENDING"
-	const val CANCELLED_BY_VEEPS = "CANCELLED_BY_VEEPS"
-}
-
 object EntityTypes {
 	const val EVENT = "event"
 	const val ARTIST = "artist"
@@ -289,6 +277,7 @@ object SubscriptionPlanDetails {
 
 object MarketPlace {
 	const val US = "US"
+}
 
 object GenreName {
 	const val COMEDY = "Comedy"

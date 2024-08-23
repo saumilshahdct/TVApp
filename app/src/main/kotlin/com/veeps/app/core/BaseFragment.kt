@@ -101,11 +101,7 @@ abstract class BaseFragment<VM : ViewModel, VB : ViewDataBinding> : Fragment() {
 					}
 				}
 				when (dataResource.tag) {
-					APIConstants.authenticationPolling, APIConstants.validateAppVersions -> {
-						block.invoke()
-					}
-
-					APIConstants.fetchCompanions, APIConstants.fetchUserStats, APIConstants.fetchEventStreamDetails, APIConstants.fetchEventDetails, APIConstants.fetchEventProductDetails, APIConstants.clearAllReservations, APIConstants.fetchStoryBoard, APIConstants.subscriptionMapping -> {
+					APIConstants.authenticationPolling, APIConstants.validateAppVersions, APIConstants.fetchCompanions, APIConstants.fetchUserStats, APIConstants.fetchEventStreamDetails, APIConstants.fetchEventDetails, APIConstants.fetchEventProductDetails, APIConstants.clearAllReservations, APIConstants.fetchStoryBoard, APIConstants.subscriptionMapping -> {
 						block.invoke()
 					}
 

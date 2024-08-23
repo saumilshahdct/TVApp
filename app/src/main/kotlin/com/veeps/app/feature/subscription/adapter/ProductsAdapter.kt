@@ -44,7 +44,7 @@ class ProductsAdapter(
                     e.printStackTrace()
                 }
             } else {
-                helper.showErrorOnScreen(Screens.SUBSCRIPTION, context?.getString(R.string.feature_not_available).toString())
+                helper.showErrorOnScreen(Screens.SUBSCRIPTION, context?.getString(R.string.iap_not_supported).toString())
             }
 
         }

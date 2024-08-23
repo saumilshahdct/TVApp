@@ -43,8 +43,8 @@ import com.veeps.app.util.AppHelper
 import com.veeps.app.util.AppPreferences
 import com.veeps.app.util.DEFAULT
 import com.veeps.app.util.Logger
-import com.veeps.app.util.PurchaseType
 import com.veeps.app.util.PurchaseResponseStatus
+import com.veeps.app.util.PurchaseType
 import com.veeps.app.util.Screens
 import com.veeps.app.util.SubscriptionPlanDetails
 import com.veeps.app.util.SubscriptionPlanSKUs
@@ -211,9 +211,6 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 			APIConstants.removeWatchListEvents -> {
 				binding.errorContainer.visibility = View.GONE
 				addRemoveWatchListEvent(binding.errorDescription.text.toString())
-			}
-			APIConstants.validateAppVersions -> {
-				binding.errorContainer.visibility = View.GONE
 			}
 
 			Screens.EXIT_APP -> {

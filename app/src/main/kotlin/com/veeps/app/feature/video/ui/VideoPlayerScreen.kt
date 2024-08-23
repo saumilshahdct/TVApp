@@ -3,7 +3,6 @@ package com.veeps.app.feature.video.ui
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
-import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -21,7 +20,6 @@ import androidx.recyclerview.widget.PagerSnapHelper
 import com.bitmovin.analytics.api.AnalyticsConfig
 import com.bitmovin.analytics.api.CustomData
 import com.bitmovin.analytics.api.SourceMetadata
-import com.bitmovin.player.PlayerView
 import com.bitmovin.player.api.PlaybackConfig
 import com.bitmovin.player.api.Player
 import com.bitmovin.player.api.PlayerBuilder
@@ -31,17 +29,13 @@ import com.bitmovin.player.api.advertising.AdSource
 import com.bitmovin.player.api.advertising.AdSourceType
 import com.bitmovin.player.api.advertising.AdvertisingConfig
 import com.bitmovin.player.api.deficiency.ErrorEvent
+import com.bitmovin.player.api.deficiency.PlayerErrorCode
+import com.bitmovin.player.api.deficiency.SourceErrorCode
 import com.bitmovin.player.api.drm.WidevineConfig
 import com.bitmovin.player.api.event.PlayerEvent
 import com.bitmovin.player.api.event.on
 import com.bitmovin.player.api.source.SourceBuilder
 import com.bitmovin.player.api.source.SourceConfig
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.MultiTransformation
-import com.bumptech.glide.load.resource.bitmap.CenterInside
-import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.pubnub.api.PNConfiguration
 import com.pubnub.api.PubNub
 import com.pubnub.api.UserId
@@ -88,12 +82,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private lateinit var statsManagement: Handler
 	private lateinit var timerTask: Runnable
 	private lateinit var addStatsTask: Runnable
-	private lateinit var playerView: PlayerView
 	private lateinit var player: Player
 	private var timeout = Handler(Looper.getMainLooper())
 	private val inactivitySeconds = 10
 	private var scrubbedPosition = 0L
-	private var playbackStream = ""
+	private var playbackStream = DEFAULT.EMPTY_STRING
 	private var isScrubVisible = false
 	var trickPlayVisible = MutableLiveData<Boolean>()
 	private val trickPlayRunnable = Runnable { trickPlayVisible.setValue(false) }
@@ -263,7 +256,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		viewModel.playbackURL.observe(this@VideoPlayerScreen) { playbackURL ->
 			if (!playbackURL.isNullOrBlank()) {
 				if (this::player.isInitialized) {
-
 					// Create a new source config
 					//https://mtoczko.github.io/hls-test-streams/test-vtt/playlist.m3u8 // VOD 10 mins
 					//https://cdn.bitmovin.com/content/assets/sintel/hls/playlist.m3u8 // VOD Full
@@ -272,30 +264,37 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					//https://mtoczko.github.io/hls-test-streams/test-group/playlist.m3u8 // VOD 1 min Quality changes
 					//https://mtoczko.github.io/hls-test-streams/test-vtt-ts-segments/playlist.m3u8 // vod 20 seconds timer
 					//https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8 // Live HLS
+
+					Logger.print("Saumil Playback URL - $playbackURL")
+					Logger.print("Saumil DRM Applicable - $isDrmAvailable. ${if (isDrmAvailable) "DRM License URL - $drmLicenseURL" else ""}")
+
 					val sourceConfig = SourceConfig.fromUrl(playbackURL)
+
 					// Attach DRM handling to the source config
 					if (isDrmAvailable) {
-						sourceConfig.drmConfig = WidevineConfig(drmLicenseURL)
+						sourceConfig.apply {
+							this@apply.drmConfig = WidevineConfig(drmLicenseURL)
+						}
 					}
 
-					val customData: CustomData =
-						CustomData.Builder()
-							.setCustomData1(userType)
-							.setCustomData2(Player.sdkVersion)
-							.setCustomData3(AppPreferences.get(AppConstants.userID, DEFAULT.EMPTY_STRING))
-							.setCustomData4(EntityTypes.EVENT)
-							.setCustomData5(eventName).build()
-                   // create a source with a sourceMetadata for custom analytics tracking
+					val customData: CustomData = CustomData.Builder().setCustomData1(userType)
+						.setCustomData2(Player.sdkVersion).setCustomData3(
+							AppPreferences.get(
+								AppConstants.userID,
+								DEFAULT.EMPTY_STRING
+							)
+						).setCustomData4(EntityTypes.EVENT).setCustomData5(eventName).build()
+					// create a source with a sourceMetadata for custom analytics tracking
 					val sourceMetadata: SourceMetadata =
-						SourceMetadata.Builder().setTitle(eventName).setIsLive(player.isLive).setCustomData(customData)
+						SourceMetadata.Builder().setTitle(eventName).setIsLive(player.isLive)
+							.setCustomData(customData)
 							.setVideoId(viewModel.eventId.value ?: DEFAULT.EMPTY_STRING).build()
-					val source = SourceBuilder(sourceConfig)
-						.configureAnalytics(sourceMetadata)
-						.build()
+					val source =
+						SourceBuilder(sourceConfig).configureAnalytics(sourceMetadata).build()
 					// Load the source
 					player.load(source)
-                    playerView.isUiVisible = false
-                }
+					binding.videoPlayer.isUiVisible = false
+				}
 			}
 		}
 	}
@@ -311,7 +310,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				allPurchasedEvents.response?.let { railData ->
 					if (railData.data.isNotEmpty()) {
 						val eventData = railData.data.filter { it.eventId == eventId }
-						if (eventData.size == 1){
+						if (eventData.size == 1) {
 							ticketId = eventData.get(0).id.toString()
 						}
 					}
@@ -336,21 +335,45 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	}
 
 	private fun setupVideoPlayer() {
-		// Initialize PlayerView from layout and attach a new Player instance
-		val analyticsKey = bitmovinAnalyticsKey
+		binding.videoPlayer.isUiVisible = false
 
-		playerView = binding.videoPlayer
-		playerView.isUiVisible = false
-		player = PlayerBuilder(this).setPlayerConfig(createPlayerConfig())
-			.configureAnalytics(AnalyticsConfig(analyticsKey)).build()
+		player = PlayerBuilder(this).setPlayerConfig(createPlayerConfig()).configureAnalytics(AnalyticsConfig(bitmovinAnalyticsKey)).build()
 		binding.videoPlayer.player = player
-		playerView.keepScreenOn = true
+		binding.videoPlayer.keepScreenOn = true
 
-		player.on<PlayerEvent.Error>(::onErrorEvent)
+		player.on<PlayerEvent.Error> { errorEvent: ErrorEvent ->
+			Logger.print("Saumil Error Event - $errorEvent")
+			binding.playPause.isSelected = false
+			when (errorEvent.code) {
+				PlayerErrorCode.General, PlayerErrorCode.DecoderGeneral, PlayerErrorCode.DecodingFailed, PlayerErrorCode.LicenseKeyNotFound, PlayerErrorCode.DecoderInitialization, PlayerErrorCode.DecodingExceedsCapabilities, PlayerErrorCode.DecodingUnsupported, PlayerErrorCode.LicenseAuthenticationFailed -> {
+					showError(
+						Screens.PLAYER_ERROR,
+						getString(R.string.video_error_title),
+						getString(R.string.video_error_description)
+					)
+				}
+
+				SourceErrorCode.General, SourceErrorCode.HttpStatusCode, SourceErrorCode.DrmGeneral, SourceErrorCode.Io, SourceErrorCode.ClearTextConnection, SourceErrorCode.ConnectionFailed, SourceErrorCode.ConnectionTimeout, SourceErrorCode.DrmKeyExpired, SourceErrorCode.DrmRequestFailed, SourceErrorCode.DrmUnsupported -> {
+					showError(
+						Screens.PLAYER_ERROR,
+						getString(R.string.video_error_title),
+						getString(R.string.video_error_description)
+					)
+				}
+
+				else -> {
+					showError(
+						Screens.PLAYER_ERROR,
+						getString(R.string.video_error_title),
+						getString(R.string.video_error_description)
+					)
+				}
+			}
+		}
 
 		player.on<PlayerEvent.Playing> {
 			resumePlayer(playingPosition)
-			playerView.isUiVisible = false
+			binding.videoPlayer.isUiVisible = false
 			if (this@VideoPlayerScreen::statsManagement.isInitialized && this@VideoPlayerScreen::addStatsTask.isInitialized) {
 				statsManagement.removeCallbacks(addStatsTask)
 				statsManagement.removeCallbacksAndMessages(addStatsTask)
@@ -359,7 +382,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			binding.loader.visibility = View.GONE
 			binding.playPause.isSelected = true
 			binding.videoPlayer.postDelayed(
-				this@VideoPlayerScreen::getPlayerProgress, if (isAdVisible) IntValue.NUMBER_500.toLong() else IntValue.NUMBER_1000.toLong()
+				this@VideoPlayerScreen::getPlayerProgress,
+				if (isAdVisible) IntValue.NUMBER_500.toLong() else IntValue.NUMBER_1000.toLong()
 			)
 			if (player.isLive) {
 				binding.playPause.isFocusable = false
@@ -379,8 +403,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				if (!binding.playPause.isFocused && !binding.progress.isFocused) binding.playPause.requestFocus()
 			}
 		}
+
 		player.on<PlayerEvent.Paused> {
-			playerView.isUiVisible = false
+			binding.videoPlayer.isUiVisible = false
 			if (this@VideoPlayerScreen::statsManagement.isInitialized && this@VideoPlayerScreen::addStatsTask.isInitialized) {
 				statsManagement.removeCallbacks(addStatsTask)
 				statsManagement.removeCallbacksAndMessages(addStatsTask)
@@ -388,6 +413,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 			binding.playPause.isSelected = false
 		}
+
 		player.on<PlayerEvent.PlaybackFinished> {
 			binding.playPause.isSelected = false
 		}
@@ -395,9 +421,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		player.on<PlayerEvent.StallStarted> {
 			binding.loader.visibility = View.VISIBLE
 		}
+
 		player.on<PlayerEvent.StallEnded> {
 			binding.loader.visibility = View.GONE
 		}
+
 		player.on<PlayerEvent.TimeChanged> {
 			if (player.isLive) {
 				binding.topControls.visibility = View.VISIBLE
@@ -410,7 +438,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				binding.liveControls.visibility = View.GONE
 				binding.standBy.visibility = View.GONE
 				if (player.isAd) {
-					playerView.isUiVisible = false
+					binding.videoPlayer.isUiVisible = false
 					trickPlayVisible.value = true
 					binding.chatToggle.isFocusable = false
 					binding.chatToggle.isFocusableInTouchMode = false
@@ -426,16 +454,19 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 			}
 		}
+
 		player.on<PlayerEvent.AdStarted> {
-			playerView.isUiVisible = false
+			binding.videoPlayer.isUiVisible = false
 			getPlayerProgress()
 		}
+
 		player.on<PlayerEvent.AdFinished> {
-			playerView.isUiVisible = false
+			binding.videoPlayer.isUiVisible = false
 			isAdVisible = false
 		}
+
 		player.on<PlayerEvent.AdError> {
-			playerView.isUiVisible = false
+			binding.videoPlayer.isUiVisible = false
 			isAdVisible = false
 		}
 
@@ -655,27 +686,10 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		}
 	}
 
-	fun setSubtitles(needDisabled: Boolean, subtitle: Subtitle) {
-		if (needDisabled) {
-			player.trackSelectionParameters = player.trackSelectionParameters.buildUpon()
-				.setTrackTypeDisabled(TRACK_TYPE_TEXT, /* disabled= */ true).build()
-		} else {
-			player.trackSelectionParameters =
-				player.trackSelectionParameters.buildUpon().setTrackTypeDisabled(
-					TRACK_TYPE_TEXT, /* disabled= */
-					false
-				).setOverrideForType(
-					TrackSelectionOverride(
-						subtitle.mediaGroup, /* trackIndex= */
-						subtitle.trackPosition
-					)
-				).build()
-		}
-	}
-
 	private fun setImagePreview() {
 		val aligner = 160L
-		val positionInPercentage = maxOf(scrubbedPosition - aligner, aligner) / player.duration.round(2).toFloat()
+		val positionInPercentage =
+			maxOf(scrubbedPosition - aligner, aligner) / player.duration.round(2).toFloat()
 		binding.vodControls.setHorizontalBias(R.id.image_preview, positionInPercentage.toFloat())
 //		if (!viewModel.tiles.value.isNullOrEmpty() && isScrubVisible && binding.progress.hasFocus()) {
 //			binding.imagePreview.clipToOutline = true
@@ -737,8 +751,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 	private fun releaseVideoPlayer() {
 		if (this::player.isInitialized) {
-			playerView.onPause()
-			playerView.onDestroy()
+			binding.videoPlayer.onPause()
+			binding.videoPlayer.onDestroy()
 		}
 	}
 
@@ -1201,7 +1215,9 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 						)
 					} Finishing Activity"
 				)
-				Handler(Looper.getMainLooper()).post(addStatsTask)
+				if (this::statsManagement.isInitialized && this::addStatsTask.isInitialized) {
+					Handler(Looper.getMainLooper()).post(addStatsTask)
+				}
 				releaseVideoPlayer()
 				finish()
 			}
@@ -1324,7 +1340,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	}
 
 	override fun onStop() {
-		playerView.onStop()
+		binding.videoPlayer.onStop()
 		super.onStop()
 	}
 
@@ -1414,7 +1430,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 
 				KeyEvent.KEYCODE_DPAD_RIGHT -> {
-					if(!isAdVisible) {
+					if (!isAdVisible) {
 						timeout.removeCallbacks(trickPlayRunnable)
 						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
 						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
@@ -1426,7 +1442,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 
 				KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD, KeyEvent.KEYCODE_MEDIA_STEP_FORWARD -> {
-					if(!isAdVisible) {
+					if (!isAdVisible) {
 						timeout.removeCallbacks(trickPlayRunnable)
 						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
 						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
@@ -1474,7 +1490,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 
 				else -> {
-					if(!isAdVisible) {
+					if (!isAdVisible) {
 						timeout.removeCallbacks(trickPlayRunnable)
 						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
 						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
@@ -1486,15 +1502,6 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 			}
 		}
-	}
-
-	private fun onErrorEvent(errorEvent: ErrorEvent) {
-		binding.playPause.isSelected = false
-		showError(
-			Screens.PLAYER_ERROR,
-			getString(R.string.error_message),
-			getString(R.string.error_description)
-		)
 	}
 
 	private fun createPlayerConfig(): PlayerConfig {
@@ -1526,7 +1533,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		binding.currentDuration.text = currentDuration ?: "00:00:00"
 		if (player.isPlaying) {
 			binding.videoPlayer.postDelayed(
-				{ getPlayerProgress() }, if (isAdVisible) IntValue.NUMBER_500.toLong() else IntValue.NUMBER_1000.toLong()
+				{ getPlayerProgress() },
+				if (isAdVisible) IntValue.NUMBER_500.toLong() else IntValue.NUMBER_1000.toLong()
 			)
 		}
 	}

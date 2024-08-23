@@ -319,7 +319,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 							binding.listing.requestFocus()
 						} else {
 							binding.carousel.visibility = View.VISIBLE
-							binding.primary.requestFocus()
+							if (binding.primary.visibility == View.VISIBLE) binding.primary.requestFocus() else binding.myShows.requestFocus()
 							binding.darkBackground.visibility = View.GONE
 							if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && !player.isPlaying && homeViewModel.isErrorVisible.value?.equals(
 									false
@@ -403,7 +403,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			if (shouldTranslate && viewModel.isVisible.value == true) {
 				binding.darkBackground.visibility = View.GONE
 				binding.carousel.visibility = View.VISIBLE
-				binding.primary.requestFocus()
+				if (binding.primary.visibility == View.VISIBLE) binding.primary.requestFocus() else binding.myShows.requestFocus()
 				if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && !player.isPlaying && homeViewModel.isErrorVisible.value?.equals(
 						false
 					) == true && binding.darkBackground.visibility == View.GONE
@@ -696,7 +696,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		}
 		binding.darkBackground.visibility = View.GONE
 		binding.carousel.visibility = View.VISIBLE
-		binding.primary.requestFocus()
+		if (binding.primary.visibility == View.VISIBLE) binding.primary.requestFocus() else binding.myShows.requestFocus()
 		binding.logo.isFocusable = false
 		binding.logo.isFocusableInTouchMode = false
 		homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.NONE)

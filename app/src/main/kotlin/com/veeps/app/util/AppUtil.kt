@@ -614,7 +614,6 @@ object AppUtil {
 					}
 					}
 				}
-			}
 
 			"protected_ondemand" -> {
 				if (screen == Screens.BROWSE) {

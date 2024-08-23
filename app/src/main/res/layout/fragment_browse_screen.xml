@@ -424,78 +424,80 @@
             </eightbitlab.com.blurview.BlurView>
 
             <eightbitlab.com.blurview.BlurView
-                android:id="@+id/app_update"
+                android:id="@+id/app_update_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="50dp"
-                android:layout_marginEnd="4dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginStart="75dp"
                 android:background="@drawable/selector_browse_button_background"
                 android:elevation="2dp"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:padding="10dp"
+                android:padding="8dp"
                 android:visibility="visible"
                 app:blurOverlayColor="@color/white_10"
-                app:layout_constraintHorizontal_chainStyle="packed"
-                app:layout_constraintStart_toStartOf="@+id/start"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <LinearLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal">
+                    android:layout_height="wrap_content">
 
                     <ImageView
+                        android:id="@+id/warning_icon"
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:layout_marginTop="-5dp"
                         android:contentDescription="@string/app_description"
-                        android:src="@drawable/error" />
+                        android:src="@drawable/warning"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
-                    <LinearLayout
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/app_update_inner_container"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical">
+                        android:layout_marginStart="28dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
 
                         <TextView
-                            android:id="@+id/app_update_message"
+                            android:id="@+id/app_update_title"
                             fontPath="fonts/SaansMedium.ttf"
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:includeFontPadding="false"
-                            android:letterSpacing="0.03"
-                            android:paddingStart="5dp"
-                            android:paddingEnd="5dp"
-                            android:paddingBottom="1dp"
-                            android:text="@string/app_update_message"
-                            android:textAlignment="gravity"
+                            android:lines="1"
+                            android:text="@string/app_update_title"
+                            android:textAlignment="textStart"
                             android:textColor="@color/selector_home_label"
                             android:textIsSelectable="false"
-                            android:textSize="14sp" />
+                            android:textSize="14sp"
+                            app:layout_constrainedWidth="true"
+                            app:layout_constraintBottom_toTopOf="@id/app_update_description"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
 
                         <TextView
-                            android:id="@+id/app_update_text"
+                            android:id="@+id/app_update_description"
                             fontPath="fonts/SaansMedium.ttf"
-                            android:layout_width="match_parent"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:includeFontPadding="false"
-                            android:letterSpacing="0.03"
-                            android:paddingStart="5dp"
-                            android:layout_marginTop="5dp"
-                            android:paddingEnd="5dp"
-                            android:paddingBottom="1dp"
-                            android:text="@string/app_update_message2"
-                            android:textAlignment="gravity"
+                            android:layout_marginTop="4dp"
+                            android:lines="1"
+                            android:text="@string/app_update_description"
+                            android:textAlignment="textStart"
                             android:textColor="@color/gray_300"
                             android:textIsSelectable="false"
-                            android:textSize="11sp" />
+                            android:textSize="11sp"
+                            app:layout_constrainedWidth="true"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/app_update_title" />
 
-                    </LinearLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
-                </LinearLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
             </eightbitlab.com.blurview.BlurView>
 
         </androidx.constraintlayout.widget.ConstraintLayout>

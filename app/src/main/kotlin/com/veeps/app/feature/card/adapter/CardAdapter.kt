@@ -21,10 +21,10 @@ import com.veeps.app.R
 import com.veeps.app.databinding.RowCardBinding
 import com.veeps.app.extension.isOfType
 import com.veeps.app.feature.artist.ui.ArtistScreen
-import com.veeps.app.feature.genre.ui.GenreScreen
 import com.veeps.app.feature.contentRail.model.Entities
 import com.veeps.app.feature.contentRail.model.UserStats
 import com.veeps.app.feature.event.ui.EventScreen
+import com.veeps.app.feature.genre.ui.GenreScreen
 import com.veeps.app.feature.venue.ui.VenueScreen
 import com.veeps.app.util.AppAction
 import com.veeps.app.util.AppConstants
@@ -286,7 +286,7 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 				val title = entities[entityPosition].name ?: DEFAULT.EMPTY_STRING
 				holder.binding.eventContainer.visibility = View.GONE
 				holder.binding.artistVenueContainer.visibility = View.GONE
-				holder.binding.genereContainer.visibility = View.VISIBLE
+				holder.binding.genreContainer.visibility = View.VISIBLE
 				val uDrawable = AppCompatResources.getDrawable(
 					context,
 					R.drawable.rounded_card_background_black
@@ -299,11 +299,11 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 					)
 					holder.binding.genreThumbnail.background = wDrawable
 				}
-				holder.binding.genereLabel.text = title
-				Glide.with(holder.binding.genereThumbnail.context).load(image)
+				holder.binding.genreLabel.text = title
+				Glide.with(holder.binding.genreThumbnail.context).load(image)
 					.diskCacheStrategy(DiskCacheStrategy.ALL)
 					.transform(CenterCrop(), RoundedCorners(IntValue.NUMBER_10))
-					.into(holder.binding.genereThumbnail)
+					.into(holder.binding.genreThumbnail)
 			}
 
 			else -> {

@@ -10,19 +10,13 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.RawResourceDataSource
 import androidx.media3.exoplayer.ExoPlayer
-import com.veeps.app.BuildConfig
 import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
-import com.veeps.app.core.BaseDataSource
 import com.veeps.app.databinding.ActivityIntroScreenBinding
 import com.veeps.app.extension.goToScreen
 import com.veeps.app.feature.intro.viewModel.IntroViewModel
 import com.veeps.app.feature.signIn.ui.SignInScreen
-import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppConstants
-import com.veeps.app.util.AppConstants.app_envirnment
-import com.veeps.app.util.AppConstants.deviceType
-import com.veeps.app.util.Logger
 import com.veeps.app.util.Screens
 import kotlin.system.exitProcess
 
@@ -55,23 +49,7 @@ class IntroScreen : BaseActivity<IntroViewModel, ActivityIntroScreenBinding>() {
         ActivityIntroScreenBinding.inflate(layoutInflater)
 
     override fun showError(tag: String, message: String, description: String) {
-        when (tag) {
-            APIConstants.validateAppVersions -> {
-                binding.positive.requestFocus()
-                player.pause()
-                binding.errorLayoutContainer.visibility = View.VISIBLE
-                viewModel.isErrorVisible.postValue(true)
-                viewModel.contentHasLoaded.postValue(true)
-                viewModel.errorMessage.postValue(getString(R.string.app_update_message))
-                viewModel.errorPositiveLabel.postValue(getString(R.string.ok_label))
-                viewModel.isErrorPositiveApplicable.postValue(true)
-                viewModel.isErrorNegativeApplicable.postValue(false)
-                binding.errorDescription.visibility = View.INVISIBLE
-                binding.errorDescription.text = description
-            }
-
-            else -> viewModel.contentHasLoaded.postValue(true)
-        }
+        viewModel.contentHasLoaded.postValue(true)
     }
 
     override fun onRendered(viewModel: IntroViewModel, binding: ActivityIntroScreenBinding) {

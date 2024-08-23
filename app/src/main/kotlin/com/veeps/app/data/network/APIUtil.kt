@@ -67,11 +67,9 @@ object APIUtil {
 				val originalHttpUrl = request.url
 				val headerToken =
 					if (originalHttpUrl.encodedPath == APIConstants.fetchUserStats || originalHttpUrl.encodedPath == APIConstants.addStats) AppPreferences.get(
-						AppConstants.generatedJWT,
-						"GeneratedJWT"
+						AppConstants.generatedJWT, "GeneratedJWT"
 					) else AppPreferences.get(
-						AppConstants.authenticatedUserToken,
-						"AuthenticatedUserToken"
+						AppConstants.authenticatedUserToken, "AuthenticatedUserToken"
 					)
 				val builder: Request.Builder =
 					request.newBuilder().header("Authorization", "Bearer $headerToken")
@@ -219,15 +217,10 @@ object APIUtil {
 		@POST(APIConstants.subscriptionMapping)
 		suspend fun subscriptionMapping(@Body hashMap: HashMap<String, Any>): Response<BaseResponseGeneric<Any>>
 
-    @GET(APIConstants.fetchGenreContent)
+		@GET(APIConstants.fetchGenreContent)
 		suspend fun fetchGenreContent(@Query("scope") scope: String): Response<RailResponse>
 
-    @GET
-		suspend fun validateAppVersion(
-			@Url addStatsAPIURL: String,
-			@Query("platform") platform: String,
-			@Query("stage") stage: String,
-			@Query("version") appVersion: String,
-		): Response<BaseResponseGeneric<Any>>
+		@GET(APIConstants.validateAppVersions)
+		suspend fun validateAppVersion(@Query("version") appVersion: String): Response<BaseResponseGeneric<Any>>
 	}
 }

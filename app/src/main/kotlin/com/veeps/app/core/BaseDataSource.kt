@@ -38,10 +38,9 @@ abstract class BaseDataSource {
                                     }
                                 }
                             }
-                                ?: return if (tag == APIConstants.validateAppVersions) Resource.successWithNullResponse(
-                                    tag,
-                                    null
-                                ) else Resource.error(
+                                ?: return if (tag == APIConstants.validateAppVersions)
+                                    Resource.successWithNullResponse(tag, null)
+                                else Resource.error(
                                     tag, Veeps.appContext.getString(R.string.unknown_error)
                                 )
                         }
@@ -94,9 +93,9 @@ abstract class BaseDataSource {
                                         Veeps.appContext.getString(R.string.unknown_error)
 
                                     response.errorBody()?.let { errorBody ->
-                                        val errorObject = JSONObject(errorBody.string())
-                                        if (errorObject.has("errors")) {
-                                            val errorObjectData = errorObject.getString("errors")
+                                        val errorBodyObject = JSONObject(errorBody.string())
+                                        if (errorBodyObject.has("errors")) {
+                                            val errorObjectData = errorBodyObject.getString("errors")
                                             val errorObject = JSONObject(errorObjectData)
                                             if (errorObject.has("message")) {
                                                 errorMessage = errorObject.getString("message")

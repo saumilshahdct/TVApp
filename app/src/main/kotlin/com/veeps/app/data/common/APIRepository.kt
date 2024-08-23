@@ -234,19 +234,11 @@ class APIRepository : BaseDataSource() {
 				APIUtil.service.subscriptionMapping(subscriptionMappingRequest)
 			}
 		}
-	fun validateAppVersion(
-		appVersionAPIURL: String,
-		platform: String,
-		stage: String,
-		appVersion: String,
-	) = performOperation(APIConstants.validateAppVersions) {
-		getResult(APIConstants.validateAppVersions) {
-			APIUtil.service.validateAppVersion(
-				appVersionAPIURL,
-				platform,
-				stage,
-				appVersion
-			)
+
+	fun validateAppVersion(appVersion: String) =
+		performOperation(APIConstants.validateAppVersions) {
+			getResult(APIConstants.validateAppVersions) {
+				APIUtil.service.validateAppVersion(appVersion)
+			}
 		}
-	}
 }
