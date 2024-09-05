@@ -48,6 +48,8 @@ import com.pubnub.api.models.consumer.pubsub.PNMessageResult
 import com.pubnub.api.models.consumer.pubsub.PNSignalResult
 import com.pubnub.api.retry.RetryConfiguration
 import com.veeps.app.BuildConfig.bitmovinAnalyticsKey
+import com.veeps.app.BuildConfig.pubnubPublishKey
+import com.veeps.app.BuildConfig.pubnubSubscribeKey
 import com.veeps.app.R
 import com.veeps.app.core.BaseActivity
 import com.veeps.app.databinding.ActivityVideoPlayerScreenBinding
@@ -213,7 +215,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 
 		setupBlur()
 
-		binding.playPause.setOnClickListener { v ->
+		binding.playPause.setOnClickListener {
 			if (binding.playPause.isSelected) {
 				player.pause().also { binding.playPause.isSelected = false }
 			} else {
@@ -264,6 +266,11 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 					//https://mtoczko.github.io/hls-test-streams/test-group/playlist.m3u8 // VOD 1 min Quality changes
 					//https://mtoczko.github.io/hls-test-streams/test-vtt-ts-segments/playlist.m3u8 // vod 20 seconds timer
 					//https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8 // Live HLS
+					//https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8 //HLS Bit-Bop Simple
+					//https://devstreaming-cdn.apple.com/videos/streaming/examples/historic_planet_content_2023-10-26-3d-video/main.m3u8 //basic HLS
+					//https://devstreaming-cdn.apple.com/videos/streaming/examples/bipbop_16x9/bipbop_16x9_variant.m3u8 //HLS Bip-Bop - Language and Subtitles
+					//https://devstreaming-cdn.apple.com/videos/streaming/examples/adv_dv_atmos/main.m3u8 //HLS main VOD 4K
+
 
 					Logger.print("Saumil Playback URL - $playbackURL")
 					Logger.print("Saumil DRM Applicable - $isDrmAvailable. ${if (isDrmAvailable) "DRM License URL - $drmLicenseURL" else ""}")
@@ -635,6 +642,27 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			}
 		}
 
+		/*val config = PNConfiguration.builder(
+			userId = UserId(
+				AppPreferences.get(
+					AppConstants.userID,
+					getString(R.string.app_platform)
+				) ?: getString(R.string.app_platform)
+			), subscribeKey = pubnubSubscribeKey
+		).apply {
+			publishKey = pubnubPublishKey
+			secure = true
+			logVerbosity = PNLogVerbosity.BODY
+			heartbeatNotificationOptions = PNHeartbeatNotificationOptions.ALL
+			retryConfiguration = RetryConfiguration.Exponential(
+				minDelayInSec = 3, maxDelayInSec = 10, maxRetryNumber = 5
+			)
+		}
+		pubnub = PubNub.create(config.build())
+		pubnub.addListener(pubNubListener)
+
+		pubnub.subscriptionSetOf(channels = setOf(signalChannel, artistChannel, subscribeChannel),).subscribe()*/
+
 		val config = PNConfiguration(
 			UserId(
 				AppPreferences.get(
@@ -642,8 +670,8 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				) ?: getString(R.string.app_platform)
 			)
 		).apply {
-			subscribeKey = "sub-c-84ee6f14-961d-11ea-a94f-52daec260573"
-			publishKey = "pub-c-eb43a482-29d3-4ffd-8169-adf1cbde3e2d"
+			subscribeKey = pubnubSubscribeKey
+			publishKey = pubnubPublishKey
 			secure = true
 			logVerbosity = PNLogVerbosity.BODY
 			heartbeatNotificationOptions = PNHeartbeatNotificationOptions.ALL
@@ -815,7 +843,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 							binding.heroImage.loadImage(posterImage, ImageTags.HERO)
 							binding.chatFromPhoneBackground.loadImage(posterImage, ImageTags.HERO)
 							fetchCompanions(eventId, organizationName, ticketId)
-							fetchStoryBoard(eventDetails.storyboards.json ?: "")
+//							fetchStoryBoard(eventDetails.storyboards.json ?: "")
 							eventName = eventDetails.eventName ?: DEFAULT.EMPTY_STRING
 							binding.title.text =
 								if (eventDetails.lineup.isNotEmpty()) "${eventDetails.lineup[0].name} - ${eventDetails.eventName}" else "${eventDetails.eventName}"
@@ -838,10 +866,10 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		subscribeChannel = eventDetails.chat.chatChannels.mainSubscribe ?: DEFAULT.EMPTY_STRING
 		signalChannel = eventDetails.chat.chatChannels.signals ?: DEFAULT.EMPTY_STRING
 		playbackStream =
-			eventDetails.playback.widevineUrl?.ifBlank { eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING } }
-				?: eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING }
+//			eventDetails.playback.widevineUrl?.ifBlank { eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING } } ?:
+				eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING }
 						?: DEFAULT.EMPTY_STRING
-		if (!eventDetails.playback.widevineUrl.isNullOrBlank()) isDrmAvailable = true
+		if (!eventDetails.playback.widevineUrl.isNullOrBlank()) isDrmAvailable = false
 		eventDetails.playback.ads.let { ads ->
 			for (ad in ads) {
 				val adSource = ad.adUrl?.ifBlank { DEFAULT.EMPTY_STRING }
