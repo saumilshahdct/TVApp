@@ -449,7 +449,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 					homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.NONE)
 				}
 
-        AppPreferences.remove(AppConstants.reservedId)
+				AppPreferences.remove(AppConstants.reservedId)
 				AppPreferences.remove(AppConstants.receiptId)
 				AppPreferences.remove(AppConstants.orderId)
 				AppPreferences.remove(AppConstants.requestId)

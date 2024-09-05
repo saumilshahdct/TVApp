@@ -256,8 +256,13 @@ object UserType {
 }
 
 object SubscriptionPlanSKUs {
+	const val VEEPS_ALL_ACCESS_SUBSCRIPTION = "VP-ALL-ACCESS"
+	const val VEEPS_MONTHLY_SUBSCRIPTION = "VP-M-US"
+	const val VEEPS_YEARLY_SUBSCRIPTION = "VP-Y-US"
 	const val MONTHLY_SUBSCRIPTION = "VP-M-77-US"
+	const val MONTHLY_TERM_SUBSCRIPTION = "Monthly"
 	const val YEARLY_SUBSCRIPTION = "VP-Y-89-US"
+	const val YEARLY_TERM_SUBSCRIPTION = "Annually"
 }
 
 object PurchaseType {
@@ -267,12 +272,12 @@ object PurchaseType {
 object SubscriptionPlanDetails {
 	const val MONTHLY_PLAN_NAME = "Monthly"
 	const val YEARLY_PLAN_NAME = "Yearly"
-	const val MONTHLY_PLAN_PRICE = "11.99"
-	const val YEARLY_PLAN_PRICE = "120"
+	const val MONTHLY_PLAN_PRICE = "$11.99"
+	const val YEARLY_PLAN_PRICE = "$120"
 	const val PLAN_BENEFIT_ONE = "See every live show and rewatch for longer"
-	const val PLAN_BENEFIT_TWO = "Enjoy 3000 hours of on-demand shows"
+	const val PLAN_BENEFIT_TWO = "Enjoy 3,000 hours of on-demand shows"
 	const val PLAN_BENEFIT_THREE = "Unlock exclusive content from your favorite artists"
-	const val PLAN_BENEFIT_FOURE = "Stream on your Fire TV"
+	const val PLAN_BENEFIT_FOUR = "Stream on your browser, Apple TV, Roku, iOS, Fire TV, Samsung and Android"
 }
 
 object MarketPlace {

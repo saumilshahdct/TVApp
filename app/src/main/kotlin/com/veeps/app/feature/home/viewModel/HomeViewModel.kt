@@ -16,6 +16,7 @@ class HomeViewModel : ViewModel() {
 	var isErrorNegativeApplicable = MutableLiveData(false)
 	val isNavigationMenuVisible = MutableLiveData(false)
 	val playerShouldRelease = MutableLiveData(false)
+	val shouldRefresh = MutableLiveData(false)
 	val playerShouldPause = MutableLiveData(false)
 	val isErrorVisible = MutableLiveData(false)
 	val translateCarouselToTop = MutableLiveData(false)
@@ -28,9 +29,6 @@ class HomeViewModel : ViewModel() {
 	var watchlistIds = listOf<String>()
 	var productsList = ArrayList<Products>()
 	var isPaymentInProgress = false
-	var reservedId = ""
-	var receiptId = ""
-	var orderId = ""
 
 	fun fetchAllWatchListEvents() = APIRepository().fetchAllWatchListEvents()
 	fun addRemoveWatchListEvent(eventId: HashMap<String, Any>, isRemoveFromWatchList: Boolean) =

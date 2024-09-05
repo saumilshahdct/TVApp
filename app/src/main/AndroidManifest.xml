@@ -86,8 +86,8 @@
         <meta-data
             android:name="io.sentry.traces.user-interaction.enable"
             android:value="true" />
-        <!-- enable screenshot for crashes (could contain sensitive/PII data) -->
 
+        <!-- enable screenshot for crashes (could contain sensitive/PII data) -->
         <meta-data
             android:name="io.sentry.attach-screenshot"
             android:value="false" />

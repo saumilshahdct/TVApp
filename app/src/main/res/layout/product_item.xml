@@ -44,7 +44,6 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
                 android:textSize="@dimen/sp50"
-                android:text="$"
                 tools:ignore="MissingPrefix" />
 
             <TextView

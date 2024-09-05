@@ -13,7 +13,6 @@ import androidx.fragment.app.Fragment
 import com.amazon.device.iap.PurchasingListener
 import com.amazon.device.iap.PurchasingService
 import com.amazon.device.iap.model.FulfillmentResult
-import com.amazon.device.iap.model.Product
 import com.amazon.device.iap.model.ProductDataResponse
 import com.amazon.device.iap.model.PurchaseResponse
 import com.amazon.device.iap.model.PurchaseUpdatesResponse
@@ -46,7 +45,6 @@ import com.veeps.app.util.Logger
 import com.veeps.app.util.PurchaseResponseStatus
 import com.veeps.app.util.PurchaseType
 import com.veeps.app.util.Screens
-import com.veeps.app.util.SubscriptionPlanDetails
 import com.veeps.app.util.SubscriptionPlanSKUs
 import com.veeps.app.widget.navigationMenu.NavigationItem
 import com.veeps.app.widget.navigationMenu.NavigationItems
@@ -416,6 +414,10 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 				true
 			}
 
+			Screens.SUBSCRIPTION -> {
+				true
+			}
+
 			else -> {
 				false
 			}
@@ -465,6 +467,12 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 			when (tag) {
 				NavigationItems.PROFILE -> {
 					showError(Screens.PROFILE, resources.getString(R.string.sign_out_warning))
+				}
+				NavigationItems.MY_SHOWS -> {
+					val selectedFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+					if (selectedFragment is ShowsScreen) {
+						viewModel.shouldRefresh.postValue(true)
+					}
 				}
 			}
 		}
@@ -619,30 +627,23 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 					}
 				}
 			}
+
 			override fun onProductDataResponse(productDataResponse: ProductDataResponse?) {
 				when (productDataResponse?.requestStatus) {
 					ProductDataResponse.RequestStatus.SUCCESSFUL -> {
+						viewModel.productsList.clear()
 						productDataResponse.let {
-							val productData: List<String> = productDataResponse.productData.keys.toList()
-							productData.forEach { productKey ->
-								val product: Product? = productDataResponse.productData?.get(productKey)
-								if (product?.productType.toString() == PurchaseType.SUBSCRIPTION) {
-									val planTitle = product?.title
-									val planPrice =  product?.price ?: if (product?.sku == SubscriptionPlanSKUs.MONTHLY_SUBSCRIPTION) SubscriptionPlanDetails.MONTHLY_PLAN_PRICE else SubscriptionPlanDetails.YEARLY_PLAN_PRICE
-									val planSKUId = product?.sku
-									val planDescription = product?.description
-									if (!viewModel.productsList.contains(Products(
-											id = planSKUId
-										))){
-										viewModel.productsList.add(
-											Products(
-												id = planSKUId,
-												name = planTitle,
-												description = planDescription,
-												price = planPrice
-											)
+							productDataResponse.productData.forEach { (productSKU, productData) ->
+								if (productData.productType.toString() == PurchaseType.SUBSCRIPTION) {
+									if (productSKU == SubscriptionPlanSKUs.VEEPS_MONTHLY_SUBSCRIPTION || productSKU == SubscriptionPlanSKUs.VEEPS_YEARLY_SUBSCRIPTION) viewModel.productsList.add(
+										Products(
+											id = productSKU,
+											name = productData.subscriptionPeriod,
+											description = productData.description,
+											price = productData.price
 										)
-									}
+									)
+
 								}
 							}
 						}
@@ -654,13 +655,13 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 						)
 					}
 				}
-
 			}
 
 			override fun onPurchaseResponse(purchaseResponse: PurchaseResponse?) {
+				purchaseResponse?.let { Logger.print("Purchase - $it") }
 				when (purchaseResponse?.requestStatus) {
 					PurchaseResponse.RequestStatus.SUCCESSFUL -> {
-						if (!purchaseResponse.receipt.isCanceled) {
+						if (!purchaseResponse.receipt.isCanceled && purchaseResponse.receipt.receiptId != AppPreferences.get(AppConstants.receiptId, DEFAULT.EMPTY_STRING).toString()) {
 							AppPreferences.set(AppConstants.receiptId, purchaseResponse.receipt.receiptId)
 							viewModel.purchaseAction.postValue(PurchaseResponseStatus.SUCCESS)
 						}
@@ -693,13 +694,16 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 			}
 
 			override fun onPurchaseUpdatesResponse(response: PurchaseUpdatesResponse?) {
+				response?.let { Logger.print("Purchase Update - $it") }
 				when (response?.requestStatus) {
 					PurchaseUpdatesResponse.RequestStatus.SUCCESSFUL -> {
 						response.receipts.forEach { receipt ->
-							if (!receipt.isCanceled) {
+							if (!receipt.isCanceled && receipt.receiptId != AppPreferences.get(AppConstants.receiptId, DEFAULT.EMPTY_STRING).toString()) {
 								if (receipt.sku.equals(AppPreferences.get(AppConstants.SKUId, DEFAULT.EMPTY_STRING))) {
 									AppPreferences.set(AppConstants.receiptId, receipt.receiptId)
-									if (!viewModel.isSubscription) createOrder()
+									if (viewModel.isSubscription) {
+										Logger.doNothing()
+									} else createOrder()
 								} else {
 									PurchasingService.notifyFulfillment(receipt.receiptId, FulfillmentResult.UNAVAILABLE)
 									viewModel.purchaseAction.postValue(PurchaseResponseStatus.NONE)
@@ -718,7 +722,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	private fun fetchProduct() {
-		val productSKUs = hashSetOf(SubscriptionPlanSKUs.MONTHLY_SUBSCRIPTION, SubscriptionPlanSKUs.YEARLY_SUBSCRIPTION)
+		val productSKUs = hashSetOf(SubscriptionPlanSKUs.MONTHLY_SUBSCRIPTION, SubscriptionPlanSKUs.YEARLY_SUBSCRIPTION, SubscriptionPlanSKUs.MONTHLY_TERM_SUBSCRIPTION, SubscriptionPlanSKUs.YEARLY_TERM_SUBSCRIPTION, SubscriptionPlanSKUs.VEEPS_ALL_ACCESS_SUBSCRIPTION, SubscriptionPlanSKUs.VEEPS_MONTHLY_SUBSCRIPTION, SubscriptionPlanSKUs.VEEPS_YEARLY_SUBSCRIPTION)
 		if (isFireTV) {
 			PurchasingService.getProductData(productSKUs)
 		}

@@ -9,6 +9,7 @@ import com.veeps.app.feature.contentRail.model.RailData
 
 class BrowseViewModel : ViewModel(), DefaultLifecycleObserver {
 	var isVisible = MutableLiveData(false)
+	var appVersionUpdateShouldVisible = false
 	var railData = MutableLiveData(ArrayList<RailData>())
 	var eventId: String = ""
 	var isAppUpdateCall: Boolean = false

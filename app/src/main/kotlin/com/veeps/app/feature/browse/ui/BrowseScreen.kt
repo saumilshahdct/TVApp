@@ -19,7 +19,6 @@ import com.google.gson.internal.LinkedTreeMap
 import com.veeps.app.BuildConfig
 import com.veeps.app.R
 import com.veeps.app.core.BaseDataSource.Resource.CallStatus.ERROR
-import com.veeps.app.core.BaseDataSource.Resource.CallStatus.SUCCESS
 import com.veeps.app.core.BaseFragment
 import com.veeps.app.databinding.FragmentBrowseScreenBinding
 import com.veeps.app.extension.fadeInNow
@@ -98,6 +97,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			carousel.visibility = View.INVISIBLE
 			darkBackground.visibility = View.VISIBLE
 			watermark.visibility = View.GONE
+			appUpdateContainer.visibility = View.GONE
 		}
 		setupBlur()
 		loadAppContent()
@@ -289,7 +289,8 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 				if (this::player.isInitialized && player.mediaItemCount.isGreaterThan(0) && player.isPlaying) {
 					player.pause()
 				}
-				binding.appUpdateContainer.visibility = View.GONE
+				if (viewModel.appVersionUpdateShouldVisible) binding.appUpdateContainer.visibility =
+					View.GONE
 				binding.darkBackground.visibility = View.VISIBLE
 				binding.carousel.visibility = View.GONE
 				binding.browseLabel.visibility = View.GONE
@@ -315,7 +316,8 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 				binding.browseLabel.visibility = View.VISIBLE
 				binding.onDemandLabel.visibility = View.VISIBLE
 				binding.logo.visibility = View.VISIBLE
-				binding.appUpdateContainer.visibility = View.VISIBLE
+				if (viewModel.appVersionUpdateShouldVisible) binding.appUpdateContainer.visibility =
+					View.VISIBLE
 			}
 		}
 
@@ -383,10 +385,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			}
 		viewModel.eventId = entity.id ?: DEFAULT.EMPTY_STRING
 		binding.primary.alpha = 1.0f
-		binding.myShows.visibility = if (AppPreferences.get(
-				AppConstants.userSubscriptionStatus, "none"
-			) != "none"
-		) View.VISIBLE else View.GONE
+		binding.myShows.visibility = View.VISIBLE
 		setupMyShows(isAdded = homeViewModel.watchlistIds.contains(entity.id?.ifBlank { DEFAULT.EMPTY_STRING }
 			?: DEFAULT.EMPTY_STRING))
 		binding.ctaContainer.visibility =
@@ -397,10 +396,12 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 			.toDateTime()
 		binding.date.text = otherDate.toString("MMM dd, yyyy${DEFAULT.SEPARATOR}ha")
 		if (AppUtil.compare(otherDate, currentDate) == DateTimeCompareDifference.GREATER_THAN) {
-			binding.date.visibility = if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
+			binding.date.visibility =
+				if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
 			binding.liveNow.visibility = View.GONE
 		} else {
-			binding.date.visibility = if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
+			binding.date.visibility =
+				if (binding.browseLabel.isSelected) View.VISIBLE else View.GONE
 			binding.liveNow.visibility = View.GONE
 		}
 		val title = entity.eventName?.ifBlank { DEFAULT.EMPTY_STRING } ?: DEFAULT.EMPTY_STRING
@@ -579,9 +580,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 				drawable?.setTint(
 					ContextCompat.getColor(
 						context,
-						if ((binding.myShows.isFocused)
-								.or(binding.myShows.hasFocus())
-						) R.color.dark_black else R.color.white
+						if ((binding.myShows.isFocused).or(binding.myShows.hasFocus())) R.color.dark_black else R.color.white
 					)
 				)
 			}
@@ -672,28 +671,28 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 
 	private fun validateAppVersion() {
 		viewModel.isAppUpdateCall = true
-		viewModel.validateAppVersion(BuildConfig.VERSION_NAME).observe(this@BrowseScreen) { appVersionResponse ->
-			fetch(
-				appVersionResponse,
-				isLoaderEnabled = false,
-				canUserAccessScreen = false,
-				shouldBeInBackground = false
-			) {
-				when (appVersionResponse.callStatus) {
-					SUCCESS -> {
-						binding.appUpdateContainer.visibility = View.GONE
-					}
-					ERROR -> {
-						appVersionResponse.message?.let {
-							if (appVersionResponse.message == "old_version") {
-								binding.appUpdateContainer.visibility = View.VISIBLE
+		viewModel.validateAppVersion(BuildConfig.VERSION_NAME)
+			.observe(this@BrowseScreen) { appVersionResponse ->
+				fetch(
+					appVersionResponse,
+					isLoaderEnabled = false,
+					canUserAccessScreen = false,
+					shouldBeInBackground = false
+				) {
+					when (appVersionResponse.callStatus) {
+						ERROR -> {
+							appVersionResponse.message?.let {
+								if (appVersionResponse.message == "old_version") {
+									viewModel.appVersionUpdateShouldVisible = true
+									binding.appUpdateContainer.visibility = View.VISIBLE
+								}
 							}
 						}
+
+						else -> Logger.doNothing()
 					}
-					else -> Logger.doNothing()
 				}
 			}
-		}
 	}
 
 }
