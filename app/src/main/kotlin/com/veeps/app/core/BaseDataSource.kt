@@ -29,7 +29,7 @@ abstract class BaseDataSource {
                         200 -> {
                             response.body()?.let {
                                 when (tag) {
-                                    APIConstants.fetchAuthenticationDetails -> {
+                                    APIConstants.FETCH_AUTHENTICATION_DETAILS -> {
                                         return Resource.success(tag, response.body()!!)
                                     }
 
@@ -38,7 +38,7 @@ abstract class BaseDataSource {
                                     }
                                 }
                             }
-                                ?: return if (tag == APIConstants.validateAppVersions)
+                                ?: return if (tag == APIConstants.VALIDATE_APP_VERSIONS)
                                     Resource.successWithNullResponse(tag, null)
                                 else Resource.error(
                                     tag, Veeps.appContext.getString(R.string.unknown_error)
@@ -46,9 +46,9 @@ abstract class BaseDataSource {
                         }
 
                         else -> {
-                            if (response.code() == 201 && tag == APIConstants.subscriptionMapping) {
+                            if (response.code() == 201 && tag == APIConstants.SUBSCRIPTION_MAPPING) {
                                 return Resource.successWithNullResponse(tag, response.body())
-                            } else if (tag == APIConstants.removeWatchListEvents) {
+                            } else if (tag == APIConstants.REMOVE_WATCH_LIST_EVENTS) {
                                 return Resource.successWithNullResponse(tag, response.body())
                             } else {
                                 response.body()?.let {
@@ -69,7 +69,7 @@ abstract class BaseDataSource {
                     when (response.code()) {
                         400 -> {
                             when (tag) {
-                                APIConstants.authenticationPolling -> {
+                                APIConstants.AUTHENTICATION_POLLING -> {
                                     var error = Veeps.appContext.getString(R.string.unknown_error)
                                     response.errorBody()?.let { errorBody ->
                                         val errorObject = JSONObject(errorBody.string())
@@ -88,7 +88,7 @@ abstract class BaseDataSource {
                                     return Resource.error(tag, error)
                                 }
 
-                                APIConstants.validateAppVersions -> {
+                                APIConstants.VALIDATE_APP_VERSIONS -> {
                                     var errorMessage: String =
                                         Veeps.appContext.getString(R.string.unknown_error)
 

@@ -787,7 +787,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	private fun fetchUserStats(eventId: String) {
 		val userStatsAPIURL = AppPreferences.get(
 			AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
-		) + APIConstants.fetchUserStats
+		) + APIConstants.FETCH_USER_STATS
 		AppPreferences.set(AppConstants.generatedJWT, AppUtil.generateJWT(eventIds = eventId))
 		viewModel.fetchUserStats(userStatsAPIURL, eventIds = eventId)
 			.observe(this@VideoPlayerScreen) { userStatsDetails ->
@@ -897,7 +897,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 						AppPreferences.set(AppConstants.generatedJWT, AppUtil.generateJWT(eventId))
 						val addStatsAPIURL = AppPreferences.get(
 							AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
-						) + APIConstants.addStats
+						) + APIConstants.ADD_STATS
 						addStats(
 							addStatsAPIURL.trim(),
 							currentTime,

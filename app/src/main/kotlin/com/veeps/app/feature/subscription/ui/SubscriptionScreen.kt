@@ -159,7 +159,7 @@ class SubscriptionScreen : BaseFragment<SubscriptionModel, SubscriptionScreenBin
                 }
 
                 if (it != PurchaseResponseStatus.NONE) {
-                    helper.showErrorOnScreen(APIConstants.generateNewOrder, errorMessage)
+                    helper.showErrorOnScreen(APIConstants.GENERATE_NEW_ORDER, errorMessage)
                     homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.NONE)
                 }
 

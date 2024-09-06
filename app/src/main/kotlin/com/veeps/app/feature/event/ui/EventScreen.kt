@@ -445,7 +445,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				}
 
 				if (it != PurchaseResponseStatus.NONE) {
-					helper.showErrorOnScreen(APIConstants.generateNewOrder, errorMessage)
+					helper.showErrorOnScreen(APIConstants.GENERATE_NEW_ORDER, errorMessage)
 					homeViewModel.purchaseAction.postValue(PurchaseResponseStatus.NONE)
 				}
 
@@ -576,6 +576,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			}
 		}
 	}
+
 	private fun setEventDetails(eventDetails: Entities) {
 		binding.logo.requestFocus()
 		this.eventDetails = eventDetails
@@ -799,7 +800,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 	private fun fetchUserStats() {
 		val userStatsAPIURL = AppPreferences.get(
 			AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
-		) + APIConstants.fetchUserStats
+		) + APIConstants.FETCH_USER_STATS
 		AppPreferences.set(
 			AppConstants.generatedJWT, AppUtil.generateJWT(eventIds = viewModel.eventId)
 		)
@@ -1065,6 +1066,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			}
 		}
 	}
+
 	fun onSubscribe() {
 		homeViewModel.isSubscription = true
 		helper.setupPageChange(

@@ -596,7 +596,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 		}
 		val userStatsAPIURL = AppPreferences.get(
 			AppConstants.userBeaconBaseURL, DEFAULT.EMPTY_STRING
-		) + APIConstants.fetchUserStats
+		) + APIConstants.FETCH_USER_STATS
 		AppPreferences.set(AppConstants.generatedJWT, AppUtil.generateJWT(eventIds))
 		viewModel.fetchUserStats(userStatsAPIURL, eventIds)
 			.observe(viewLifecycleOwner) { userStatsDetails ->

@@ -125,7 +125,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 		viewModel.errorMessage.postValue(message)
 		binding.errorDescription.text = description
 		when (tag) {
-			APIConstants.removeWatchListEvents -> {
+			APIConstants.REMOVE_WATCH_LIST_EVENTS -> {
 				viewModel.errorPositiveLabel.postValue(getString(R.string.ok_label))
 				viewModel.errorNegativeLabel.postValue(getString(R.string.cancel_label))
 				viewModel.isErrorPositiveApplicable.postValue(true)
@@ -206,7 +206,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 
 	fun onErrorPositive(tag: Any?) {
 		when (tag) {
-			APIConstants.removeWatchListEvents -> {
+			APIConstants.REMOVE_WATCH_LIST_EVENTS -> {
 				binding.errorContainer.visibility = View.GONE
 				addRemoveWatchListEvent(binding.errorDescription.text.toString())
 			}
@@ -356,7 +356,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 
 	override fun removeEventFromWatchList(eventId: String) {
 		showError(
-			APIConstants.removeWatchListEvents,
+			APIConstants.REMOVE_WATCH_LIST_EVENTS,
 			"Are you sure you want to remove it from My Shows?",
 			eventId
 		)

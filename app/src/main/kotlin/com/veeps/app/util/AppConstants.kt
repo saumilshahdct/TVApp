@@ -72,6 +72,8 @@ object CardTypes {
 	const val WIDE = "wide"
 	const val CIRCLE = "circle"
 	const val STANDARD = "standard"
+	const val CHART = "chart"
+	const val LANDSCAPE = "landscape"
 	const val PORTRAIT = "portrait"
 	const val HERO = "hero"
 	const val GENRE = "genre"

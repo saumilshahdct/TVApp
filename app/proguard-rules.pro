@@ -77,6 +77,7 @@
 -dontwarn com.amazon.**
 -keep class com.amazon.** {*;}
 -keepattributes *Annotation*
+-dontoptimize -dontobfuscate
 
 -keep class com.bitmovin.analytics.stateMachines.PlayerStateMachine$Factory { *; }
      -keep class com.bitmovin.analytics.** { *; }
