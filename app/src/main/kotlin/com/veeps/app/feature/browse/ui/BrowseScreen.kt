@@ -364,7 +364,7 @@ class BrowseScreen : BaseFragment<BrowseViewModel, FragmentBrowseScreenBinding>(
 					requireCarouselRemoval = true
 				}
 				rails.removeIf { rail ->
-					rail.cardType.equals(CardTypes.WIDE)
+					rail.cardType.equals(CardTypes.WIDE) or rail.cardType.equals(CardTypes.GENRE)
 				}
 				railAdapter.setRails(rails)
 			} else {

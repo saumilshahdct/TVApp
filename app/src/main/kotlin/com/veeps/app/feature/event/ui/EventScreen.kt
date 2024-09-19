@@ -6,7 +6,6 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.ViewOutlineProvider
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
 import androidx.leanback.widget.BaseGridView
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C.AUDIO_CONTENT_TYPE_MOVIE
@@ -35,7 +34,6 @@ import com.veeps.app.feature.contentRail.model.Entities
 import com.veeps.app.feature.contentRail.model.Products
 import com.veeps.app.feature.contentRail.model.RailData
 import com.veeps.app.feature.event.viewModel.EventViewModel
-import com.veeps.app.feature.subscription.ui.SubscriptionScreen
 import com.veeps.app.util.APIConstants
 import com.veeps.app.util.AppAction
 import com.veeps.app.util.AppConstants
@@ -103,6 +101,8 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 			loader.visibility = View.VISIBLE
 			logo.requestFocus()
 			rail = arrayListOf()
+			subscribe.visibility = View.GONE
+			myShows.visibility = View.GONE
 			carousel.visibility = View.INVISIBLE
 			resumeProgress.visibility = View.INVISIBLE
 			darkBackground.visibility = View.VISIBLE
@@ -617,12 +617,7 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 		binding.subscribeLabel.text = getString(
 			R.string.free_for_subscriber
 		)
-		binding.subscribe.visibility = if (AppPreferences.get(
-				AppConstants.userSubscriptionStatus, "none"
-			) == "none" && (homeViewModel.productsList.isNotEmpty())
-		) {
-			View.VISIBLE
-		} else View.GONE
+		binding.subscribe.visibility = View.GONE
 
 		setupMyShows(isAdded = homeViewModel.watchlistIds.contains(eventDetails.id))
 
@@ -1065,12 +1060,5 @@ class EventScreen : BaseFragment<EventViewModel, FragmentEventDetailsScreenBindi
 				claimFreeTicketForEvent()
 			}
 		}
-	}
-
-	fun onSubscribe() {
-		homeViewModel.isSubscription = true
-		helper.setupPageChange(
-			true, SubscriptionScreen::class.java, bundleOf(), Screens.SUBSCRIPTION, true
-		)
 	}
 }

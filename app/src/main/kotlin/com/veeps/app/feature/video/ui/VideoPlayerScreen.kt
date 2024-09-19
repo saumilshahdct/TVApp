@@ -103,6 +103,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	lateinit var chatAdapter: ChatMessagesAdapter
 	private val adItems: MutableList<AdItem> = ArrayList()
 	private var isDrmAvailable = false
+	private var isAdAvailable = false
 	private var isAdVisible = false
 	private var currentTime: String = DEFAULT.EMPTY_STRING
 	private var duration: String = DEFAULT.EMPTY_STRING
@@ -390,7 +391,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 			binding.playPause.isSelected = true
 			binding.videoPlayer.postDelayed(
 				this@VideoPlayerScreen::getPlayerProgress,
-				if (isAdVisible) IntValue.NUMBER_500.toLong() else IntValue.NUMBER_1000.toLong()
+				if (isAdAvailable && isAdVisible) IntValue.NUMBER_500.toLong() else IntValue.NUMBER_1000.toLong()
 			)
 			if (player.isLive) {
 				binding.playPause.isFocusable = false
@@ -444,7 +445,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				binding.vodControls.visibility = View.VISIBLE
 				binding.liveControls.visibility = View.GONE
 				binding.standBy.visibility = View.GONE
-				if (player.isAd) {
+				if (isAdAvailable && player.isAd) {
 					binding.videoPlayer.isUiVisible = false
 					trickPlayVisible.value = true
 					binding.chatToggle.isFocusable = false
@@ -865,17 +866,20 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		publishChannel = eventDetails.chat.chatChannels.mainPublish ?: DEFAULT.EMPTY_STRING
 		subscribeChannel = eventDetails.chat.chatChannels.mainSubscribe ?: DEFAULT.EMPTY_STRING
 		signalChannel = eventDetails.chat.chatChannels.signals ?: DEFAULT.EMPTY_STRING
-		playbackStream =
-//			eventDetails.playback.widevineUrl?.ifBlank { eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING } } ?:
-				eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING }
-						?: DEFAULT.EMPTY_STRING
-		if (!eventDetails.playback.widevineUrl.isNullOrBlank()) isDrmAvailable = false
-		eventDetails.playback.ads.let { ads ->
-			for (ad in ads) {
-				val adSource = ad.adUrl?.ifBlank { DEFAULT.EMPTY_STRING }
-					?.let { AdSource(AdSourceType.Bitmovin, it) }
-				val adItem = adSource?.let { AdItem(ad.adPosition ?: "pre", it) }
-				adItem?.let { adItems.add(it) }
+
+		isDrmAvailable = false//!eventDetails.playback.widevineUrl.isNullOrBlank()
+		val streamURL = eventDetails.playback.streamUrl?.ifBlank { DEFAULT.EMPTY_STRING } ?: DEFAULT.EMPTY_STRING
+		val widevineURL = eventDetails.playback.widevineUrl?.ifBlank { streamURL } ?: DEFAULT.EMPTY_STRING
+		playbackStream = if (isDrmAvailable) widevineURL else streamURL
+
+		if (isAdAvailable) {
+			eventDetails.playback.ads.let { ads ->
+				for (ad in ads) {
+					val adSource = ad.adUrl?.ifBlank { DEFAULT.EMPTY_STRING }
+						?.let { AdSource(AdSourceType.Bitmovin, it) }
+					val adItem = adSource?.let { AdItem(ad.adPosition ?: "pre", it) }
+					adItem?.let { adItems.add(it) }
+				}
 			}
 		}
 
@@ -1418,7 +1422,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 
 				KeyEvent.KEYCODE_DPAD_LEFT -> {
-					if (!isAdVisible) {
+					if (!isAdAvailable && !isAdVisible) {
 						timeout.removeCallbacks(trickPlayRunnable)
 						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
 						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
@@ -1430,7 +1434,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 
 				KeyEvent.KEYCODE_MEDIA_REWIND, KeyEvent.KEYCODE_MEDIA_SKIP_BACKWARD, KeyEvent.KEYCODE_MEDIA_STEP_BACKWARD -> {
-					if (!isAdVisible) {
+					if (!isAdAvailable && !isAdVisible) {
 						timeout.removeCallbacks(trickPlayRunnable)
 						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
 						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
@@ -1458,7 +1462,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 
 				KeyEvent.KEYCODE_DPAD_RIGHT -> {
-					if (!isAdVisible) {
+					if (!isAdAvailable && !isAdVisible) {
 						timeout.removeCallbacks(trickPlayRunnable)
 						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
 						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
@@ -1470,7 +1474,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 
 				KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, KeyEvent.KEYCODE_MEDIA_SKIP_FORWARD, KeyEvent.KEYCODE_MEDIA_STEP_FORWARD -> {
-					if (!isAdVisible) {
+					if (!isAdAvailable && !isAdVisible) {
 						timeout.removeCallbacks(trickPlayRunnable)
 						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
 						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
@@ -1518,7 +1522,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 				}
 
 				else -> {
-					if (!isAdVisible) {
+					if (!isAdAvailable && !isAdVisible) {
 						timeout.removeCallbacks(trickPlayRunnable)
 						timeout.postDelayed(trickPlayRunnable, (inactivitySeconds * 1000).toLong())
 						if (trickPlayVisible.value != null && !trickPlayVisible.value!!) {
@@ -1533,14 +1537,14 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 	}
 
 	private fun createPlayerConfig(): PlayerConfig {
-		// Creating a new PlayerConfig
 		val playerConfig = PlayerConfig()
 		val playbackConfig = PlaybackConfig()
 		playbackConfig.isAutoplayEnabled = true
 		playerConfig.playbackConfig = playbackConfig
-		// Add AdvertisingConfig to PlayerConfig. Ads will be scheduled automatically.
-		val advertisingConfig = AdvertisingConfig(adItems)
-		playerConfig.advertisingConfig = advertisingConfig
+		if (isAdAvailable) {
+			val advertisingConfig = AdvertisingConfig(adItems)
+			playerConfig.advertisingConfig = advertisingConfig
+		}
 		return playerConfig
 	}
 
@@ -1562,7 +1566,7 @@ class VideoPlayerScreen : BaseActivity<VideoPlayerViewModel, ActivityVideoPlayer
 		if (player.isPlaying) {
 			binding.videoPlayer.postDelayed(
 				{ getPlayerProgress() },
-				if (isAdVisible) IntValue.NUMBER_500.toLong() else IntValue.NUMBER_1000.toLong()
+				if (isAdAvailable && isAdVisible) IntValue.NUMBER_500.toLong() else IntValue.NUMBER_1000.toLong()
 			)
 		}
 	}
