@@ -1,5 +1,7 @@
 package com.veeps.app.feature.home.ui
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.content.res.Resources
 import android.os.Bundle
 import android.os.Handler
@@ -31,6 +33,7 @@ import com.veeps.app.feature.contentRail.model.Products
 import com.veeps.app.feature.event.ui.EventScreen
 import com.veeps.app.feature.home.viewModel.HomeViewModel
 import com.veeps.app.feature.intro.ui.IntroScreen
+import com.veeps.app.feature.liveTV.ui.LiveTVScreen
 import com.veeps.app.feature.search.ui.SearchScreen
 import com.veeps.app.feature.shows.ui.ShowsScreen
 import com.veeps.app.feature.venue.ui.VenueScreen
@@ -41,6 +44,7 @@ import com.veeps.app.util.AppConstants
 import com.veeps.app.util.AppHelper
 import com.veeps.app.util.AppPreferences
 import com.veeps.app.util.DEFAULT
+import com.veeps.app.util.IntValue
 import com.veeps.app.util.Logger
 import com.veeps.app.util.PurchaseResponseStatus
 import com.veeps.app.util.PurchaseType
@@ -394,12 +398,30 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	}
 
 	private fun showNavigationMenu(navigationMenu: View) {
+		binding.navigationMenuBackground.apply {
+			alpha = 0f
+			visibility = View.VISIBLE
+			animate()
+				.alpha(1f)
+				.setDuration(IntValue.NUMBER_333.toLong())
+				.setListener(null)
+		}
 		binding.navigationMenu.onFocusChangeListener = null
 		navigationMenu.transformWidth(R.dimen.expanded_navigation_menu_width, false)
 		viewModel.isNavigationMenuVisible.postValue(true)
 	}
 
 	private fun hideNavigationMenu(navigationMenu: View) {
+		binding.navigationMenuBackground.apply {
+			animate()
+				.alpha(0f)
+				.setDuration(IntValue.NUMBER_200.toLong()) // Duration of the animation in milliseconds
+				.setListener(object : AnimatorListenerAdapter() {
+					override fun onAnimationEnd(animation: Animator) {
+						visibility = View.GONE // Make the view invisible when the animation ends
+					}
+				})
+		}
 		val screen = supportFragmentManager.findFragmentById(R.id.fragment_container)
 		val doesCompletelyHiddenRequired: Boolean = when (screen?.tag) {
 			Screens.ARTIST -> {
@@ -454,6 +476,10 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 					fragment = BrowseScreen::class.java
 				}
 
+				NavigationItems.LIVE_TV -> {
+					fragment = LiveTVScreen::class.java
+				}
+
 				NavigationItems.SEARCH -> {
 					fragment = SearchScreen::class.java
 				}
@@ -497,7 +523,7 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 		}
 	}
 
-	private fun knowFocusedView() {
+	fun knowFocusedView() {
 		Thread {
 			var oldId = -1
 			while (true) {
@@ -529,6 +555,13 @@ class HomeScreen : BaseActivity<HomeViewModel, ActivityHomeScreenBinding>(), Nav
 	override fun onDestroy() {
 		binding.navigationMenu.onFocusChangeListener = null
 		super.onDestroy()
+	}
+
+	override fun setCarousel(position: Int) {
+		val fragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+		if (fragment is BrowseScreen) {
+			fragment.setCarousel(position)
+		}
 	}
 
 	override fun translateCarouselToTop(needsOnTop: Boolean) {

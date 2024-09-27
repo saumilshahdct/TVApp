@@ -24,6 +24,7 @@
 
     <color name="dark_gray">#565656</color>
     <color name="gray_300">#FF9898A1</color>
+    <color name="gray">#A6A8B4</color>
     <color name="red">#FFEA0034</color>
     <color name="red_30">#4DEA0034</color>
     <color name="red_75">#BFEA0034</color>

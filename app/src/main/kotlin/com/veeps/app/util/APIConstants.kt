@@ -10,9 +10,9 @@ object APIConstants {
 	private const val PLAYER_STAT_STAGE: String = "https://vstats.veeps-team.com"
 	private const val PLAYER_STAT_PROD: String = "https://vstats.veeps.com"
 
-	var BASE_URL: String = if (isProduction) PROD else STAGE
+	var BASE_URL: String = if (isProduction) STAGE else STAGE
 	private const val API_VERSION: String = "v3/"
-	private const val AUTH_VERSION: String = AUTH_PROD + "oauth/"
+	private const val AUTH_VERSION: String = AUTH_STAG + "oauth/"
 	const val QR_CODE_BASE_URL: String =
 		"https://veeps.com/qr-code?i="
 	const val QR_CODE_ACTIVATE_URL: String =

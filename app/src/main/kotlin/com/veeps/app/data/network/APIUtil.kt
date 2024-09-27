@@ -1,6 +1,7 @@
 package com.veeps.app.data.network
 
 import com.google.gson.GsonBuilder
+import com.google.gson.Strictness
 import com.veeps.app.BuildConfig
 import com.veeps.app.data.common.BaseResponseGeneric
 import com.veeps.app.extension.isAppConnected
@@ -98,7 +99,7 @@ object APIUtil {
 
 		Retrofit.Builder().baseUrl(APIConstants.BASE_URL)
 			.addConverterFactory(ScalarsConverterFactory.create())
-			.addConverterFactory(GsonConverterFactory.create(GsonBuilder().setLenient().create()))
+			.addConverterFactory(GsonConverterFactory.create(GsonBuilder().setStrictness(Strictness.LENIENT).create()))
 			.client(httpClient).build().create(APIService::class.java)
 	}
 

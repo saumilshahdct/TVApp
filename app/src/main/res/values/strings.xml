@@ -31,7 +31,8 @@
 
     <!-- Navigation Menu -->
     <string name="profile_label">Profile</string>
-    <string name="home_label">Home</string>
+    <string name="home_label">Browse</string>
+    <string name="live_tv_label">Live TV</string>
     <string name="search_label">Search</string>
     <string name="my_shows_label">My Shows</string>
 

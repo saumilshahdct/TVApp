@@ -61,6 +61,9 @@ class ContentRailsAdapter(
 					CardTypes.CIRCLE -> context.resources.getDimensionPixelSize(
 						R.dimen.row_height_circle_without_follow
 					)
+					CardTypes.LANDSCAPE, CardTypes.HERO -> context.resources.getDimensionPixelSize(
+						R.dimen.row_height_landscape
+					)
 					CardTypes.GENRE -> context.resources.getDimensionPixelSize(
 						R.dimen.row_height_genre
 					)

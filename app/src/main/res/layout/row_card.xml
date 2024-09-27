@@ -257,6 +257,81 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/event_landscape_container"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:padding="3dp"
+            android:visibility="visible">
+
+            <ImageView
+                android:id="@+id/event_landscape_thumbnail"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:contentDescription="@string/app_description"
+                android:scaleType="centerCrop"
+                app:layout_constraintBottom_toTopOf="@id/event_landscape_artist_name"
+                app:layout_constraintDimensionRatio="300:168"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/event_landscape_thumbnail_container"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:contentDescription="@string/app_description"
+                android:scaleType="centerCrop"
+                app:layout_constraintBottom_toBottomOf="@id/event_landscape_thumbnail"
+                app:layout_constraintDimensionRatio="300:168"
+                app:layout_constraintEnd_toEndOf="@id/event_landscape_thumbnail"
+                app:layout_constraintStart_toStartOf="@id/event_landscape_thumbnail"
+                app:layout_constraintTop_toTopOf="@id/event_landscape_thumbnail" />
+
+            <TextView
+                android:id="@+id/event_landscape_artist_name"
+                fontPath="fonts/SaansMedium.ttf"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="2dp"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:gravity="fill_vertical"
+                android:includeFontPadding="false"
+                android:lines="1"
+                android:textAlignment="gravity"
+                android:textColor="@color/white"
+                android:textIsSelectable="false"
+                android:textSize="10sp"
+                app:layout_constraintBottom_toTopOf="@id/event_landscape_title"
+                app:layout_constraintEnd_toEndOf="@+id/event_landscape_thumbnail"
+                app:layout_constraintStart_toStartOf="@+id/event_landscape_thumbnail"
+                app:layout_constraintTop_toBottomOf="@+id/event_landscape_thumbnail"
+                tools:ignore="MissingPrefix" />
+
+            <TextView
+                android:id="@+id/event_landscape_title"
+                fontPath="fonts/SaansMedium.ttf"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:gravity="fill_vertical"
+                android:includeFontPadding="false"
+                android:lines="1"
+                android:textAlignment="gravity"
+                android:textColor="@color/white_50"
+                android:textIsSelectable="false"
+                android:textSize="10sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/event_landscape_thumbnail"
+                app:layout_constraintStart_toStartOf="@+id/event_landscape_thumbnail"
+                app:layout_constraintTop_toBottomOf="@+id/event_landscape_artist_name"
+                tools:ignore="MissingPrefix" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 

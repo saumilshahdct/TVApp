@@ -85,6 +85,7 @@ object IntValue {
 	const val NUMBER_5 = 5
 	const val NUMBER_8 = 8
 	const val NUMBER_10 = 10
+	const val NUMBER_LANDSCAPE = 9
 	const val NUMBER_100 = 100
 	const val NUMBER_200 = 200
 	const val NUMBER_300 = 300

@@ -104,9 +104,9 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 				else if (isRecommended && adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_UP) {
 					helper.focusItem()
 					true
-				} else if (adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+				} else if (adapterPosition == 1 && keyCode == KeyEvent.KEYCODE_DPAD_UP) {
 					helper.translateCarouselToBottom(true)
-					true
+					false
 				} else if (adapterPosition == 0 && keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
 					if (!isRecommended && screen == Screens.EVENT && railCount == 1) {
 						helper.focusItem()
@@ -203,10 +203,16 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 		}
 
 		holder.binding.container.setOnFocusChangeListener { _, hasFocus ->
-			if (hasFocus) helper.translateCarouselToTop(true)
+			if (hasFocus && adapterPosition > 0) helper.translateCarouselToTop(true)
+			if (hasFocus && adapterPosition == 0 && cardType == CardTypes.HERO) {
+				helper.setCarousel(entityPosition)
+			}
 			when (cardType) {
 				CardTypes.CIRCLE -> {
 					holder.binding.artistVenueThumbnailContainer.setImageResource(if (hasFocus) R.drawable.rounded_card_image_background_focused else (if (entitiesType == EntityTypes.ARTIST) R.drawable.rounded_card_image_background_white_10 else R.drawable.rounded_card_image_background_transparent))
+				}
+				CardTypes.LANDSCAPE, CardTypes.HERO -> {
+					holder.binding.eventLandscapeThumbnailContainer.setImageResource(if (hasFocus) R.drawable.rounded_landscape_card_image_background_focused else R.drawable.rounded_card_image_background_transparent)
 				} else -> {
 					holder.binding.container.setCardBackgroundColor(
 						if (hasFocus) context.getColor(R.color.white) else context.getColor(
@@ -307,92 +313,126 @@ class CardAdapter(private val action: AppAction) : RecyclerView.Adapter<CardAdap
 			}
 
 			else -> {
-				when (val badgeStatus: String = AppUtil.getBadgeStatus(
-					entities[entityPosition], isContinueWatching, screen == Screens.SHOWS
-				)) {
-					BadgeStatus.LIVE -> {
-						holder.binding.eventLiveBadgeContainer.visibility = View.VISIBLE
-						holder.binding.eventDateContainer.visibility = View.GONE
+				if (cardType == CardTypes.LANDSCAPE || cardType == CardTypes.HERO) {
+					var image: String
+					entities[entityPosition].eventPosterUrl.let {
+						image = it ?: DEFAULT.EMPTY_STRING
 					}
+					val title = entities[entityPosition].eventName
+					val artistTitle =
+						if (entities[entityPosition].lineup.isNotEmpty()) entities[entityPosition].lineup[0].name else DEFAULT.EMPTY_STRING
 
-					BadgeStatus.DO_NOT_SHOW, BadgeStatus.NOTHING,
-					-> {
-						holder.binding.eventLiveBadgeContainer.visibility = View.GONE
-						holder.binding.eventDateContainer.visibility = View.GONE
-					}
+					holder.binding.eventLandscapeTitle.text = title
+					holder.binding.eventLandscapeArtistName.text = artistTitle
 
-					else -> {
-						holder.binding.eventLiveBadgeContainer.visibility = View.GONE
-						holder.binding.eventDate.text = badgeStatus
-						holder.binding.eventDateContainer.visibility =
-							if (badgeStatus.isBlank()) View.GONE else View.VISIBLE
-					}
-				}
-
-				if (isContinueWatching) {
-					holder.binding.continueWatchingProgress.visibility = View.VISIBLE
-					val stats = userStats.filter { it.eventId == entities[entityPosition].eventId }
-					if (stats.size == 1 && ((stats[0].cursor / stats[0].duration) * 100) < 95) {
-						holder.binding.continueWatchingProgress.max = stats[0].duration.roundToInt()
-						holder.binding.continueWatchingProgress.progress =
-							stats[0].cursor.roundToInt()
-					}
-				} else {
-					holder.binding.continueWatchingProgress.visibility = View.GONE
-				}
-				var image: String
-				entities[entityPosition].presentation.let {
-					image = it.portraitUrl ?: DEFAULT.EMPTY_STRING
-				}
-				val title = entities[entityPosition].eventName
-				val artistTitle =
-					if (entities[entityPosition].lineup.isNotEmpty()) entities[entityPosition].lineup[0].name else ""
-				entities[entityPosition].presentation.let {
-					if (!it.badgeBgColor.isNullOrBlank()) holder.binding.eventBadgeContainer.background.colorFilter =
-						BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
-							Color.parseColor(it.badgeBgColor), BlendModeCompat.SRC_OVER
+					val newResource = image.replace(Image.DEFAULT, Image.CARD_HORIZONTAL)
+					Glide.with(holder.binding.eventLandscapeThumbnail.context).load(newResource)
+						.diskCacheStrategy(DiskCacheStrategy.ALL).override(
+							holder.binding.eventLandscapeThumbnail.measuredWidth,
+							holder.binding.eventLandscapeThumbnail.measuredHeight
 						)
-
-					if (!it.badgeFgColor.isNullOrBlank()) holder.binding.eventBadge.setTextColor(
-						Color.parseColor(
-							it.badgeFgColor
-						)
-					)
-
-					if (it.badgeLabel.isNullOrBlank()) {
-						holder.binding.eventBadgeContainer.visibility = View.GONE
-					} else {
-						val firstLetter = it.badgeLabel!!.substring(0, 1).uppercase(Locale.ROOT)
-						val labelWOFirstLetter = it.badgeLabel!!.substring(1)
-						val label = "$firstLetter$labelWOFirstLetter"
-						holder.binding.eventBadge.text = label
-					}
-				}
-				holder.binding.eventTitle.text = title
-				holder.binding.eventLogoLabel.text = artistTitle
-				holder.binding.eventLogo.visibility = View.GONE
-
-				val newResource = image.replace(Image.DEFAULT, Image.CARD)
-				Glide.with(holder.binding.eventThumbnail.context).load(newResource)
-					.diskCacheStrategy(DiskCacheStrategy.ALL).override(
-						holder.binding.eventThumbnail.measuredWidth,
-						holder.binding.eventThumbnail.measuredHeight
-					)
 //					.transition(DrawableTransitionOptions.withCrossFade())
-					.transform(CenterCrop(), RoundedCorners(IntValue.NUMBER_10))
+						.transform(CenterCrop(), RoundedCorners(IntValue.NUMBER_LANDSCAPE))
 //					.placeholder(R.drawable.rounded_card_background_black)
-					.error(R.drawable.rounded_card_background_black)
-					.into(holder.binding.eventThumbnail)
+						.error(R.drawable.rounded_card_background_black)
+						.into(holder.binding.eventLandscapeThumbnail)
 //				Logger.printMessage("Card Image url with optimized ($newResource) is requested to load.")
 
-				holder.binding.eventDateContainer.setupWith(holder.binding.container)
-					.setBlurRadius(12.5f)
-				holder.binding.eventDateContainer.outlineProvider = ViewOutlineProvider.BACKGROUND
-				holder.binding.eventDateContainer.clipToOutline = true
-				holder.binding.artistVenueFollow.visibility = View.GONE
-				holder.binding.artistVenueContainer.visibility = View.GONE
-				holder.binding.eventContainer.visibility = View.VISIBLE
+					holder.binding.artistVenueFollow.visibility = View.GONE
+					holder.binding.artistVenueContainer.visibility = View.GONE
+					holder.binding.genreContainer.visibility = View.GONE
+					holder.binding.eventContainer.visibility = View.GONE
+					holder.binding.eventLandscapeContainer.visibility = View.VISIBLE
+				} else {
+					when (val badgeStatus: String = AppUtil.getBadgeStatus(
+						entities[entityPosition], isContinueWatching, screen == Screens.SHOWS
+					)) {
+						BadgeStatus.LIVE -> {
+							holder.binding.eventLiveBadgeContainer.visibility = View.VISIBLE
+							holder.binding.eventDateContainer.visibility = View.GONE
+						}
 
+						BadgeStatus.DO_NOT_SHOW, BadgeStatus.NOTHING,
+						-> {
+							holder.binding.eventLiveBadgeContainer.visibility = View.GONE
+							holder.binding.eventDateContainer.visibility = View.GONE
+						}
+
+						else -> {
+							holder.binding.eventLiveBadgeContainer.visibility = View.GONE
+							holder.binding.eventDate.text = badgeStatus
+							holder.binding.eventDateContainer.visibility =
+								if (badgeStatus.isBlank()) View.GONE else View.VISIBLE
+						}
+					}
+
+					if (isContinueWatching) {
+						holder.binding.continueWatchingProgress.visibility = View.VISIBLE
+						val stats =
+							userStats.filter { it.eventId == entities[entityPosition].eventId }
+						if (stats.size == 1 && ((stats[0].cursor / stats[0].duration) * 100) < 95) {
+							holder.binding.continueWatchingProgress.max =
+								stats[0].duration.roundToInt()
+							holder.binding.continueWatchingProgress.progress =
+								stats[0].cursor.roundToInt()
+						}
+					} else {
+						holder.binding.continueWatchingProgress.visibility = View.GONE
+					}
+					var image: String
+					entities[entityPosition].presentation.let {
+						image = it.portraitUrl ?: DEFAULT.EMPTY_STRING
+					}
+					val title = entities[entityPosition].eventName
+					val artistTitle =
+						if (entities[entityPosition].lineup.isNotEmpty()) entities[entityPosition].lineup[0].name else ""
+					entities[entityPosition].presentation.let {
+						if (!it.badgeBgColor.isNullOrBlank()) holder.binding.eventBadgeContainer.background.colorFilter =
+							BlendModeColorFilterCompat.createBlendModeColorFilterCompat(
+								Color.parseColor(it.badgeBgColor), BlendModeCompat.SRC_OVER
+							)
+
+						if (!it.badgeFgColor.isNullOrBlank()) holder.binding.eventBadge.setTextColor(
+							Color.parseColor(
+								it.badgeFgColor
+							)
+						)
+
+						if (it.badgeLabel.isNullOrBlank()) {
+							holder.binding.eventBadgeContainer.visibility = View.GONE
+						} else {
+							val firstLetter = it.badgeLabel!!.substring(0, 1).uppercase(Locale.ROOT)
+							val labelWOFirstLetter = it.badgeLabel!!.substring(1)
+							val label = "$firstLetter$labelWOFirstLetter"
+							holder.binding.eventBadge.text = label
+						}
+					}
+					holder.binding.eventTitle.text = title
+					holder.binding.eventLogoLabel.text = artistTitle
+					holder.binding.eventLogo.visibility = View.GONE
+
+					val newResource = image.replace(Image.DEFAULT, Image.CARD)
+					Glide.with(holder.binding.eventThumbnail.context).load(newResource)
+						.diskCacheStrategy(DiskCacheStrategy.ALL).override(
+							holder.binding.eventThumbnail.measuredWidth,
+							holder.binding.eventThumbnail.measuredHeight
+						)
+//					.transition(DrawableTransitionOptions.withCrossFade())
+						.transform(CenterCrop(), RoundedCorners(IntValue.NUMBER_10))
+//					.placeholder(R.drawable.rounded_card_background_black)
+						.error(R.drawable.rounded_card_background_black)
+						.into(holder.binding.eventThumbnail)
+//				Logger.printMessage("Card Image url with optimized ($newResource) is requested to load.")
+
+					holder.binding.eventDateContainer.setupWith(holder.binding.container)
+						.setBlurRadius(12.5f)
+					holder.binding.eventDateContainer.outlineProvider =
+						ViewOutlineProvider.BACKGROUND
+					holder.binding.eventDateContainer.clipToOutline = true
+					holder.binding.artistVenueFollow.visibility = View.GONE
+					holder.binding.artistVenueContainer.visibility = View.GONE
+					holder.binding.eventContainer.visibility = View.VISIBLE
+				}
 			}
 		}
 	}

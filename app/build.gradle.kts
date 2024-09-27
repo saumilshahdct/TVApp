@@ -88,6 +88,10 @@ android {
 		jvmTarget = "17"
 	}
 
+	kapt {
+		correctErrorTypes = true
+	}
+
 	dependenciesInfo {
 		includeInApk = false
 		includeInBundle = false
